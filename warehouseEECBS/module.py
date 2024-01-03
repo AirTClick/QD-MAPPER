@@ -14,7 +14,7 @@ import fire
 import logging
 import pathlib
 import warnings
-import warehouse_sim  # type: ignore # ignore pylance warning
+import warehouse_sim_EECBS  # type: ignore # ignore pylance warning
 import numpy as np
 import multiprocessing
 
@@ -344,7 +344,7 @@ class WarehouseModule:
         if planning_window is not None:
             kwargs["planning_window"] = planning_window
 
-        one_sim_result_jsonstr = warehouse_sim.run(**kwargs)
+        one_sim_result_jsonstr = warehouse_sim_EECBS.run(**kwargs)
 
         result_json = json.loads(one_sim_result_jsonstr)
         return result_json
@@ -810,7 +810,7 @@ def single_simulation(seed, agent_num, kwargs, results_dir):
     kwargs["output"] = output_dir
     kwargs["agentNum"] = agent_num
 
-    result_jsonstr = warehouse_sim.run(**kwargs)
+    result_jsonstr = warehouse_sim_EECBS.run(**kwargs)
     result_json = json.loads(result_jsonstr)
 
     throughput = result_json["throughput"]
