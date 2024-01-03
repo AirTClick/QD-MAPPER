@@ -5,6 +5,7 @@ From: python:3.8.11-buster
 %files
     setup.py /usr/project/setup.py
     pybind11/ /usr/project/pybind11
+    EECBS/ /usr/project/EECBS
     RHCR/ /usr/project/RHCR
     CMakeLists.txt /usr/project/CMakeLists.txt
     boost_1_71_0.tar.gz /usr/project/boost_1_71_0.tar.gz

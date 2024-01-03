@@ -36,6 +36,7 @@ std::string run(const py::kwargs& kwargs) {
 	result["finish"] = false; // status code to false by default
     result["solution_cost"] = -2.0;
     result["runtime"] = 0;
+    result["solution_found"] = false;
 
     
     high_level_solver_type s;
@@ -157,6 +158,8 @@ std::string run(const py::kwargs& kwargs) {
         
         result["runtime"] = ecbs.runtime;
         result["finish"] = true;
+        result["solution_cost"] = ecbs.solution_cost;
+        result["solution_found"] = ecbs.solution_found;
         
         ecbs.clearSearchEngines();
     }
@@ -199,7 +202,9 @@ std::string run(const py::kwargs& kwargs) {
             cbs.saveStats(kwargs["output"].cast<string>(), kwargs["agents"].cast<string>());
         
         result["runtime"] = cbs.runtime;
+        result["solution_cost"] = cbs.solution_cost;
         result["finish"] = true;
+        result["solution_found"] = cbs.solution_found;
         
         cbs.clearSearchEngines();
     }

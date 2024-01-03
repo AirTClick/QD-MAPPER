@@ -2,8 +2,6 @@ cmake_minimum_required (VERSION 3.4)
 
 project(lifelong)
 
-set(CMAKE_CXX_STANDARD 11)
-
 # Let cmake build for python 3.8
 find_package(Python 3.8 COMPONENTS Interpreter Development REQUIRED)
 
@@ -13,6 +11,9 @@ IF(NOT CMAKE_BUILD_TYPE)
     #SET(CMAKE_BUILD_TYPE "RELWITHDEBINFO")
     #SET(CMAKE_BUILD_TYPE "MINSIZEREL")
 ENDIF()
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+
 
 include_directories("EECBS/inc")
 
