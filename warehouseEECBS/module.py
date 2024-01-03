@@ -155,110 +155,110 @@ class WarehouseModule:
             # map = put_endpoints(map, n_endpt=n_endpt)
 
             # Stack left and right additional blocks
-            l_block, r_block = get_additional_h_blocks(ADDITION_BLOCK_WIDTH,
-                                                       n_row, w_mode)
-            assert l_block.shape == r_block.shape == (n_row,
-                                                      ADDITION_BLOCK_WIDTH)
-            map_comp_unrepaired = np.hstack((l_block, map, r_block))
-            n_col_comp = n_col + 2 * ADDITION_BLOCK_WIDTH
+            # l_block, r_block = get_additional_h_blocks(ADDITION_BLOCK_WIDTH,
+            #                                            n_row, w_mode)
+            # assert l_block.shape == r_block.shape == (n_row,
+            #                                           ADDITION_BLOCK_WIDTH)
+            # map_comp_unrepaired = np.hstack((l_block, map, r_block))
+            # n_col_comp = n_col + 2 * ADDITION_BLOCK_WIDTH
 
-            # Stack top and bottom additional blocks (At this point, we assume
-            # that left and right blocks are stacked)
-            n_row_comp = n_row
-            if ADDITION_BLOCK_HEIGHT > 0:
-                t_block, b_block = \
-                    get_additional_v_blocks(ADDITION_BLOCK_HEIGHT,
-                                            n_col_comp, w_mode)
-                map_comp_unrepaired = np.vstack(
-                    (t_block, map_comp_unrepaired, b_block))
-                n_row_comp += 2 * ADDITION_BLOCK_HEIGHT
+            # # Stack top and bottom additional blocks (At this point, we assume
+            # # that left and right blocks are stacked)
+            # n_row_comp = n_row
+            # if ADDITION_BLOCK_HEIGHT > 0:
+            #     t_block, b_block = \
+            #         get_additional_v_blocks(ADDITION_BLOCK_HEIGHT,
+            #                                 n_col_comp, w_mode)
+            #     map_comp_unrepaired = np.vstack(
+            #         (t_block, map_comp_unrepaired, b_block))
+            #     n_row_comp += 2 * ADDITION_BLOCK_HEIGHT
 
             # Repair environment here
-            format_env = format_env_str(eecbs_env_number2str(map_comp_unrepaired))
+        format_env = format_env_str(eecbs_env_number2str(map))
 
-            logger.info(f"Repairing generated environment:\n{format_env}")
+        logger.info(f"Repairing generated environment:\n{format_env}")
 
-            # Limit n_obstacle? number of obstacles constraints
-            limit_n_obstacle = True
-            if self.config.obj_type == "throughput_plus_n_obstacle":
-                limit_n_obstacle = False
-            # Warm start schema
-            warm_up_sols = None
-            if self.config.use_warm_up:
-                if parent_map is not None:
-                    parent_env_str = format_env_str(
-                    eecbs_env_number2str(parent_map))
-                    logger.info(f"Parent warm up solution:\n{parent_env_str}")
-                    warm_up_sols = [parent_map]
-                # Get the solution from hamming distance objective
-                hamming_repaired_env = repair_env(
-                    map_comp_unrepaired,
-                    agentNum,
-                    add_movement=False,
-                    min_n_obstacle=min_n_obstacle,
-                    max_n_obstacle=max_n_obstacle,
-                    seed=repair_seed,
-                    # w_mode=w_mode,
-                    warm_envs_np=warm_up_sols,
-                    limit_n_obstacle=limit_n_obstacle,
-                )
-                hamming_warm_env_str = format_env_str(
-                    eecbs_env_number2str(hamming_repaired_env))
-                logger.info(
-                    f"Hamming warm up solution:\n{hamming_warm_env_str}")
+        # Limit n_obstacle? number of obstacles constraints
+        limit_n_obstacle = True
+        if self.config.obj_type == "throughput_plus_n_obstacle":
+            limit_n_obstacle = False
+        # Warm start schema
+        warm_up_sols = None
+        if self.config.use_warm_up:
+            if parent_map is not None:
+                parent_env_str = format_env_str(
+                eecbs_env_number2str(parent_map))
+                logger.info(f"Parent warm up solution:\n{parent_env_str}")
+                warm_up_sols = [parent_map]
+            # Get the solution from hamming distance objective
+            hamming_repaired_env = repair_env(
+                map,
+                agentNum,
+                add_movement=False,
+                min_n_obstacle=min_n_obstacle,
+                max_n_obstacle=max_n_obstacle,
+                seed=repair_seed,
+                # w_mode=w_mode,
+                warm_envs_np=warm_up_sols,
+                limit_n_obstacle=limit_n_obstacle,
+            )
+            hamming_warm_env_str = format_env_str(
+                eecbs_env_number2str(hamming_repaired_env))
+            logger.info(
+                f"Hamming warm up solution:\n{hamming_warm_env_str}")
 
-                if parent_map is None:
-                    warm_up_sols = [hamming_repaired_env]
-                else:
-                    warm_up_sols = [hamming_repaired_env, parent_map]
-
-            # If hamming only, we just use hamming_repaired_env as the result
-            # env
-            if self.config.hamming_only:
-                map_np_repaired = hamming_repaired_env
+            if parent_map is None:
+                warm_up_sols = [hamming_repaired_env]
             else:
-                map_np_repaired = repair_env(
-                    map_comp_unrepaired,
-                    agentNum,
-                    add_movement=True,
-                    warm_envs_np=warm_up_sols,
-                    min_n_obstacle=min_n_obstacle,
-                    max_n_obstacle=max_n_obstacle,
-                    seed=repair_seed,
-                    # w_mode=w_mode,
-                    limit_n_obstacle=limit_n_obstacle,
-                )
+                warm_up_sols = [hamming_repaired_env, parent_map]
 
-            # Convert map layout to str format
-            map_str_repaired = eecbs_env_number2str(map_np_repaired)
+        # If hamming only, we just use hamming_repaired_env as the result
+        # env
+        if self.config.hamming_only:
+            map_np_repaired = hamming_repaired_env
+        else:
+            map_np_repaired = repair_env(
+                map,
+                agentNum,
+                add_movement=True,
+                warm_envs_np=warm_up_sols,
+                min_n_obstacle=min_n_obstacle,
+                max_n_obstacle=max_n_obstacle,
+                seed=repair_seed,
+                # w_mode=w_mode,
+                limit_n_obstacle=limit_n_obstacle,
+            )
 
-            format_env = format_env_str(map_str_repaired)
-            logger.info(f"\nRepaired result:\n{format_env}")
+        # Convert map layout to str format
+        map_str_repaired = eecbs_env_number2str(map_np_repaired)
 
-            # Create json string to map layout
-            map_json = json.dumps({
-                "name":
-                f"sol-seed={sim_seed}",
-                "weight":
-                False,
-                "n_row":
-                n_row_comp,
-                "n_col":
-                n_col_comp,
-                # "n_endpoint":
-                # sum(row.count('e') for row in map_str_repaired),
-                # "n_agent_loc":
-                # sum(row.count('r') for row in map_str_repaired),
-                # "maxtime": ?
-                # self.config.simulation_time, 
-                "layout":
-                map_str_repaired,
-            })
+        format_env = format_env_str(map_str_repaired)
+        logger.info(f"\nRepaired result:\n{format_env}")
+
+        # Create json string to map layout
+        map_json = json.dumps({
+            "name":
+            f"sol-seed={sim_seed}",
+            "weight":
+            False,
+            "n_row":
+            n_row,
+            "n_col":
+            n_col,
+            # "n_endpoint":
+            # sum(row.count('e') for row in map_str_repaired),
+            # "n_agent_loc":
+            # sum(row.count('r') for row in map_str_repaired),
+            # "maxtime": ?
+            # self.config.simulation_time, 
+            "layout":
+            map_str_repaired,
+        })
 
         # else:
         #     NotImplementedError("Other warehouse types not supported yet.")
 
-        return map_json, map_np_unrepaired, map_comp_unrepaired, map_np_repaired
+        return map_json, map_np_unrepaired, map, map_np_repaired
 
 
     def evaluate(
