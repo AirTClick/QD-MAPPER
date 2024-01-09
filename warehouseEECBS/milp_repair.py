@@ -221,7 +221,7 @@ def add_neighboaring_constraint(mdl, graph, objs, obj_t1, obj_t2):
 # add_movement: if True, use edit distance obj, otherwise, use hamming distance.
 def repair_env(
     env_np,
-    # agent_num,
+    agent_num,
     warm_envs_np=None,
     time_limit=120,
     add_movement=True,

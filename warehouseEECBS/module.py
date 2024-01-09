@@ -125,16 +125,16 @@ class WarehouseModule:
         repair_seed: int,
         sim_seed: int,
         # w_mode: bool,
-        min_n_obstacle: int,
-        max_n_obstacle: int,
+        # min_n_obstacle: int,
+        # max_n_obstacle: int,
         agentNum: int,
     ):
         map_np_unrepaired = copy.deepcopy(map)
 
         # Create json string for the map
         # if self.config.scenario == "KIVA":
-        if self.config.obj_type == "throughput_plus_n_obstacle":
-             assert max_n_obstacle == min_n_obstacle
+        # if self.config.obj_type == "throughput_plus_n_obstacle":
+        #      assert max_n_obstacle == min_n_obstacle
         #     ADDITION_BLOCK_WIDTH = KIVA_WORKSTATION_BLOCK_WIDTH if w_mode \
         #                         else KIVA_ROBOT_BLOCK_WIDTH
         #     ADDITION_BLOCK_HEIGHT = 0 if w_mode else KIVA_ROBOT_BLOCK_HEIGHT
@@ -179,9 +179,9 @@ class WarehouseModule:
         logger.info(f"Repairing generated environment:\n{format_env}")
 
         # Limit n_obstacle? number of obstacles constraints
-        limit_n_obstacle = True
-        if self.config.obj_type == "throughput_plus_n_obstacle":
-            limit_n_obstacle = False
+        # limit_n_obstacle = True
+        # if self.config.obj_type == "throughput_plus_n_obstacle":
+        #     limit_n_obstacle = False
         # Warm start schema
         warm_up_sols = None
         if self.config.use_warm_up:
@@ -195,12 +195,12 @@ class WarehouseModule:
                 map,
                 agentNum,
                 add_movement=False,
-                min_n_obstacle=min_n_obstacle,
-                max_n_obstacle=max_n_obstacle,
+                # min_n_obstacle=min_n_obstacle,
+                # max_n_obstacle=max_n_obstacle,
                 seed=repair_seed,
                 # w_mode=w_mode,
                 warm_envs_np=warm_up_sols,
-                limit_n_obstacle=limit_n_obstacle,
+                # limit_n_obstacle=limit_n_obstacle,
             )
             hamming_warm_env_str = format_env_str(
                 eecbs_env_number2str(hamming_repaired_env))
@@ -222,11 +222,11 @@ class WarehouseModule:
                 agentNum,
                 add_movement=True,
                 warm_envs_np=warm_up_sols,
-                min_n_obstacle=min_n_obstacle,
-                max_n_obstacle=max_n_obstacle,
+                # min_n_obstacle=min_n_obstacle,
+                # max_n_obstacle=max_n_obstacle,
                 seed=repair_seed,
                 # w_mode=w_mode,
-                limit_n_obstacle=limit_n_obstacle,
+                # limit_n_obstacle=limit_n_obstacle,
             )
 
         # Convert map layout to str format
