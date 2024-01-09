@@ -37,7 +37,7 @@ def repair_warehouse(
         (
             map_json,
             map_np_unrepaired,
-            map_comp_unrepaired,
+            map,
             map_np_repaired,
         ) = warehouse_module.repair(
             map=map,

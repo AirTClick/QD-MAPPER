@@ -57,13 +57,13 @@ class WarehouseMetadata:
     finished_len_std: float = None
 
     n_shelf: int = None
-    n_endpoint: int = None
+    # n_endpoint: int = None
 
     all_task_len_mean: float = None # Average length of all possible
                                     # tasks in the map
     tasks_finished_timestep: List[np.ndarray] = None
 
-    n_shelf_components: int = None # Number of connected shelf components
+    # n_shelf_components: int = None # Number of connected shelf components
 
 
 @dataclass

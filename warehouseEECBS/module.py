@@ -307,42 +307,34 @@ class WarehouseModule:
         kwargs = {
             "map" : map_json,
             "output" : output,
-            "scenario" : self.config.scenario,
-            "task" : self.config.task,
             "agentNum" : agentNum,
-            "cutoffTime" : self.config.cutoffTime,
             "seed" : sim_seed,
-            "screen" : self.config.screen,
-            "solver" : self.config.solver,
-            "id" : self.config.id,
-            "single_agent_solver" : self.config.single_agent_solver,
-            "lazyP" : self.config.lazyP,
-            "simulation_time" : self.config.simulation_time,
-            "simulation_window" : self.config.simulation_window,
-            "travel_time_window" : self.config.travel_time_window,
-            "potential_function" : self.config.potential_function,
-            "potential_threshold" : self.config.potential_threshold,
-            "rotation" : self.config.rotation,
-            "robust" : self.config.robust,
-            "CAT" : self.config.CAT,
-            "hold_endpoints" : self.config.hold_endpoints,
-            "dummy_paths" : self.config.dummy_paths,
-            "prioritize_start" : self.config.prioritize_start,
-            "suboptimal_bound" : self.config.suboptimal_bound,
-            "log" : self.config.log,
-            "test" : self.config.test,
+            "cutoffTime": self.config.cutoffTime,
+            "screen":self.config.screen,
+            "stats": self.config.stats,
+            "id": self.config.id,
+            "highLevelSolver":self.config.highLevelSolver,
+            "lowLevelSolver":self.config.lowLevelSolver,
+            "inadmissibleH": self.config.inadmissibleH,
+            "suboptimality": self.config.suboptimality,
+            "heurisitics": self.config.heurisitics,
+            "prioritizingConflicts":self.config.prioritizingConflicts,
+            "bypass": self.config.bypass,
+            "disjointSplitting": self.config.disjointSplitting,
+            "rectangleReasoning": self.config.rectangleReasoning,
+            "corridorReasoning": self.config.corridorReasoning,
+            "targetReasoning": self.config.targetReasoning,
+            "sipp": self.config.sipp,
+            "restart":self.config.restart,
             "force_new_logdir": True,
-            "save_result": self.config.save_result,
-            "save_solver": self.config.save_solver,
-            "save_heuristics_table": self.config.save_heuristics_table,
-            "stop_at_traffic_jam": self.config.stop_at_traffic_jam,
+            
         }
 
         # For some of the parameters, we do not want to pass them in here
         # to the use the default value defined on the C++ side.
-        planning_window = self.config.planning_window
-        if planning_window is not None:
-            kwargs["planning_window"] = planning_window
+        # planning_window = self.config.planning_window
+        # if planning_window is not None:
+        #     kwargs["planning_window"] = planning_window
 
         one_sim_result_jsonstr = warehouse_sim_EECBS.run(**kwargs)
 
@@ -380,8 +372,8 @@ class WarehouseModule:
         # the layout in the middle) as the totol number of tiles
         tile_ele, tile_cnt = np.unique(map_np_repaired, return_counts=True)
         tile_cnt_dict = dict(zip(tile_ele, tile_cnt))
-        n_shelf = tile_cnt_dict[kiva_obj_types.index("@")]
-        n_endpoint = tile_cnt_dict[kiva_obj_types.index("e")]
+        n_shelf = tile_cnt_dict[eecbs_obj_types.index("@")]
+        # n_endpoint = tile_cnt_dict[kiva_obj_types.index("e")]
 
         # Get average length of all tasks
         all_task_len_mean = collected_results.get("avg_task_len")
@@ -392,9 +384,9 @@ class WarehouseModule:
             f"Map ID {map_id}: Average length of all possible tasks: {all_task_len_mean}")
 
         # Calculate number of connected shelf components
-        n_shelf_components = calc_num_shelf_components(map_np_repaired)
-        logger.info(
-            f"Map ID {map_id}: Number of connected shelf components: {n_shelf_components}")
+        # n_shelf_components = calc_num_shelf_components(map_np_repaired)
+        # logger.info(
+        #     f"Map ID {map_id}: Number of connected shelf components: {n_shelf_components}")
 
         # Post process result if necessary
         tile_usage = np.array(collected_results.get("tile_usage"))
@@ -420,9 +412,9 @@ class WarehouseModule:
             map_int_unrepaired=map_comp_unrepaired,
             map_int=map_np_repaired,
             map_int_raw=map_np_unrepaired,
-            map_str=kiva_env_number2str(map_np_repaired),
+            map_str=eecbs_env_number2str(map_np_repaired),
             n_shelf=n_shelf,
-            n_endpoint=n_endpoint,
+            # n_endpoint=n_endpoint,
             tile_usage=tile_usage,
             tile_usage_mean=np.mean(collected_results.get("tile_usage_mean")),
             tile_usage_std=np.mean(collected_results.get("tile_usage_std")),
@@ -435,7 +427,7 @@ class WarehouseModule:
             finished_len_std=np.mean(collected_results.get("finished_len_std")),
             all_task_len_mean=all_task_len_mean,
             tasks_finished_timestep=tasks_finished_timestep,
-            n_shelf_components=n_shelf_components,
+            # n_shelf_components=n_shelf_components,
         )
         result = WarehouseResult.from_raw(
             warehouse_metadata=metadata,
@@ -468,39 +460,39 @@ class WarehouseModule:
 logger = logging.getLogger(__name__)
 d = [(0, 1), (0, -1), (1, 0), (-1, 0)]
 
+# RHCR Def
+# def has_endpoint_around(env_np, i, j, n_endpt=2):
+#     endpoint_cnt = 0
+#     n_row, n_col = env_np.shape
+#     for dx, dy in d:
+#         n_i, n_j = i + dx, j + dy
+#         if 0 <= n_i < n_row and 0 <= n_j < n_col:
+#             if env_np[n_i, n_j] == kiva_obj_types.index("e"):
+#                 endpoint_cnt += 1
+#                 if endpoint_cnt >= n_endpt:
+#                     return True
+#     return False
 
-def has_endpoint_around(env_np, i, j, n_endpt=2):
-    endpoint_cnt = 0
-    n_row, n_col = env_np.shape
-    for dx, dy in d:
-        n_i, n_j = i + dx, j + dy
-        if 0 <= n_i < n_row and 0 <= n_j < n_col:
-            if env_np[n_i, n_j] == kiva_obj_types.index("e"):
-                endpoint_cnt += 1
-                if endpoint_cnt >= n_endpt:
-                    return True
-    return False
 
+# def put_endpoints(map, n_endpt=2):
+#     # Use a new order of putting endpoints everytime
+#     cur_d = copy.deepcopy(d)
+#     # np.random.shuffle(cur_d)
 
-def put_endpoints(map, n_endpt=2):
-    # Use a new order of putting endpoints everytime
-    cur_d = copy.deepcopy(d)
-    # np.random.shuffle(cur_d)
-
-    # Put endpoint around the obstacles
-    n_row, n_col = map.shape
-    for i in range(n_row):
-        for j in range(n_col):
-            if map[i, j] == kiva_obj_types.index("@"):
-                for dx, dy in cur_d:
-                    n_i, n_j = i + dx, j + dy
-                    # if in range and the tile is empty space, add endpoint
-                    if 0 <= n_i < n_row and \
-                        0 <= n_j < n_col and \
-                        map[n_i, n_j] == kiva_obj_types.index(".") and \
-                        not has_endpoint_around(map, i, j, n_endpt=n_endpt):
-                        map[n_i, n_j] = kiva_obj_types.index("e")
-    return map
+#     # Put endpoint around the obstacles
+#     n_row, n_col = map.shape
+#     for i in range(n_row):
+#         for j in range(n_col):
+#             if map[i, j] == kiva_obj_types.index("@"):
+#                 for dx, dy in cur_d:
+#                     n_i, n_j = i + dx, j + dy
+#                     # if in range and the tile is empty space, add endpoint
+#                     if 0 <= n_i < n_row and \
+#                         0 <= n_j < n_col and \
+#                         map[n_i, n_j] == kiva_obj_types.index(".") and \
+#                         not has_endpoint_around(map, i, j, n_endpt=n_endpt):
+#                         map[n_i, n_j] = kiva_obj_types.index("e")
+#     return map
 
 
 def reaches_goal(loc, goal_locs):
@@ -535,13 +527,13 @@ def BFS_path_len(start_loc, goal_locs, env_np, w_mode):
     dist_matrix = np.full((m, n), np.inf)
     dist_matrix[start_loc] = 0
     block_idxs = [
-        kiva_obj_types.index("@"),
+        eecbs_obj_types.index("@"),
         # kiva_obj_types.index("e"),
-        kiva_obj_types.index("w"),
-        kiva_obj_types.index("r"),
+        eecbs_obj_types.index("w"),
+        eecbs_obj_types.index("r"),
     ]
     if not w_mode:
-        block_idxs.append(kiva_obj_types.index("e"))
+        block_idxs.append(eecbs_obj_types.index("e"))
     while not q.empty():
         curr = q.get()
         x, y = curr
@@ -575,12 +567,12 @@ def BFS_path_len(start_loc, goal_locs, env_np, w_mode):
 
 def calc_path_len_mean(repaired_env, w_mode):
     if w_mode:
-        start_locs = np.where(repaired_env == kiva_obj_types.index("w"))
+        start_locs = np.where(repaired_env == eecbs_obj_types.index("w"))
     else:
-        start_locs = np.where(repaired_env == kiva_obj_types.index("e"))
+        start_locs = np.where(repaired_env == eecbs_obj_types.index("e"))
 
     start_locs = np.stack(start_locs, axis=1)
-    end_locs = np.where(repaired_env == kiva_obj_types.index("e"))
+    end_locs = np.where(repaired_env == eecbs_obj_types.index("e"))
     end_locs = np.stack(end_locs, axis=1)
 
     path_length_table = {}
@@ -602,95 +594,95 @@ def calc_path_len_mean(repaired_env, w_mode):
     return np.mean(all_path_length)
 
 
-def BFS_shelf_component(start_loc, env_np, env_visited):
-    """
-    Find all shelves that are connected to the shelf at start_loc.
-    """
-    # We must start searching from shelf
-    assert env_np[start_loc] == kiva_obj_types.index("@")
+# def BFS_shelf_component(start_loc, env_np, env_visited):
+#     """
+#     Find all shelves that are connected to the shelf at start_loc.
+#     """
+#     # We must start searching from shelf
+#     assert env_np[start_loc] == kiva_obj_types.index("@")
 
-    q = Queue()
-    q.put(start_loc)
-    seen = set()
-    m, n = env_np.shape
-    block_idxs = [
-        kiva_obj_types.index("e"),
-        kiva_obj_types.index("w"),
-        kiva_obj_types.index("r"),
-        kiva_obj_types.index("w"),
-        kiva_obj_types.index("."),
-    ]
-    while not q.empty():
-        curr = q.get()
-        x, y = curr
-        env_visited[x,y] = True
-        seen.add(curr)
-        for dx, dy in d:
-            n_x = x + dx
-            n_y = y + dy
-            if n_x < m and n_x >= 0 and \
-               n_y < n and n_y >= 0 and \
-               env_np[n_x,n_y] not in block_idxs and\
-               (n_x, n_y) not in seen:
-                q.put((n_x, n_y))
-
-
-def calc_num_shelf_components(repaired_env):
-    env_visited = np.zeros(repaired_env.shape, dtype=bool)
-    n_row, n_col = repaired_env.shape
-    n_shelf_components = 0
-    for i in range(n_row):
-        for j in range(n_col):
-            if repaired_env[i,j] == kiva_obj_types.index("@") and\
-                not env_visited[i,j]:
-                n_shelf_components += 1
-                BFS_shelf_component((i, j), repaired_env, env_visited)
-    return n_shelf_components
+#     q = Queue()
+#     q.put(start_loc)
+#     seen = set()
+#     m, n = env_np.shape
+#     block_idxs = [
+#         kiva_obj_types.index("e"),
+#         kiva_obj_types.index("w"),
+#         kiva_obj_types.index("r"),
+#         kiva_obj_types.index("w"),
+#         kiva_obj_types.index("."),
+#     ]
+#     while not q.empty():
+#         curr = q.get()
+#         x, y = curr
+#         env_visited[x,y] = True
+#         seen.add(curr)
+#         for dx, dy in d:
+#             n_x = x + dx
+#             n_y = y + dy
+#             if n_x < m and n_x >= 0 and \
+#                n_y < n and n_y >= 0 and \
+#                env_np[n_x,n_y] not in block_idxs and\
+#                (n_x, n_y) not in seen:
+#                 q.put((n_x, n_y))
 
 
-def get_additional_h_blocks(ADDITION_BLOCK_WIDTH, n_row, w_mode):
-    """
-    Generate additional blocks to horizontally stack to the map on the left and
-    right side
-    """
+# def calc_num_shelf_components(repaired_env):
+#     env_visited = np.zeros(repaired_env.shape, dtype=bool)
+#     n_row, n_col = repaired_env.shape
+#     n_shelf_components = 0
+#     for i in range(n_row):
+#         for j in range(n_col):
+#             if repaired_env[i,j] == kiva_obj_types.index("@") and\
+#                 not env_visited[i,j]:
+#                 n_shelf_components += 1
+#                 BFS_shelf_component((i, j), repaired_env, env_visited)
+#     return n_shelf_components
 
-    if w_mode:
-        # In 'w' mode, horizontally stack the workstations
-        # The workstation locations are fixed as the following:
-        # 1. Stack workstations on the border of the generated map,
-        #    meaning that there is no columns on the left/right side of the
-        #    left/right workstations.
-        # 2. The first row and last row has no workstations.
-        # 3. For the rest of the rows, starting from the second row, put
-        # workstations for every three rows, meaning that there are at least
-        # two empty cells between each pair of workstations.
-        # 4. The left and right side of workstation blocks are symmetrical
-        l_block = []
-        r_block = []
-        for i in range(n_row):
-            curr_l_row = None
-            curr_r_row = None
-            if i == 0 or i == n_row - 1 or (i - 1) % 3 != 0:
-                curr_l_row = [
-                    kiva_obj_types.index(".")
-                    for _ in range(ADDITION_BLOCK_WIDTH)
-                ]
-                curr_r_row = copy.deepcopy(curr_l_row)
-            elif (i - 1) % 3 == 0:
-                curr_l_row = [
-                    kiva_obj_types.index("w"),
-                    kiva_obj_types.index(".")
-                ]
-                curr_r_row = [
-                    kiva_obj_types.index("."),
-                    kiva_obj_types.index("w")
-                ]
-            l_block.append(curr_l_row)
-            r_block.append(curr_r_row)
-        r_block = np.array(r_block)
-        l_block = np.array(l_block)
 
-    else:
+# def get_additional_h_blocks(ADDITION_BLOCK_WIDTH, n_row, w_mode):
+#     """
+#     Generate additional blocks to horizontally stack to the map on the left and
+#     right side
+#     """
+
+#     if w_mode:
+#         # In 'w' mode, horizontally stack the workstations
+#         # The workstation locations are fixed as the following:
+#         # 1. Stack workstations on the border of the generated map,
+#         #    meaning that there is no columns on the left/right side of the
+#         #    left/right workstations.
+#         # 2. The first row and last row has no workstations.
+#         # 3. For the rest of the rows, starting from the second row, put
+#         # workstations for every three rows, meaning that there are at least
+#         # two empty cells between each pair of workstations.
+#         # 4. The left and right side of workstation blocks are symmetrical
+#         l_block = []
+#         r_block = []
+#         for i in range(n_row):
+#             curr_l_row = None
+#             curr_r_row = None
+#             if i == 0 or i == n_row - 1 or (i - 1) % 3 != 0:
+#                 curr_l_row = [
+#                     kiva_obj_types.index(".")
+#                     for _ in range(ADDITION_BLOCK_WIDTH)
+#                 ]
+#                 curr_r_row = copy.deepcopy(curr_l_row)
+#             elif (i - 1) % 3 == 0:
+#                 curr_l_row = [
+#                     kiva_obj_types.index("w"),
+#                     kiva_obj_types.index(".")
+#                 ]
+#                 curr_r_row = [
+#                     kiva_obj_types.index("."),
+#                     kiva_obj_types.index("w")
+#                 ]
+#             l_block.append(curr_l_row)
+#             r_block.append(curr_r_row)
+#         r_block = np.array(r_block)
+#         l_block = np.array(l_block)
+
+#     else:
         # In 'r' mode, horizontally stack the robot start locations
         # The robot start locations are fixed as the following:
         # 1. Stack robot location blocks on either sides of the generated map
@@ -700,106 +692,106 @@ def get_additional_h_blocks(ADDITION_BLOCK_WIDTH, n_row, w_mode):
         # 4. Starting from the 2nd row, there are 2 robots in the middle column
         # 5. There are at most 3 sequential rows of robots
         # 6. For every 3 rows, append a row of empty space
-        r_block = []
-        n_robot_row = 0
-        for i in range(n_row):
-            curr_row = None
-            if i == 0 or i == n_row - 1:
-                curr_row = [
-                    kiva_obj_types.index(".")
-                    for _ in range(ADDITION_BLOCK_WIDTH)
-                ]
-            elif n_robot_row < 3:
-                curr_row = [
-                    kiva_obj_types.index("."),
-                    kiva_obj_types.index("r"),
-                    kiva_obj_types.index("r"),
-                    kiva_obj_types.index("."),
-                ]
-                n_robot_row += 1
-            elif n_robot_row >= 3:
-                curr_row = [
-                    kiva_obj_types.index(".")
-                    for _ in range(ADDITION_BLOCK_WIDTH)
-                ]
-                n_robot_row = 0
-            r_block.append(curr_row)
+    #     r_block = []
+    #     n_robot_row = 0
+    #     for i in range(n_row):
+    #         curr_row = None
+    #         if i == 0 or i == n_row - 1:
+    #             curr_row = [
+    #                 kiva_obj_types.index(".")
+    #                 for _ in range(ADDITION_BLOCK_WIDTH)
+    #             ]
+    #         elif n_robot_row < 3:
+    #             curr_row = [
+    #                 kiva_obj_types.index("."),
+    #                 kiva_obj_types.index("r"),
+    #                 kiva_obj_types.index("r"),
+    #                 kiva_obj_types.index("."),
+    #             ]
+    #             n_robot_row += 1
+    #         elif n_robot_row >= 3:
+    #             curr_row = [
+    #                 kiva_obj_types.index(".")
+    #                 for _ in range(ADDITION_BLOCK_WIDTH)
+    #             ]
+    #             n_robot_row = 0
+    #         r_block.append(curr_row)
 
-        # Under 'r' mode, left and right blocks are the same
-        r_block = np.array(r_block)
-        l_block = copy.deepcopy(r_block)
+    #     # Under 'r' mode, left and right blocks are the same
+    #     r_block = np.array(r_block)
+    #     l_block = copy.deepcopy(r_block)
 
-    return l_block, r_block
+    # return l_block, r_block
 
 
-def get_additional_v_blocks(ADDITION_BLOCK_HEIGHT, n_col_comp, w_mode):
-    """
-    Generate additional blocks to vertically stack to the map on the top and
-    bottom
-    """
-    # Only applicable for r mode
-    assert not w_mode
-    # We only want even # of cols to make the map symmetrical
-    assert n_col_comp % 2 == 0
-    t_block = []
-    b_block = []
-    # For r mode, we need to append additional on top and bottom of the map
-    for i in range(ADDITION_BLOCK_HEIGHT):
-        # We add 'r' to everywhere except for:
-        # 1) the first and block column of each row
-        # 2) the 2 columns in the middle of each row
-        # 2) the first row for t_block and last row for b_block
-        cont_r_length = (n_col_comp - 4) // 2
+# def get_additional_v_blocks(ADDITION_BLOCK_HEIGHT, n_col_comp, w_mode):
+#     """
+#     Generate additional blocks to vertically stack to the map on the top and
+#     bottom
+#     """
+#     # Only applicable for r mode
+#     assert not w_mode
+#     # We only want even # of cols to make the map symmetrical
+#     assert n_col_comp % 2 == 0
+#     t_block = []
+#     b_block = []
+#     # For r mode, we need to append additional on top and bottom of the map
+#     for i in range(ADDITION_BLOCK_HEIGHT):
+#         # We add 'r' to everywhere except for:
+#         # 1) the first and block column of each row
+#         # 2) the 2 columns in the middle of each row
+#         # 2) the first row for t_block and last row for b_block
+#         cont_r_length = (n_col_comp - 4) // 2
 
-        if i == 0 or i == ADDITION_BLOCK_HEIGHT - 1:
-            t_block.append([
-                kiva_obj_types.index(".") for _ in range(n_col_comp)
-            ])
-        else:
-            t_block.append([
-                kiva_obj_types.index("."),
-                *[kiva_obj_types.index("r") for _ in range(cont_r_length)],
-                kiva_obj_types.index("."),
-                kiva_obj_types.index("."),
-                *[kiva_obj_types.index("r") for _ in range(cont_r_length)],
-                kiva_obj_types.index("."),
-            ])
+#         if i == 0 or i == ADDITION_BLOCK_HEIGHT - 1:
+#             t_block.append([
+#                 kiva_obj_types.index(".") for _ in range(n_col_comp)
+#             ])
+#         else:
+#             t_block.append([
+#                 kiva_obj_types.index("."),
+#                 *[kiva_obj_types.index("r") for _ in range(cont_r_length)],
+#                 kiva_obj_types.index("."),
+#                 kiva_obj_types.index("."),
+#                 *[kiva_obj_types.index("r") for _ in range(cont_r_length)],
+#                 kiva_obj_types.index("."),
+#             ])
 
-    t_block = np.array(t_block)
-    b_block = copy.deepcopy(t_block)
-    assert t_block.shape == b_block.shape == (ADDITION_BLOCK_HEIGHT, n_col_comp)
-    return t_block, b_block
+#     t_block = np.array(t_block)
+#     b_block = copy.deepcopy(t_block)
+#     assert t_block.shape == b_block.shape == (ADDITION_BLOCK_HEIGHT, n_col_comp)
+#     return t_block, b_block
 
-def get_comp_map(
-    map,
-    seed,
-    w_mode,
-    n_endpt,
-    lvl_height,
-):
-    """
-    Helper function that repair one map using hamming for EM-ME inner
-    loop.
-    """
-    np.random.seed(seed // np.int32(4))
+# def get_comp_map(
+#     map,
+#     seed,
+#     w_mode,
+#     n_endpt,
+#     lvl_height,
+# ):
+#     """
+#     Helper function that repair one map using hamming for EM-ME inner
+#     loop.
+#     """
+#     np.random.seed(seed // np.int32(4))
 
-    # Put endpoints in raw maps and repair using hamming distance obj
-    ADDITION_BLOCK_WIDTH = KIVA_WORKSTATION_BLOCK_WIDTH if w_mode \
-                            else KIVA_ROBOT_BLOCK_WIDTH
-    # map = put_endpoints(map, n_endpt=n_endpt)
-    l_block, r_block = get_additional_h_blocks(ADDITION_BLOCK_WIDTH, lvl_height,
-                                             w_mode)
-    map_comp = np.hstack((l_block, map, r_block))
+#     # Put endpoints in raw maps and repair using hamming distance obj
+#     ADDITION_BLOCK_WIDTH = KIVA_WORKSTATION_BLOCK_WIDTH if w_mode \
+#                             else KIVA_ROBOT_BLOCK_WIDTH
+#     # map = put_endpoints(map, n_endpt=n_endpt)
+#     l_block, r_block = get_additional_h_blocks(ADDITION_BLOCK_WIDTH, lvl_height,
+#                                              w_mode)
+#     map_comp = np.hstack((l_block, map, r_block))
 
-    # Same as MILP, in the surrogate model, we replace 'w' with 'r' under
-    # w_mode to use 'r' internally.
-    if w_mode:
-        map_comp = flip_tiles(
-            map_comp,
-            'w',
-            'r',
-        )
-    return map_comp
+#     # Same as MILP, in the surrogate model, we replace 'w' with 'r' under
+#     # w_mode to use 'r' internally.
+#     if w_mode:
+#         map_comp = flip_tiles(
+#             map_comp,
+#             'w',
+#             'r',
+#         )
+#     return map_comp
 
 
 
@@ -849,13 +841,13 @@ def test_calc_path_len_mean(map_filepath):
     print(f"Average length (naive BFS): {avg_len}")
 
 
-def test_calc_num_shelf_components(map_filepath):
-    with open(map_filepath, "r") as f:
-        raw_env_json = json.load(f)
-    repaired_env_str = raw_env_json["layout"]
-    repaired_env = kiva_env_str2number(repaired_env_str)
-    n_shelf_components = calc_num_shelf_components(repaired_env)
-    print(f"Number of connected shelf components: {n_shelf_components}")
+# def test_calc_num_shelf_components(map_filepath):
+#     with open(map_filepath, "r") as f:
+#         raw_env_json = json.load(f)
+#     repaired_env_str = raw_env_json["layout"]
+#     repaired_env = kiva_env_str2number(repaired_env_str)
+#     n_shelf_components = calc_num_shelf_components(repaired_env)
+#     print(f"Number of connected shelf components: {n_shelf_components}")
 
 def main(
     warehouse_config,
