@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 @gin.configurable
 @dataclass
-class WarehouseConfig:
+class WarehouseEECBSConfig:
     """
     Config warehouse simulation
 
@@ -375,18 +375,18 @@ class WarehouseModule:
         n_shelf = tile_cnt_dict[eecbs_obj_types.index("@")]
         # n_endpoint = tile_cnt_dict[kiva_obj_types.index("e")]
 
-        # Get average length of all tasks
-        all_task_len_mean = collected_results.get("avg_task_len")
-        # all_task_len_mean = calc_path_len_mean(map_np_repaired, w_mode)
-        all_task_len_mean = all_task_len_mean[0]
+        # # Get average length of all tasks
+        # all_task_len_mean = collected_results.get("avg_task_len")
+        # # all_task_len_mean = calc_path_len_mean(map_np_repaired, w_mode)
+        # all_task_len_mean = all_task_len_mean[0]
 
-        logger.info(
-            f"Map ID {map_id}: Average length of all possible tasks: {all_task_len_mean}")
+        # logger.info(
+        #     f"Map ID {map_id}: Average length of all possible tasks: {all_task_len_mean}")
 
         # Calculate number of connected shelf components
-        # n_shelf_components = calc_num_shelf_components(map_np_repaired)
-        # logger.info(
-        #     f"Map ID {map_id}: Number of connected shelf components: {n_shelf_components}")
+        n_shelf_components = calc_num_shelf_components(map_np_repaired)
+        logger.info(
+            f"Map ID {map_id}: Number of connected shelf components: {n_shelf_components}")
 
         # Post process result if necessary
         tile_usage = np.array(collected_results.get("tile_usage"))
@@ -418,16 +418,16 @@ class WarehouseModule:
             tile_usage=tile_usage,
             tile_usage_mean=np.mean(collected_results.get("tile_usage_mean")),
             tile_usage_std=np.mean(collected_results.get("tile_usage_std")),
-            num_wait=collected_results.get("num_wait"),
-            num_wait_mean=np.mean(collected_results.get("num_wait_mean")),
-            num_wait_std=np.mean(collected_results.get("num_wait_std")),
-            finished_task_len=collected_results.get("finished_task_len"),
-            finished_len_mean=np.mean(
-                collected_results.get("finished_len_mean")),
-            finished_len_std=np.mean(collected_results.get("finished_len_std")),
+            # num_wait=collected_results.get("num_wait"),
+            # num_wait_mean=np.mean(collected_results.get("num_wait_mean")),
+            # num_wait_std=np.mean(collected_results.get("num_wait_std")),
+            # finished_task_len=collected_results.get("finished_task_len"),
+            # finished_len_mean=np.mean(
+            #     collected_results.get("finished_len_mean")),
+            # finished_len_std=np.mean(collected_results.get("finished_len_std")),
             all_task_len_mean=all_task_len_mean,
             tasks_finished_timestep=tasks_finished_timestep,
-            # n_shelf_components=n_shelf_components,
+            n_shelf_components=n_shelf_components,
         )
         result = WarehouseResult.from_raw(
             warehouse_metadata=metadata,
@@ -495,127 +495,63 @@ d = [(0, 1), (0, -1), (1, 0), (-1, 0)]
 #     return map
 
 
-def reaches_goal(loc, goal_locs):
-    """
-    A `loc` reaches goal if any loc in `goal_locs` is around `loc`.
-    """
-    x, y = loc
-    around_goal = False
-    goals = []
-    for goal_loc in goal_locs:
-        for dx, dy in d:
-            n_x = x + dx
-            n_y = y + dy
-            if tuple([n_x, n_y]) == goal_loc:
-                goals.append(goal_loc)
-                around_goal = True
-    return around_goal, goals
-
-
-def BFS_path_len(start_loc, goal_locs, env_np, w_mode):
-    """
-    Find shortest path from start_loc to all goal_locs
-    """
-    # Set goal loc as none-blocking tile, otherwise it cannot be reached.
-    # env_np[goal_locs] = kiva_obj_types.index(".")
-    result_path_len = {}
-    n_goals = len(goal_locs)
-    q = Queue()
-    q.put(start_loc)
-    seen = set()
-    m, n = env_np.shape
-    dist_matrix = np.full((m, n), np.inf)
-    dist_matrix[start_loc] = 0
-    block_idxs = [
-        eecbs_obj_types.index("@"),
-        # kiva_obj_types.index("e"),
-        eecbs_obj_types.index("w"),
-        eecbs_obj_types.index("r"),
-    ]
-    if not w_mode:
-        block_idxs.append(eecbs_obj_types.index("e"))
-    while not q.empty():
-        curr = q.get()
-        x, y = curr
-        around_goal, goals = reaches_goal(curr, goal_locs)
-        if around_goal:
-            shortest = dist_matrix[x, y] + 1
-            for goal_reached in goals:
-                result_path_len[goal_reached] = shortest
-                goal_locs.remove(goal_reached)
-
-            # print(f"Found goal {goal_reached}")
-            # print(f"Remaining number of goals {len(goal_locs)}")
-
-            # All goals found?
-            if len(goal_locs) == 0:
-                assert len(result_path_len) == n_goals
-                return result_path_len
-
-        seen.add(curr)
-        for dx, dy in d:
-            n_x = x + dx
-            n_y = y + dy
-            if n_x < m and n_x >= 0 and \
-               n_y < n and n_y >= 0 and \
-               env_np[n_x,n_y] not in block_idxs and\
-               (n_x, n_y) not in seen:
-                q.put((n_x, n_y))
-                dist_matrix[n_x, n_y] = dist_matrix[x, y] + 1
-    raise ValueError(f"Start loc: {start_loc}. Remaining goal: {goal_locs}")
-
-
-def calc_path_len_mean(repaired_env, w_mode):
-    if w_mode:
-        start_locs = np.where(repaired_env == eecbs_obj_types.index("w"))
-    else:
-        start_locs = np.where(repaired_env == eecbs_obj_types.index("e"))
-
-    start_locs = np.stack(start_locs, axis=1)
-    end_locs = np.where(repaired_env == eecbs_obj_types.index("e"))
-    end_locs = np.stack(end_locs, axis=1)
-
-    path_length_table = {}
-    for start_loc in start_locs:
-        path_length_table[tuple(start_loc)] = BFS_path_len(
-                tuple(start_loc),
-                [tuple(end_loc) for end_loc in end_locs],
-                copy.deepcopy(repaired_env),
-                w_mode,
-            )
-
-    all_path_length = []
-    for start_loc in start_locs:
-        for end_loc in end_locs:
-            if tuple(start_loc) != tuple(end_loc):
-                all_path_length.append(
-                    path_length_table[tuple(start_loc)][tuple(end_loc)])
-
-    return np.mean(all_path_length)
-
-
-# def BFS_shelf_component(start_loc, env_np, env_visited):
+# def reaches_goal(loc, goal_locs):
 #     """
-#     Find all shelves that are connected to the shelf at start_loc.
+#     A `loc` reaches goal if any loc in `goal_locs` is around `loc`.
 #     """
-#     # We must start searching from shelf
-#     assert env_np[start_loc] == kiva_obj_types.index("@")
+#     x, y = loc
+#     around_goal = False
+#     goals = []
+#     for goal_loc in goal_locs:
+#         for dx, dy in d:
+#             n_x = x + dx
+#             n_y = y + dy
+#             if tuple([n_x, n_y]) == goal_loc:
+#                 goals.append(goal_loc)
+#                 around_goal = True
+#     return around_goal, goals
 
+
+# def BFS_path_len(start_loc, goal_locs, env_np, w_mode):
+#     """
+#     Find shortest path from start_loc to all goal_locs
+#     """
+#     # Set goal loc as none-blocking tile, otherwise it cannot be reached.
+#     # env_np[goal_locs] = kiva_obj_types.index(".")
+#     result_path_len = {}
+#     n_goals = len(goal_locs)
 #     q = Queue()
 #     q.put(start_loc)
 #     seen = set()
 #     m, n = env_np.shape
+#     dist_matrix = np.full((m, n), np.inf)
+#     dist_matrix[start_loc] = 0
 #     block_idxs = [
-#         kiva_obj_types.index("e"),
-#         kiva_obj_types.index("w"),
-#         kiva_obj_types.index("r"),
-#         kiva_obj_types.index("w"),
-#         kiva_obj_types.index("."),
+#         eecbs_obj_types.index("@"),
+#         # kiva_obj_types.index("e"),
+#         eecbs_obj_types.index("w"),
+#         eecbs_obj_types.index("r"),
 #     ]
+#     if not w_mode:
+#         block_idxs.append(eecbs_obj_types.index("e"))
 #     while not q.empty():
 #         curr = q.get()
 #         x, y = curr
-#         env_visited[x,y] = True
+#         around_goal, goals = reaches_goal(curr, goal_locs)
+#         if around_goal:
+#             shortest = dist_matrix[x, y] + 1
+#             for goal_reached in goals:
+#                 result_path_len[goal_reached] = shortest
+#                 goal_locs.remove(goal_reached)
+
+#             # print(f"Found goal {goal_reached}")
+#             # print(f"Remaining number of goals {len(goal_locs)}")
+
+#             # All goals found?
+#             if len(goal_locs) == 0:
+#                 assert len(result_path_len) == n_goals
+#                 return result_path_len
+
 #         seen.add(curr)
 #         for dx, dy in d:
 #             n_x = x + dx
@@ -625,19 +561,79 @@ def calc_path_len_mean(repaired_env, w_mode):
 #                env_np[n_x,n_y] not in block_idxs and\
 #                (n_x, n_y) not in seen:
 #                 q.put((n_x, n_y))
+#                 dist_matrix[n_x, n_y] = dist_matrix[x, y] + 1
+#     raise ValueError(f"Start loc: {start_loc}. Remaining goal: {goal_locs}")
 
 
-# def calc_num_shelf_components(repaired_env):
-#     env_visited = np.zeros(repaired_env.shape, dtype=bool)
-#     n_row, n_col = repaired_env.shape
-#     n_shelf_components = 0
-#     for i in range(n_row):
-#         for j in range(n_col):
-#             if repaired_env[i,j] == kiva_obj_types.index("@") and\
-#                 not env_visited[i,j]:
-#                 n_shelf_components += 1
-#                 BFS_shelf_component((i, j), repaired_env, env_visited)
-#     return n_shelf_components
+# def calc_path_len_mean(repaired_env, w_mode):
+#     if w_mode:
+#         start_locs = np.where(repaired_env == eecbs_obj_types.index("w"))
+#     else:
+#         start_locs = np.where(repaired_env == eecbs_obj_types.index("e"))
+
+#     start_locs = np.stack(start_locs, axis=1)
+#     end_locs = np.where(repaired_env == eecbs_obj_types.index("e"))
+#     end_locs = np.stack(end_locs, axis=1)
+
+#     path_length_table = {}
+#     for start_loc in start_locs:
+#         path_length_table[tuple(start_loc)] = BFS_path_len(
+#                 tuple(start_loc),
+#                 [tuple(end_loc) for end_loc in end_locs],
+#                 copy.deepcopy(repaired_env),
+#                 w_mode,
+#             )
+
+#     all_path_length = []
+#     for start_loc in start_locs:
+#         for end_loc in end_locs:
+#             if tuple(start_loc) != tuple(end_loc):
+#                 all_path_length.append(
+#                     path_length_table[tuple(start_loc)][tuple(end_loc)])
+
+#     return np.mean(all_path_length)
+
+
+def BFS_shelf_component(start_loc, env_np, env_visited):
+    """
+    Find all shelves that are connected to the shelf at start_loc.
+    """
+    # We must start searching from shelf
+    assert env_np[start_loc] == eecbs_obj_types.index("@")
+
+    q = Queue()
+    q.put(start_loc)
+    seen = set()
+    m, n = env_np.shape
+    block_idxs = [
+        eecbs_obj_types.index("."),
+    ]
+    while not q.empty():
+        curr = q.get()
+        x, y = curr
+        env_visited[x,y] = True
+        seen.add(curr)
+        for dx, dy in d:
+            n_x = x + dx
+            n_y = y + dy
+            if n_x < m and n_x >= 0 and \
+               n_y < n and n_y >= 0 and \
+               env_np[n_x,n_y] not in block_idxs and\
+               (n_x, n_y) not in seen:
+                q.put((n_x, n_y))
+
+
+def calc_num_shelf_components(repaired_env):
+    env_visited = np.zeros(repaired_env.shape, dtype=bool)
+    n_row, n_col = repaired_env.shape
+    n_shelf_components = 0
+    for i in range(n_row):
+        for j in range(n_col):
+            if repaired_env[i,j] == eecbs_obj_types.index("@") and\
+                not env_visited[i,j]:
+                n_shelf_components += 1
+                BFS_shelf_component((i, j), repaired_env, env_visited)
+    return n_shelf_components
 
 
 # def get_additional_h_blocks(ADDITION_BLOCK_WIDTH, n_row, w_mode):
@@ -830,24 +826,24 @@ def single_simulation(seed, agent_num, kwargs, results_dir):
 
     return throughput
 
-def test_calc_path_len_mean(map_filepath):
-    # Read in map
-    with open(map_filepath, "r") as f:
-        raw_env_json = json.load(f)
-    repaired_env_str = raw_env_json["layout"]
-    repaired_env = kiva_env_str2number(repaired_env_str)
-
-    avg_len = calc_path_len_mean(repaired_env, True)
-    print(f"Average length (naive BFS): {avg_len}")
-
-
-# def test_calc_num_shelf_components(map_filepath):
+# def test_calc_path_len_mean(map_filepath):
+#     # Read in map
 #     with open(map_filepath, "r") as f:
 #         raw_env_json = json.load(f)
 #     repaired_env_str = raw_env_json["layout"]
 #     repaired_env = kiva_env_str2number(repaired_env_str)
-#     n_shelf_components = calc_num_shelf_components(repaired_env)
-#     print(f"Number of connected shelf components: {n_shelf_components}")
+
+#     avg_len = calc_path_len_mean(repaired_env, True)
+#     print(f"Average length (naive BFS): {avg_len}")
+
+
+def test_calc_num_shelf_components(map_filepath):
+    with open(map_filepath, "r") as f:
+        raw_env_json = json.load(f)
+    repaired_env_str = raw_env_json["layout"]
+    repaired_env = kiva_env_str2number(repaired_env_str)
+    n_shelf_components = calc_num_shelf_components(repaired_env)
+    print(f"Number of connected shelf components: {n_shelf_components}")
 
 def main(
     warehouse_config,
@@ -894,54 +890,35 @@ def main(
     kwargs = {
         "map" : json.dumps(raw_env_json),
         # "output" : log_dir,
-        "scenario" : gin.query_parameter("WarehouseConfig.scenario"),
-        "task" : gin.query_parameter("WarehouseConfig.task"),
         "agentNum" : agent_num,
-        "cutoffTime" : gin.query_parameter("WarehouseConfig.cutoffTime"),
-        # "seed" : seed,
-        "screen" : gin.query_parameter("WarehouseConfig.screen"),
-        "solver" : gin.query_parameter("WarehouseConfig.solver"),
-        "id" : gin.query_parameter("WarehouseConfig.id"),
-        "single_agent_solver" : gin.query_parameter(
-            "WarehouseConfig.single_agent_solver"),
-        "lazyP" : gin.query_parameter("WarehouseConfig.lazyP"),
-        "simulation_time" : gin.query_parameter(
-            "WarehouseConfig.simulation_time"),
-        "simulation_window" : gin.query_parameter(
-            "WarehouseConfig.simulation_window"),
-        "travel_time_window" : gin.query_parameter(
-            "WarehouseConfig.travel_time_window"),
-        "potential_function" : gin.query_parameter(
-            "WarehouseConfig.potential_function"),
-        "potential_threshold" : gin.query_parameter(
-            "WarehouseConfig.potential_threshold"),
-        "rotation" : gin.query_parameter("WarehouseConfig.rotation"),
-        "robust" : gin.query_parameter("WarehouseConfig.robust"),
-        "CAT" : gin.query_parameter("WarehouseConfig.CAT"),
-        "hold_endpoints" : gin.query_parameter(
-            "WarehouseConfig.hold_endpoints"),
-        "dummy_paths" : gin.query_parameter("WarehouseConfig.dummy_paths"),
-        "prioritize_start" : gin.query_parameter(
-            "WarehouseConfig.prioritize_start"),
-        "suboptimal_bound" : gin.query_parameter(
-            "WarehouseConfig.suboptimal_bound"),
-        "log" : gin.query_parameter("WarehouseConfig.log"),
-        "test" : gin.query_parameter("WarehouseConfig.test"),
+        "cutoffTime": gin.query_parameter("WarehouseEECBSConfig.cutoffTime"),
+        "screen":gin.query_parameter("WarehouseEECBSConfig.screen"),
+        "stats": gin.query_parameter("WarehouseEECBSConfig.stats"),
+        "id": gin.query_parameter("WarehouseEECBSConfig.id"),
+        "highLevelSolver":gin.query_parameter("WarehouseEECBSConfig.highLevelSolver"),
+        "lowLevelSolver":gin.query_parameter("WarehouseEECBSConfig.lowLevelSolver"),
+        "inadmissibleH": gin.query_parameter("WarehouseEECBSConfig.inadmissibleH"),
+        "suboptimality": gin.query_parameter("WarehouseEECBSConfig.suboptimality"),
+        "heurisitics": gin.query_parameter("WarehouseEECBSConfig.heuristics"),
+        "prioritizingConflicts":gin.query_parameter("WarehouseEECBSConfig.prioritizingConflicts"),
+        "bypass": gin.query_parameter("WarehouseEECBSConfig.bypass"),
+        "disjointSplitting": gin.query_parameter("WarehouseEECBSConfig.disjointSplitting"),
+        "rectangleReasoning": gin.query_parameter("WarehouseEECBSConfig.rectangleReasoning"),
+        "corridorReasoning": gin.query_parameter("WarehouseEECBSConfig.corridorResasoning"),
+        "targetReasoning": gin.query_parameter("WarehouseEECBSConfig.targetReasoning"),
+        "sipp": gin.query_parameter("WarehouseEECBSConfig.sipp"),
+        "restart":gin.query_parameter("WarehouseEECBSConfig.restart"),
         "force_new_logdir": False,
-        "save_result": gin.query_parameter("WarehouseConfig.save_result"),
-        "save_solver": gin.query_parameter("WarehouseConfig.save_solver"),
-        "save_heuristics_table": gin.query_parameter("WarehouseConfig.save_heuristics_table"),
-        "stop_at_traffic_jam": gin.query_parameter("WarehouseConfig.stop_at_traffic_jam")
     }
 
     # For some of the parameters, we do not want to pass them in here
     # to the use the default value defined on the C++ side.
-    try:
-        planning_window = gin.query_parameter("WarehouseConfig.planning_window")
-        if planning_window is not None:
-            kwargs["planning_window"] = planning_window
-    except ValueError:
-        pass
+    # try:
+    #     planning_window = gin.query_parameter("WarehouseConfig.planning_window")
+    #     if planning_window is not None:
+    #         kwargs["planning_window"] = planning_window
+    # except ValueError:
+    #     pass
 
     n_workers = 32
     pool = multiprocessing.Pool(n_workers)

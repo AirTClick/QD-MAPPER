@@ -1,24 +1,24 @@
-# ## WarehouseConfig ##
+# ##WarehouseEECBSConfig ##
 
 # Experiment settings
-WarehouseConfig.agentNum=5                      #number of agents
-WarehouseConfig.cutoffTime=7200                 #cutoff time (seconds)
-WarehouseConfig.screen=1                        #screen option (0: none; 1: results; 2:all)#
-WarehouseConfig.stats=False                     #write to files some detailed statistics
+WarehouseEECBSConfig.agentNum=5                      #number of agents
+WarehouseEECBSConfigg.cutoffTime=7200                 #cutoff time (seconds)
+WarehouseEECBSConfig.screen=1                        #screen option (0: none; 1: results; 2:all)#
+WarehouseEECBSConfig.stats=False                     #write to files some detailed statistics
 
 # CBS node selection strategies              
-WarehouseConfig.highLevelSolver="EES"           #the high-level solver (A*, A*eps, EES, NEW)
-WarehouseConfig.lowLevelSolver=True             #using suboptimal solver in the low level
-WarehouseConfig.inadmissibleH=Global            #inadmissible heuristics (Zero, Global, Path, Local, Conflict)
-WarehouseConfig.suboptimality=1.2               #suboptimality bound
+WarehouseEECBSConfig.highLevelSolver="EES"           #the high-level solver (A*, A*eps, EES, NEW)
+WarehouseEECBSConfig.lowLevelSolver=True             #using suboptimal solver in the low level
+WarehouseEECBSConfig.inadmissibleH=Global            #inadmissible heuristics (Zero, Global, Path, Local, Conflict)
+WarehouseEECBSConfig.suboptimality=1.2               #suboptimality bound
 
 # CBS improvement
-WarehouseConfig.heuristics="WDG"                #admissible heuristics for the high-level search (Zero, CG,DG, WDG)
-WarehouseConfig.prioritizingConflicts=True      #conflict prioirtization. If true, conflictSelection is used as a tie-breaking rule.
-WarehouseConfig.bypass=True                     #Bypass1
-WarehouseConfig.disjointSplitting=False         #disjoint splitting
-WarehouseConfig.rectangleReasoning=True         #rectangle reasoning
-WarehouseConfig.corridorReasoning=True          #corridor reasoning
-WarehouseConfig.targetReasoning=True            #target reasoning
-WarehouseConfig.sipp=0                          #using SIPPS as the low-level solver
-WarehouseConfig.restart=0                       #rapid random restart times
+WarehouseEECBSConfig.heuristics="WDG"                #admissible heuristics for the high-level search (Zero, CG,DG, WDG)
+WarehouseEECBSConfig.prioritizingConflicts=True      #conflict prioirtization. If true, conflictSelection is used as a tie-breaking rule.
+WarehouseEECBSConfig.bypass=True                     #Bypass1
+WarehouseEECBSConfig.disjointSplitting=False         #disjoint splitting
+WarehouseEECBSConfig.rectangleReasoning=True         #rectangle reasoning
+WarehouseEECBSConfig.corridorReasoning=True          #corridor reasoning
+WarehouseEECBSConfig.targetReasoning=True            #target reasoning
+WarehouseEECBSConfig.sipp=0                          #using SIPPS as the low-level solver
+WarehouseEECBSConfig.restart=0                       #rapid random restart times

@@ -44,9 +44,9 @@ def repair_warehouse(
             parent_map=parent_map,
             sim_seed=sim_seed,
             repair_seed=repair_seed,
-            w_mode=w_mode,
-            min_n_shelf=min_n_shelf,
-            max_n_shelf=max_n_shelf,
+            # w_mode=w_mode,
+            # min_n_shelf=min_n_shelf,
+            # max_n_shelf=max_n_shelf,
             agentNum=agentNum,
         )
     except TimeoutError as e:
