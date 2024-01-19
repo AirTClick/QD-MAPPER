@@ -97,12 +97,12 @@ class WarehouseEECBSConfig:
     cutoffTime: int = gin.REQUIRED,
     screen: int = gin.REQUIRED,
     stats: bool = gin.REQUIRED,
-    id: bool = gin.REQUIRED,
+    # id: bool = gin.REQUIRED,
     highLevelSolver: str = gin.REQUIRED,
     lowLevelSolver: bool = gin.REQUIRED,
     inadmissibleH: str = gin.REQUIRED,
     suboptimality: float = gin.REQUIRED,
-    heurisitics: str = gin.REQUIRED,
+    heuristics: str = gin.REQUIRED,
     prioritizingConflicts: bool = gin.REQUIRED,
     bypass: bool = gin.REQUIRED,
     disjointSplitting: int = gin.REQUIRED,
@@ -115,7 +115,7 @@ class WarehouseEECBSConfig:
 
 
 class WarehouseModule:
-    def __init__(self, config: WarehouseConfig):
+    def __init__(self, config: WarehouseEECBSConfig):
         self.config = config
 
     def repair(
@@ -312,12 +312,12 @@ class WarehouseModule:
             "cutoffTime": self.config.cutoffTime,
             "screen":self.config.screen,
             "stats": self.config.stats,
-            "id": self.config.id,
+            # "id": self.config.id,
             "highLevelSolver":self.config.highLevelSolver,
             "lowLevelSolver":self.config.lowLevelSolver,
             "inadmissibleH": self.config.inadmissibleH,
             "suboptimality": self.config.suboptimality,
-            "heurisitics": self.config.heurisitics,
+            "heuristics": self.config.heuristics,
             "prioritizingConflicts":self.config.prioritizingConflicts,
             "bypass": self.config.bypass,
             "disjointSplitting": self.config.disjointSplitting,
@@ -894,17 +894,17 @@ def main(
         "cutoffTime": gin.query_parameter("WarehouseEECBSConfig.cutoffTime"),
         "screen":gin.query_parameter("WarehouseEECBSConfig.screen"),
         "stats": gin.query_parameter("WarehouseEECBSConfig.stats"),
-        "id": gin.query_parameter("WarehouseEECBSConfig.id"),
+        # "id": gin.query_parameter("WarehouseEECBSConfig.id"),
         "highLevelSolver":gin.query_parameter("WarehouseEECBSConfig.highLevelSolver"),
         "lowLevelSolver":gin.query_parameter("WarehouseEECBSConfig.lowLevelSolver"),
         "inadmissibleH": gin.query_parameter("WarehouseEECBSConfig.inadmissibleH"),
         "suboptimality": gin.query_parameter("WarehouseEECBSConfig.suboptimality"),
-        "heurisitics": gin.query_parameter("WarehouseEECBSConfig.heuristics"),
+        "heuristics": gin.query_parameter("WarehouseEECBSConfig.heuristics"),
         "prioritizingConflicts":gin.query_parameter("WarehouseEECBSConfig.prioritizingConflicts"),
         "bypass": gin.query_parameter("WarehouseEECBSConfig.bypass"),
         "disjointSplitting": gin.query_parameter("WarehouseEECBSConfig.disjointSplitting"),
         "rectangleReasoning": gin.query_parameter("WarehouseEECBSConfig.rectangleReasoning"),
-        "corridorReasoning": gin.query_parameter("WarehouseEECBSConfig.corridorResasoning"),
+        "corridorReasoning": gin.query_parameter("WarehouseEECBSConfig.corridorReasoning"),
         "targetReasoning": gin.query_parameter("WarehouseEECBSConfig.targetReasoning"),
         "sipp": gin.query_parameter("WarehouseEECBSConfig.sipp"),
         "restart":gin.query_parameter("WarehouseEECBSConfig.restart"),
