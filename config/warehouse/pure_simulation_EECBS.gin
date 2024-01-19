@@ -1,15 +1,15 @@
 # ##WarehouseEECBSConfig ##
 
 # Experiment settings
-WarehouseEECBSConfig.agentNum=5                      #number of agents
-WarehouseEECBSConfigg.cutoffTime=7200                 #cutoff time (seconds)
+# WarehouseEECBSConfig.agentNum=5                      #number of agents
+WarehouseEECBSConfig.cutoffTime=7200                 #cutoff time (seconds)
 WarehouseEECBSConfig.screen=1                        #screen option (0: none; 1: results; 2:all)#
 WarehouseEECBSConfig.stats=False                     #write to files some detailed statistics
 
 # CBS node selection strategies              
 WarehouseEECBSConfig.highLevelSolver="EES"           #the high-level solver (A*, A*eps, EES, NEW)
 WarehouseEECBSConfig.lowLevelSolver=True             #using suboptimal solver in the low level
-WarehouseEECBSConfig.inadmissibleH=Global            #inadmissible heuristics (Zero, Global, Path, Local, Conflict)
+WarehouseEECBSConfig.inadmissibleH="Global"            #inadmissible heuristics (Zero, Global, Path, Local, Conflict)
 WarehouseEECBSConfig.suboptimality=1.2               #suboptimality bound
 
 # CBS improvement
