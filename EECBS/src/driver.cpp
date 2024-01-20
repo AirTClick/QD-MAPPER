@@ -10,6 +10,9 @@
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 #include "ECBS.h"
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 
 /* Main function */
@@ -132,8 +135,15 @@ int main(int argc, char** argv)
 
 	///////////////////////////////////////////////////////////////////////////
 	// load the instance
-	Instance instance(vm["map"].as<string>(), vm["agents"].as<string>(),
-		vm["agentNum"].as<int>());
+	// Instance instance(vm["map"].as<string>(), vm["agents"].as<string>(),
+	// 	vm["agentNum"].as<int>());
+
+	//load the .json instance
+	std::ifstream i(vm["map"].as<std::string>());
+        json map_json;
+        i >> map_json;
+	
+	Instance instance(map_json, vm["agentNum"].as<int>());
 
 	srand(0);
 	int runs = 1 + vm["restart"].as<int>();

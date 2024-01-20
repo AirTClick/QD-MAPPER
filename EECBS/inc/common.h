@@ -11,7 +11,9 @@
 #include <boost/heap/pairing_heap.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
+#include <nlohmann/json.hpp>
 
+using json = nlohmann::json;
 using boost::heap::pairing_heap;
 using boost::heap::compare;
 using boost::unordered_map;

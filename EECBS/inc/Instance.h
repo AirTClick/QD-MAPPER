@@ -1,7 +1,6 @@
 #pragma once
 #include"common.h"
 
-
 // Currently only works for undirected unweighted 4-nighbor grids
 class Instance 
 {
@@ -15,7 +14,7 @@ public:
 	Instance(){}
 	Instance(const string& map_fname, const string& agent_fname, 
 		int num_of_agents = 0, int num_of_rows = 0, int num_of_cols = 0, int num_of_obstacles = 0, int warehouse_width = 0);
-
+	Instance(json& G_json, int num_of_agents);
 
 	void printAgents() const;
 
@@ -73,6 +72,7 @@ private:
 	  vector<int> goal_locations;
 
 	  bool loadMap();
+	  bool load_map_from_jsonstr(json G_json);
 	  void printMap() const;
 	  void saveMap() const;
 

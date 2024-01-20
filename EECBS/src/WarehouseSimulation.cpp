@@ -11,24 +11,24 @@ using json = nlohmann::json;
 namespace py = pybind11;
 
 std::string run(const py::kwargs& kwargs) {
-	if (kwargs["test"].cast<bool>())
-	{
-		// For testing
-		json result = {
-            {"throughput", 10},
-			{"tile_usage", {0.0, 1.0, 2.0}},
-			{"num_wait", {3.0, 4.0, 5.0}},
-			{"finished_task_len", {6.0, 7.0, 8.0}},
-			{"tile_usage_mean", 1.0},
-			{"tile_usage_std", 0.67},
-			{"num_wait_mean", 4.0},
-			{"num_wait_std", 0.67},
-			{"finished_len_mean", 7.0},
-			{"finished_len_std", 0.67}
-		};
+	// if (kwargs["test"].cast<bool>())
+	// {
+	// 	// For testing
+	// 	json result = {
+    //         {"throughput", 10},
+	// 		{"tile_usage", {0.0, 1.0, 2.0}},
+	// 		{"num_wait", {3.0, 4.0, 5.0}},
+	// 		{"finished_task_len", {6.0, 7.0, 8.0}},
+	// 		{"tile_usage_mean", 1.0},
+	// 		{"tile_usage_std", 0.67},
+	// 		{"num_wait_mean", 4.0},
+	// 		{"num_wait_std", 0.67},
+	// 		{"finished_len_mean", 7.0},
+	// 		{"finished_len_std", 0.67}
+	// 	};
 
-		return result.dump(4);
-	}
+	// 	return result.dump(4);
+	// }
 
     namespace po = boost::program_options;
     clock_t start_time = clock();
