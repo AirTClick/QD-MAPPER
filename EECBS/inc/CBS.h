@@ -86,8 +86,10 @@ public:
 	~CBS();
 
 	// Save results
-	void saveResults(const string &fileName, const string &instanceName) const;
-	void saveStats(const string &fileName, const string &instanceName);
+	// void saveResults(const string &fileName, const string &instanceName) const;
+	// void saveStats(const string &fileName, const string &instanceName);
+	void saveResults(const string &fileName) const;
+	void saveStats(const string &fileName);
 	void saveCT(const string &fileName) const; // write the CT to a file
     void savePaths(const string &fileName) const; // write the paths to a file
 	void clear(); // used for rapid random  restart

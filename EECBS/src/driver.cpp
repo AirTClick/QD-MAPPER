@@ -181,14 +181,16 @@ int main(int argc, char** argv)
         }
         ecbs.runtime = runtime;
         if (vm.count("output"))
-            ecbs.saveResults(vm["output"].as<string>(), vm["agents"].as<string>());
+			// ecbs.saveResults(vm["output"].as<string>(), vm["agents"].as<string>());
+            ecbs.saveResults(vm["output"].as<string>());
         if (ecbs.solution_found && vm.count("outputPaths"))
             ecbs.savePaths(vm["outputPaths"].as<string>());
         /*size_t pos = vm["output"].as<string>().rfind('.');      // position of the file extension
         string output_name = vm["output"].as<string>().substr(0, pos);     // get the name without extension
         cbs.saveCT(output_name); // for debug*/
         if (vm["stats"].as<bool>())
-            ecbs.saveStats(vm["output"].as<string>(), vm["agents"].as<string>());
+			// ecbs.saveStats(vm["output"].as<string>(), vm["agents"].as<string>());	
+            ecbs.saveStats(vm["output"].as<string>());
         ecbs.clearSearchEngines();
     }
     else
@@ -223,11 +225,13 @@ int main(int argc, char** argv)
         }
         cbs.runtime = runtime;
         if (vm.count("output"))
-            cbs.saveResults(vm["output"].as<string>(), vm["agents"].as<string>());
+			// cbs.saveResults(vm["output"].as<string>(), vm["agents"].as<string>());
+            cbs.saveResults(vm["output"].as<string>());
         if (cbs.solution_found && vm.count("outputPaths"))
             cbs.savePaths(vm["outputPaths"].as<string>());
         if (vm["stats"].as<bool>())
-            cbs.saveStats(vm["output"].as<string>(), vm["agents"].as<string>());
+			// cbs.saveStats(vm["output"].as<string>(), vm["agents"].as<string>());
+            cbs.saveStats(vm["output"].as<string>());
         cbs.clearSearchEngines();
     }
 

@@ -939,7 +939,8 @@ void CBS::printResults() const
     }*/
 }
 
-void CBS::saveResults(const string &fileName, const string &instanceName) const
+// void CBS::saveResults(const string &fileName, const string &instanceName) const
+void CBS::saveResults(const string &fileName) const
 {
 	std::ifstream infile(fileName);
 	bool exist = infile.good();
@@ -992,11 +993,12 @@ void CBS::saveResults(const string &fileName, const string &instanceName) const
 		mdd_helper.accumulated_runtime << "," << runtime_build_CT << "," << runtime_build_CAT << "," <<
 		runtime_path_finding << "," << runtime_generate_child << "," <<
 
-		runtime_preprocessing << "," << getSolverName() << "," << instanceName << endl;
+		runtime_preprocessing << "," << getSolverName() << "," << endl;
 	stats.close();
 }
 
-void CBS::saveStats(const string &fileName, const string &instanceName)
+// void CBS::saveStats(const string &fileName, const string &instanceName)
+void CBS::saveStats(const string &fileName)
 {
 	/*cout << "writing logs..." << endl;
 	ofstream stats(fileName+ ".txt", std::ios::app);

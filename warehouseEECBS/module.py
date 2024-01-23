@@ -26,12 +26,11 @@ from queue import Queue
 from typing import Collection
 from env_search import LOG_DIR
 from env_search.utils.logging import setup_logging
-from env_search.warehouse.milp_repair import repair_env
-from env_search.warehouse.warehouse_result import (WarehouseResult,
+from warehouseEECBS.milp_repair import repair_env
+from warehouseEECBS.warehouse_result import (WarehouseResult,
                                                    WarehouseMetadata)
-from env_search.utils import (eecbs_obj_types, KIVA_ROBOT_BLOCK_WIDTH,
-                              KIVA_WORKSTATION_BLOCK_WIDTH, MIN_SCORE,
-                              KIVA_ROBOT_BLOCK_HEIGHT, eecbs_env_number2str,
+from env_search.utils import (eecbs_obj_types, MIN_SCORE,
+                              eecbs_env_number2str,
                               kiva_env_str2number, format_env_str,
                               read_in_kiva_map, flip_tiles)
 

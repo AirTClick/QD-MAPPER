@@ -108,8 +108,14 @@ std::string run(const py::kwargs& kwargs) {
 
 	///////////////////////////////////////////////////////////////////////////
 	// load the instance
-	Instance instance(kwargs["map"].cast<string>(), kwargs["agents"].cast<string>(),
-		kwargs["agentNum"].cast<int>());
+	// Instance instance(kwargs["map"].cast<string>(), kwargs["agents"].cast<string>(),
+	// 	kwargs["agentNum"].cast<int>());
+
+    std::ifstream i(kwargs["map"].cast<std::string>());
+        json map_json;
+        i >> map_json;
+	
+	Instance instance(map_json, kwargs["agentNum"].cast<int>());
 
 	srand(0);
 	int runs = 1 + kwargs["restart"].cast<int>();
@@ -147,14 +153,14 @@ std::string run(const py::kwargs& kwargs) {
         }
         ecbs.runtime = runtime;
         if (kwargs.contains("output"))
-            ecbs.saveResults(kwargs["output"].cast<string>(), kwargs["agents"].cast<string>());
+            ecbs.saveResults(kwargs["output"].cast<string>());
         if (ecbs.solution_found && kwargs.contains("outputPaths"))
             ecbs.savePaths(kwargs["outputPaths"].cast<string>());
         /*size_t pos = kwargs["output"].as<string>().rfind('.');      // position of the file extension
         string output_name = kwargs["output"].as<string>().substr(0, pos);     // get the name without extension
         cbs.saveCT(output_name); // for debug*/
         if (kwargs["stats"].cast<bool>())
-            ecbs.saveStats(kwargs["output"].cast<string>(), kwargs["agents"].cast<string>());
+            ecbs.saveStats(kwargs["output"].cast<string>());
         
         result["runtime"] = ecbs.runtime;
         result["finish"] = true;
@@ -195,11 +201,11 @@ std::string run(const py::kwargs& kwargs) {
         }
         cbs.runtime = runtime;
         if (kwargs.contains("output"))
-            cbs.saveResults(kwargs["output"].cast<string>(), kwargs["agents"].cast<string>());
+            cbs.saveResults(kwargs["output"].cast<string>());
         if (cbs.solution_found && kwargs.contains("outputPaths"))
             cbs.savePaths(kwargs["outputPaths"].cast<string>());
         if (kwargs["stats"].cast<bool>())
-            cbs.saveStats(kwargs["output"].cast<string>(), kwargs["agents"].cast<string>());
+            cbs.saveStats(kwargs["output"].cast<string>());
         
         result["runtime"] = cbs.runtime;
         result["solution_cost"] = cbs.solution_cost;
