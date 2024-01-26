@@ -111,11 +111,12 @@ std::string run(const py::kwargs& kwargs) {
 	// Instance instance(kwargs["map"].cast<string>(), kwargs["agents"].cast<string>(),
 	// 	kwargs["agentNum"].cast<int>());
 
-    std::ifstream i(kwargs["map"].cast<std::string>());
-        json map_json;
-        i >> map_json;
+    json G_json = json::parse(kwargs["map"].cast<string>());
+    // std::ifstream i(kwargs["map"].cast<std::string>());
+    //     json map_json;
+    //     i >> map_json;
 	
-	Instance instance(map_json, kwargs["agentNum"].cast<int>());
+	Instance instance(G_json, kwargs["agentNum"].cast<int>());
 
 	srand(0);
 	int runs = 1 + kwargs["restart"].cast<int>();
@@ -166,8 +167,13 @@ std::string run(const py::kwargs& kwargs) {
         result["finish"] = true;
         result["solution_cost"] = ecbs.solution_cost;
         result["solution_found"] = ecbs.solution_found;
+
+        cout << "For finish: " << result["finish"] << endl;
         
         ecbs.clearSearchEngines();
+        
+        cout << "Clean Done " <<  endl; 
+    
     }
     else
     {
@@ -211,11 +217,15 @@ std::string run(const py::kwargs& kwargs) {
         result["solution_cost"] = cbs.solution_cost;
         result["finish"] = true;
         result["solution_found"] = cbs.solution_found;
+
+        cout << "For finish: " << result["finish"] << endl;
         
         cbs.clearSearchEngines();
+
+        cout << "Clean Done " <<  endl; 
     }
 
-	result.dump(4);
+    return result.dump(4);
 
 }
 

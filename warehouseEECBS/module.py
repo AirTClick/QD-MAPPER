@@ -794,13 +794,19 @@ def single_simulation(seed, agent_num, kwargs, results_dir):
     kwargs["seed"] = int(seed)
     output_dir = os.path.join(results_dir,
         f"sim-agent_num={agent_num}-seed={seed}")
-    kwargs["output"] = output_dir
+    # kwargs["output"] = output_dir
     kwargs["agentNum"] = agent_num
 
+    # breakpoint()
+    # for i in kwargs:
+    #     print(i)
+    print(kwargs["stats"])
+    
     result_jsonstr = warehouse_sim_EECBS.run(**kwargs)
+    
     result_json = json.loads(result_jsonstr)
 
-    throughput = result_json["throughput"]
+    solution_cost = result_json["solution_cost"]
 
     # if result_json["throughput"] > max_obj:
     #     max_obj = result_json["throughput"]
@@ -823,7 +829,7 @@ def single_simulation(seed, agent_num, kwargs, results_dir):
     # if mode == "inc_agents":
     #     kwargs["agentNum"] += 1
 
-    return throughput
+    return solution_cost
 
 # def test_calc_path_len_mean(map_filepath):
 #     # Read in map

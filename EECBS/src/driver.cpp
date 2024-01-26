@@ -139,6 +139,8 @@ int main(int argc, char** argv)
 	// 	vm["agentNum"].as<int>());
 
 	//load the .json instance
+
+	
 	std::ifstream i(vm["map"].as<std::string>());
         json map_json;
         i >> map_json;
@@ -191,7 +193,8 @@ int main(int argc, char** argv)
         if (vm["stats"].as<bool>())
 			// ecbs.saveStats(vm["output"].as<string>(), vm["agents"].as<string>());	
             ecbs.saveStats(vm["output"].as<string>());
-        ecbs.clearSearchEngines();
+        // ecbs.clearSearchEngines();
+		cout << "Clean done" << endl;
     }
     else
     {
@@ -232,7 +235,8 @@ int main(int argc, char** argv)
         if (vm["stats"].as<bool>())
 			// cbs.saveStats(vm["output"].as<string>(), vm["agents"].as<string>());
             cbs.saveStats(vm["output"].as<string>());
-        cbs.clearSearchEngines();
+        // cbs.clearSearchEngines();
+		cout << "Clean done" << endl;
     }
 
 	return 0;

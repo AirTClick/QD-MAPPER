@@ -40,10 +40,10 @@ From: python:3.9.18-bullseye
         libboost-all-dev
         # gcc-9 g++-9
 
-    sudo echo 'deb http://deb.debian.org/debian testing main' | sudo tee -a /etc/apt/sources.list
-    echo "Write gcc to source.list"
-    apt update -y
-    DEBIAN_FRONTEND=noninteractive apt install -y gcc
+    # sudo echo 'deb http://deb.debian.org/debian testing main' | sudo tee -a /etc/apt/sources.list
+    # echo "Write gcc to source.list"
+    # apt update -y
+    # DEBIAN_FRONTEND=noninteractive apt install -y gcc
 
     apt-get clean
     rm -rf /var/lib/apt/lists/*

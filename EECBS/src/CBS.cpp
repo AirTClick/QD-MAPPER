@@ -1616,7 +1616,7 @@ inline void CBS::releaseNodes()
 
 CBS::~CBS()
 {
-	releaseNodes();
+	// releaseNodes();
 	mdd_helper.clear();
 }
 
