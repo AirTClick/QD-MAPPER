@@ -4,7 +4,7 @@ from collections import namedtuple
 import numpy as np
 import torch
 
-from env_search.device import DEVICE
+from env_search_EECBS.device import DEVICE
 
 Experience = namedtuple("Experience",
                         ["solution", "lvl", "objective", "measures"])

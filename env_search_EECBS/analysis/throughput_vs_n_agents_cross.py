@@ -1,7 +1,7 @@
 """Visualizes throughput vs. n_agents from multiple experiments.
 
 Usage:
-    python env_search/analysis/throughput_vs_n_agents_cross.py --all_logdirs_plot <all_logdirs_plot>
+    python env_search_EECBS/analysis/throughput_vs_n_agents_cross.py --all_logdirs_plot <all_logdirs_plot>
 """
 import os
 import fire
@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-from env_search.analysis.throughput_vs_n_agents import throughput_vs_n_agents
+from env_search_EECBS.analysis.throughput_vs_n_agents import throughput_vs_n_agents
 
 mpl.use("agg")
 

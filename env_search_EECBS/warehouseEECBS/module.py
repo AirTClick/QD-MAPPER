@@ -111,6 +111,8 @@ class WarehouseEECBSConfig:
     sipp: bool = gin.REQUIRED,
     restart:int = gin.REQUIRED,
     obj_type : str = gin.REQUIRED,
+    use_warm_up : bool = gin.REQUIRED,
+    hamming_only : bool = gin.REQUIRED,
 
 
 class WarehouseModule:
@@ -138,6 +140,7 @@ class WarehouseModule:
         #                         else KIVA_ROBOT_BLOCK_WIDTH
         #     ADDITION_BLOCK_HEIGHT = 0 if w_mode else KIVA_ROBOT_BLOCK_HEIGHT
         n_row, n_col = map.shape
+        map_comp_unrepaired = copy.deepcopy(map)
             # d = [(0, 1), (0, -1), (1, 0), (-1, 0)]
 
             # # Keep only max_obs_ratio of obstacles
@@ -257,7 +260,7 @@ class WarehouseModule:
         # else:
         #     NotImplementedError("Other warehouse types not supported yet.")
 
-        return map_json, map_np_unrepaired, map, map_np_repaired
+        return map_json, map_np_unrepaired, map_comp_unrepaired, map_np_repaired
 
 
     def evaluate(

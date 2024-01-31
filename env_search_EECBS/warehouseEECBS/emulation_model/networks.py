@@ -5,8 +5,8 @@ import torch
 from torch import nn
 from torchvision.models import resnet
 
-from env_search.utils.network import int_preprocess
-from env_search.utils import kiva_obj_types
+from env_search_EECBS.utils.network import int_preprocess
+from env_search_EECBS.utils import kiva_obj_types
 
 @gin.configurable
 class WarehouseConvolutional(nn.Module):

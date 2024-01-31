@@ -40,14 +40,16 @@ Manager.sol_size = 108
 MapElitesBaselineEmitter.batch_size = 10
 MapElitesBaselineEmitter.geometric_k = True
 MapElitesBaselineEmitter.initial_population = 20
-MapElitesBaselineEmitter.max_n_shelf = %max_n_shelf
-MapElitesBaselineEmitter.min_n_shelf = %min_n_shelf
+# MapElitesBaselineEmitter.max_n_shelf = %max_n_shelf
+# MapElitesBaselineEmitter.min_n_shelf = %min_n_shelf
 MapElitesBaselineEmitter.mutation_k = 10
 MapElitesBaselineEmitter.num_objects = %num_objects
 
 # Parameters for WarehouseEECBSConfig:
 # ======================================================================================================================
 # WarehouseEECBSConfig.agentNum=5                      #number of agents
+WarehouseEECBSConfig.measure_names = ['n_shelf_components', 'all_task_len_mean']
+WarehouseEECBSConfig.aggregation_type = 'mean'
 WarehouseEECBSConfig.cutoffTime=7200                 #cutoff time (seconds)
 WarehouseEECBSConfig.screen=1                        #screen option (0: none; 1: results; 2:all)#
 WarehouseEECBSConfig.stats=False                     #write to files some detailed statistics
@@ -68,7 +70,8 @@ WarehouseEECBSConfig.corridorReasoning=True          #corridor reasoning
 WarehouseEECBSConfig.targetReasoning=True            #target reasoning
 WarehouseEECBSConfig.sipp=0                          #using SIPPS as the low-level solver
 WarehouseEECBSConfig.restart=0                       #rapid random restart times
-
+WarehouseEECBSConfig.use_warm_up = True
+WarehouseEECBSConfig.hamming_only= True
 ########################### SEEMS NOT IMPORTANT WITH is_sm = FALSE ########################### 
 
 # Parameters for WarehouseConvolutional:

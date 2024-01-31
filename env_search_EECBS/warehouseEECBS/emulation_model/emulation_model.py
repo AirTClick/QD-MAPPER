@@ -11,17 +11,17 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from env_search.device import DEVICE
-from env_search.warehouse.emulation_model.aug_buffer import AugBuffer
-from env_search.warehouse.emulation_model.double_aug_buffer import DoubleAugBuffer
-from env_search.warehouse.emulation_model.buffer import Buffer, Experience
-from env_search.warehouse.emulation_model.networks import (
+from env_search_EECBS.device import DEVICE
+from env_search_EECBS.warehouseEECBS.emulation_model.aug_buffer import AugBuffer
+from env_search_EECBS.warehouseEECBS.emulation_model.double_aug_buffer import DoubleAugBuffer
+from env_search_EECBS.warehouseEECBS.emulation_model.buffer import Buffer, Experience
+from env_search_EECBS.warehouseEECBS.emulation_model.networks import (
     WarehouseConvolutional, WarehouseAugResnetOccupancy,
     WarehouseAugResnetRepairedMapAndOccupancy)
 
-from env_search.utils.network import (int_preprocess, freeze_params,
+from env_search_EECBS.utils.network import (int_preprocess, freeze_params,
                                       unfreeze_params)
-from env_search.utils import kiva_obj_types
+from env_search_EECBS.utils import kiva_obj_types
 
 logger = logging.getLogger(__name__)
 # Just to get rid of pylint warning about unused import

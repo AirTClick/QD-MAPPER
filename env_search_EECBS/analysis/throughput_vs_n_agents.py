@@ -1,7 +1,7 @@
 """Visualizes throughput vs. n_agents from an experiment.
 
 Usage:
-    python env_search/analysis/throughput_vs_n_agents.py --logdirs_plot <log_dir_plot>
+    python env_search_EECBS/analysis/throughput_vs_n_agents.py --logdirs_plot <log_dir_plot>
 """
 import os
 import json
@@ -18,7 +18,7 @@ import pandas as pd
 
 
 
-from env_search.analysis.utils import get_color, algo_name_map
+from env_search_EECBS.analysis.utils import get_color, algo_name_map
 
 mpl.use("agg")
 

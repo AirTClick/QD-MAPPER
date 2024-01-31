@@ -15,11 +15,11 @@ from tqdm import tqdm
 from logdir import LogDir
 from pathlib import Path
 from pprint import pprint
-from env_search.analysis.utils import load_experiment, load_metrics
-from env_search.analysis.visualize_env import visualize_kiva
-from env_search.utils.logging import setup_logging
-from env_search.mpl_styles.utils import mpl_style_file
-from env_search.utils import (set_spines_visible, KIVA_ROBOT_BLOCK_WIDTH,
+from env_search_EECBS.analysis.utils import load_experiment, load_metrics
+from env_search_EECBS.analysis.visualize_env import visualize_kiva
+from env_search_EECBS.utils.logging import setup_logging
+from env_search_EECBS.mpl_styles.utils import mpl_style_file
+from env_search_EECBS.utils import (set_spines_visible, KIVA_ROBOT_BLOCK_WIDTH,
                               KIVA_WORKSTATION_BLOCK_WIDTH,
                               KIVA_ROBOT_BLOCK_HEIGHT, kiva_env_number2str,
                               kiva_env_str2number, read_in_kiva_map)

@@ -40,7 +40,7 @@ class MapElitesBaselineEmitter(EmitterBase):
         x0: np.ndarray,
         bounds: Optional["array-like"] = None,  # type: ignore
         seed: int = None,
-        # num_objects: int = gin.REQUIRED,
+        num_objects: int = gin.REQUIRED,
         batch_size: int = gin.REQUIRED,
         initial_population: int = gin.REQUIRED,
         mutation_k: int = gin.REQUIRED,
@@ -53,7 +53,7 @@ class MapElitesBaselineEmitter(EmitterBase):
         self.rng = np.random.default_rng(seed)
         self.batch_size = batch_size
 
-        # self.num_objects = num_objects
+        self.num_objects = num_objects
         self.initial_population = initial_population
         self.mutation_k = mutation_k
         self.geometric_k = geometric_k
@@ -65,10 +65,10 @@ class MapElitesBaselineEmitter(EmitterBase):
 
         # When we know the exact number of shelves and we only have shelf or
         # floor, k will be used to switch randomly pairs of 0's and 1's
-        if self.max_n_shelf == self.min_n_shelf and self.num_objects == 2:
-            if not self.geometric_k:
-                assert self.min_n_shelf >= self.mutation_k
-                assert self.solution_dim - self.min_n_shelf >= self.mutation_k
+        # if self.max_n_shelf == self.min_n_shelf and self.num_objects == 2:
+        #     if not self.geometric_k:
+        #         assert self.min_n_shelf >= self.mutation_k
+        #         assert self.solution_dim - self.min_n_shelf >= self.mutation_k
 
         self.sols_emitted = 0
 

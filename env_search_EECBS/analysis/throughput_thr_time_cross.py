@@ -5,7 +5,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
-from env_search.analysis.throughput_thr_time import throughput_thr_time
+from env_search_EECBS.analysis.throughput_thr_time import throughput_thr_time
 
 mpl.use("agg")
 

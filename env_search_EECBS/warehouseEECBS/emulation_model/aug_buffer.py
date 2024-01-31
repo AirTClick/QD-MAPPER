@@ -5,8 +5,8 @@ from collections import namedtuple
 import numpy as np
 import torch
 
-from env_search.device import DEVICE
-from env_search.warehouse.emulation_model.buffer import Buffer, Experience
+from env_search_EECBS.device import DEVICE
+from env_search_EECBS.warehouseEECBS.emulation_model.buffer import Buffer, Experience
 
 AugExperience = namedtuple(
     "AugExperience", Experience._fields + ("occupancy",))

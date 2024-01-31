@@ -7,11 +7,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from matplotlib import colors
-from env_search import MAP_DIR
-from env_search.utils import (kiva_obj_types, kiva_env_str2number,
+from env_search_EECBS import MAP_DIR
+from env_search_EECBS.utils import (kiva_obj_types, kiva_env_str2number,
                               kiva_env_number2str, read_in_kiva_map,
                               KIVA_ROBOT_BLOCK_WIDTH)
-from env_search.utils import set_spines_visible
+from env_search_EECBS.utils import set_spines_visible
 
 
 def visualize_kiva(
@@ -22,7 +22,7 @@ def visualize_kiva(
     ax: plt.Axes = None,
 ):
     """
-    Visualize kiva layout. Will store image under env_search/map/
+    Visualize kiva layout. Will store image under env_search_EECBS/map/
 
     Args:
         env_np: layout in numpy format

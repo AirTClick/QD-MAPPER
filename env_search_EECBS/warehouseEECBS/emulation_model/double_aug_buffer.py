@@ -5,8 +5,8 @@ from collections import namedtuple
 import numpy as np
 import torch
 
-from env_search.device import DEVICE
-from env_search.warehouse.emulation_model.aug_buffer import AugBuffer, AugExperience
+from env_search_EECBS.device import DEVICE
+from env_search_EECBS.warehouseEECBS.emulation_model.aug_buffer import AugBuffer, AugExperience
 
 DoubleAugExperience = namedtuple(
     "AugExperience", AugExperience._fields + ("repaired_map",))

@@ -2,9 +2,9 @@ import os
 import fire
 import json
 
-from env_search.analysis.visualize_sim.plot_figure import draw_animation_with_orientation
-from env_search.analysis.visualize_sim.read_file import read_tasks_file, read_paths_file
-from env_search.utils import kiva_env_number2str, kiva_env_str2number
+from env_search_EECBS.analysis.visualize_sim.plot_figure import draw_animation_with_orientation
+from env_search_EECBS.analysis.visualize_sim.read_file import read_tasks_file, read_paths_file
+from env_search_EECBS.utils import kiva_env_number2str, kiva_env_str2number
 
 
 def main(log_dir: str, map_img_path: str):

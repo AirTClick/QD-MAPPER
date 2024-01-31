@@ -17,10 +17,10 @@ from ribs.visualize import _retrieve_cmap
 
 # Including this makes gin config work because main imports (pretty much)
 # everything.
-import env_search.main  # pylint: disable = unused-import
-from env_search.archives import GridArchive
-from env_search.utils.deprecation import DEPRECATED_OBJECTS
-from env_search.utils.metric_logger import MetricLogger
+import env_search_EECBS.main  # pylint: disable = unused-import
+from env_search_EECBS.archives import GridArchive
+from env_search_EECBS.utils.deprecation import DEPRECATED_OBJECTS
+from env_search_EECBS.utils.metric_logger import MetricLogger
 
 algo_name_map = {
     "Dummy": "DPP",

@@ -1,2 +1,2 @@
 """pyribs-compliant archives."""
-from env_search.archives.grid_archive import GridArchive
+from env_search_EECBS.archives.grid_archive import GridArchive

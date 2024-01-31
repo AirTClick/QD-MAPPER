@@ -2,8 +2,8 @@
 import gin
 import ribs
 
-from env_search.emitters.map_elites_baseline_emitter import MapElitesBaselineEmitter
-from env_search.emitters.random_emitter import RandomEmitter
+from env_search_EECBS.emitters.map_elites_baseline_emitter import MapElitesBaselineEmitter
+from env_search_EECBS.emitters.random_emitter import RandomEmitter
 
 __all__ = [
     "GaussianEmitter",

@@ -3,7 +3,7 @@ import os
 import json
 import numpy as np
 import matplotlib.pyplot as plt
-from env_search import MAP_DIR
+from env_search_EECBS import MAP_DIR
 
 
 # 4 object types for kiva map:

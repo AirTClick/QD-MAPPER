@@ -2,15 +2,15 @@ import os
 import gin
 import pickle as pkl
 import fire
-from env_search.utils.logging import setup_logging
+from env_search_EECBS.utils.logging import setup_logging
 from logdir import LogDir
 import matplotlib.pyplot as plt
 import shutil
 
 # Including this makes gin config work because main imports (pretty much)
 # everything.
-import env_search.main  # pylint: disable = unused-import
-from env_search.warehouse.emulation_model.emulation_model import WarehouseEmulationModel
+import env_search_EECBS.main  # pylint: disable = unused-import
+from env_search_EECBS.warehouseEECBS.emulation_model.emulation_model import WarehouseEmulationModel
 
 
 def plot_loss(

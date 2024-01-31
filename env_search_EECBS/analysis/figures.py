@@ -115,16 +115,16 @@ run `make shell` to start a shell in the container and run the commands in that
 shell.
 
     # For the comparison figure.
-    python env_search/analysis/figures.py comparison figure_data.json
+    python env_search_EECBS/analysis/figures.py comparison figure_data.json
 
     # For the higher-res version of the comparison figure.
-    python env_search/analysis/figures.py comparison_high_res figure_data.json
+    python env_search_EECBS/analysis/figures.py comparison_high_res figure_data.json
 
     # To generate the latex source for the tables in the paper.
-    python env_search/analysis/figures.py table figure_data.json
+    python env_search_EECBS/analysis/figures.py table figure_data.json
 
     # To generate statistical test results.
-    python env_search/analysis/figures.py tests figure_data.json
+    python env_search_EECBS/analysis/figures.py tests figure_data.json
 
 If including the Latex files output by these commands, make sure to also put
 these commands in your paper:
@@ -168,9 +168,9 @@ from scipy.interpolate import interp1d
 from scipy.stats import sem
 
 import seaborn as sns
-from env_search.analysis.utils import load_experiment, load_metrics
-from env_search.mpl_styles import QUALITATIVE_COLORS
-from env_search.mpl_styles.utils import mpl_style_file
+from env_search_EECBS.analysis.utils import load_experiment, load_metrics
+from env_search_EECBS.mpl_styles import QUALITATIVE_COLORS
+from env_search_EECBS.mpl_styles.utils import mpl_style_file
 
 # Metrics which we record in figure_data.json but do not plot.
 METRIC_BLACKLIST = [

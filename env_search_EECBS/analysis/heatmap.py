@@ -1,7 +1,7 @@
 """Visualizes heatmaps from an experiment.
 
 Usage:
-    python -m env_search.analysis.heatmap -l LOGDIR
+    python -m env_search_EECBS.analysis.heatmap -l LOGDIR
 """
 import os
 import shutil
@@ -12,11 +12,11 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import ribs.visualize
-from env_search.archives import GridArchive
+from env_search_EECBS.archives import GridArchive
 from loguru import logger
 
-from env_search.analysis.utils import load_archive_gen, load_experiment, load_metrics, load_surrogate_archive, grid_archive_heatmap
-from env_search.mpl_styles.utils import mpl_style_file
+from env_search_EECBS.analysis.utils import load_archive_gen, load_experiment, load_metrics, load_surrogate_archive, grid_archive_heatmap
+from env_search_EECBS.mpl_styles.utils import mpl_style_file
 
 mpl.use("agg")
 

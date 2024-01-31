@@ -1,7 +1,7 @@
 """Utils for handling styles."""
 import importlib.resources
 
-import env_search.mpl_styles
+import env_search_EECBS.mpl_styles
 
 
 def mpl_style_file(name: str):
@@ -18,4 +18,4 @@ def mpl_style_file(name: str):
             with plt.style.context(f):
                 plt.plot(...)
     """
-    return importlib.resources.path(env_search.mpl_styles, name)
+    return importlib.resources.path(env_search_EECBS.mpl_styles, name)

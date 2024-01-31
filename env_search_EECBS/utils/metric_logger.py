@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
-from env_search.utils.text_plot import text_plot
+from env_search_EECBS.utils.text_plot import text_plot
 
 
 class MetricLogger:

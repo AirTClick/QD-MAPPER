@@ -9,7 +9,7 @@ import numpy as np
 from typing import List
 from env_search_EECBS.warehouseEECBS.warehouse_result import WarehouseResult
 from env_search_EECBS.utils.worker_state import get_warehouse_module
-from warehouseEECBS.module import WarehouseModule
+from env_search_EECBS.warehouseEECBS.module import WarehouseModule
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ def repair_warehouse(
         (
             map_json,
             map_np_unrepaired,
-            map,
+            map_comp_unrepaired,
             map_np_repaired,
         ) = warehouse_module.repair(
             map=map,
