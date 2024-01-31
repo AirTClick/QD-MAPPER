@@ -365,6 +365,7 @@ class WarehouseModule:
         # Collect the results
         keys = curr_result_json[0].keys()
         collected_results = {key: [] for key in keys}
+        print(collected_results)
         for result_json in curr_result_json:
             for key in keys:
                 collected_results[key].append(result_json[key])
@@ -391,35 +392,45 @@ class WarehouseModule:
             f"Map ID {map_id}: Number of connected shelf components: {n_shelf_components}")
 
         # Post process result if necessary
-        tile_usage = np.array(collected_results.get("tile_usage"))
-        tile_usage = tile_usage.reshape(n_evals, *map_np_repaired.shape)
-        tasks_finished_timestep = [np.array(x) for x in collected_results.get("tasks_finished_timestep")]
+        # tile_usage = np.array(collected_results.get("tile_usage"))
+        # tile_usage = tile_usage.reshape(n_evals, *map_np_repaired.shape)
+        # tasks_finished_timestep = [np.array(x) for x in collected_results.get("tasks_finished_timestep")]
+
+        run_time = np.array(collected_results.get("run_time"))
+        solution_cost = np.array(collected_results.get("solution_cost")) 
 
         # Get objective based on type
         objs = None
-        if self.config.obj_type == "throughput":
-            objs = np.array(collected_results.get("throughput"))
-        elif self.config.obj_type == "throughput_plus_n_shelf":
-            objs = np.array(collected_results.get("throughput")) - \
-                (max_n_shelf - n_shelf)**2 * 0.5
-        else:
-            return ValueError(
-                f"Object type {self.config.obj_type} not supported")
+        objs = np.array(collected_results.get("solution_cost")) 
+        # if self.config.obj_type == "throughput":
+        #     objs = np.array(collected_results.get("throughput"))
+        # elif self.config.obj_type == "throughput_plus_n_shelf":
+        #     objs = np.array(collected_results.get("throughput")) - \
+        #         (max_n_shelf - n_shelf)**2 * 0.5
+        # else:
+        #     return ValueError(
+        #         f"Object type {self.config.obj_type} not supported")
+        
+
 
         # Create WarehouseResult object using the mean of n_eval simulations
         # For tile_usage, num_wait, and finished_task_len, the mean is not taken
         metadata = WarehouseMetadata(
             objs=objs,
-            throughput=collected_results.get("throughput"),
+            # throughput=collected_results.get("throughput"),
+            run_time = run_time,
+            solution_cost=solution_cost,
             map_int_unrepaired=map_comp_unrepaired,
             map_int=map_np_repaired,
             map_int_raw=map_np_unrepaired,
             map_str=eecbs_env_number2str(map_np_repaired),
             n_shelf=n_shelf,
             # n_endpoint=n_endpoint,
-            tile_usage=tile_usage,
-            tile_usage_mean=np.mean(collected_results.get("tile_usage_mean")),
-            tile_usage_std=np.mean(collected_results.get("tile_usage_std")),
+
+            # tile_usage=tile_usage,
+            # tile_usage_mean=np.mean(collected_results.get("tile_usage_mean")),
+            # tile_usage_std=np.mean(collected_results.get("tile_usage_std")),
+
             # num_wait=collected_results.get("num_wait"),
             # num_wait_mean=np.mean(collected_results.get("num_wait_mean")),
             # num_wait_std=np.mean(collected_results.get("num_wait_std")),
@@ -428,7 +439,7 @@ class WarehouseModule:
             #     collected_results.get("finished_len_mean")),
             # finished_len_std=np.mean(collected_results.get("finished_len_std")),
             all_task_len_mean=None,                                                     #not used in process_eval_result
-            tasks_finished_timestep=tasks_finished_timestep,
+            # tasks_finished_timestep=tasks_finished_timestep,
             n_shelf_components=n_shelf_components,
         )
         result = WarehouseResult.from_raw(

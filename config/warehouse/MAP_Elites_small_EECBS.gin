@@ -94,7 +94,7 @@ WarehouseEmulationModel.train_sample_size = 20000
 
 # Parameters for WarehouseManager:
 # ======================================================================================================================
-WarehouseManager.agent_num = 60
+WarehouseManager.agent_num = 2
 WarehouseManager.lvl_height = 9
 WarehouseManager.lvl_width = 12
 WarehouseManager.max_n_shelf = %max_n_shelf

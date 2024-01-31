@@ -40,6 +40,9 @@ class WarehouseMetadata:
     map_str: List[List[str]] = None
     objs: np.ndarray = None  # Objectives
 
+    run_time : List[float] = None
+    solution_cost : List[float] = None
+    
     throughput : List[float] = None # throughput of the simulation
 
     tile_usage: np.ndarray = None # (n_eval, n_row, n_col) 3D np array
