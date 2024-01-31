@@ -295,6 +295,8 @@ class WarehouseManager:
 
         repair_results = self.client.gather(repair_futures)
 
+        logger.info("Finished gathering repaired futures")  
+
         # Based on number of simulations (n_evals), create maps and
         # corresponding variables to simulate
         map_jsons_sim = []
@@ -354,6 +356,8 @@ class WarehouseManager:
         ]
         logger.info("Collecting evaluations")
         results_json = self.client.gather(sim_futures)
+
+        logger.info("Finished Collection") 
 
         results_json_sorted = []
         for i in range(len(sols)):
