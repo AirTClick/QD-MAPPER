@@ -12,12 +12,12 @@ from dask.distributed import Client
 from logdir import LogDir
 from ribs.archives import ArchiveBase, Elite
 
-from env_search.archives import GridArchive
-from env_search.emitters import ImprovementEmitter, MapElitesBaselineEmitter, RandomEmitter
-from env_search.optimizers import Optimizer
-from env_search.utils.logging import worker_log
-from env_search.utils.metric_logger import MetricLogger
-from env_search.warehouse.warehouse_manager import WarehouseManager
+from env_search_EECBS.archives import GridArchive
+from env_search_EECBS.emitters import ImprovementEmitter, MapElitesBaselineEmitter, RandomEmitter
+from env_search_EECBS.optimizers import Optimizer
+from env_search_EECBS.utils.logging import worker_log
+from env_search_EECBS.utils.metric_logger import MetricLogger
+from env_search_EECBS.warehouseEECBS.warehouse_manager import WarehouseManager
 
 # Just to get rid of pylint warning about unused import (adding a comment after
 # each line above messes with formatting).

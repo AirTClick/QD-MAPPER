@@ -12,7 +12,7 @@ N_SIM="$6"
 if [ "${MODE}" = "inc_agents" ]
 then
     singularity exec --cleanenv singularity/ubuntu_warehouse.sif \
-        python warehouseEECBS/module.py 
+        python env_search_EECBS/warehouseEECBS/module.py 
             --warehouse-config "$SIM_CONFIG" \
             --map-filepath "$MAP_FILE" \
             --agent-num "$AGENT_NUM" \
@@ -25,7 +25,7 @@ fi
 if [ "${MODE}" = "constant" ]
 then
     singularity exec --cleanenv singularity/ubuntu_warehouse.sif \
-    python warehouseEECBS/module.py \
+    python env_search_EECBS/warehouseEECBS/module.py \
         --warehouse-config "$SIM_CONFIG" \
         --map-filepath "$MAP_FILE" \
         --agent-num "$AGENT_NUM" \

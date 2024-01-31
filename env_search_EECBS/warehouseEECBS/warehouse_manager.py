@@ -9,21 +9,21 @@ import copy
 from dask.distributed import Client
 from logdir import LogDir
 
-# from env_search.maze.agents.rl_agent import RLAgentConfig
-from env_search.warehouse.emulation_model.buffer import Experience
-from env_search.warehouse.emulation_model.aug_buffer import AugExperience
-from env_search.warehouse.emulation_model.double_aug_buffer import DoubleAugExperience
-from env_search.warehouse.emulation_model.emulation_model import WarehouseEmulationModel
-from env_search.warehouse.emulation_model.networks import (
+# from env_search_EECBS.maze.agents.rl_agent import RLAgentConfig
+from env_search_EECBS.warehouseEECBS.emulation_model.buffer import Experience
+from env_search_EECBS.warehouseEECBS.emulation_model.aug_buffer import AugExperience
+from env_search_EECBS.warehouseEECBS.emulation_model.double_aug_buffer import DoubleAugExperience
+from env_search_EECBS.warehouseEECBS.emulation_model.emulation_model import WarehouseEmulationModel
+from env_search_EECBS.warehouseEECBS.emulation_model.networks import (
     WarehouseAugResnetOccupancy, WarehouseAugResnetRepairedMapAndOccupancy)
-from env_search.warehouse.module import (WarehouseModule, WarehouseConfig,
-                                         get_comp_map, get_additional_h_blocks,
-                                         get_additional_v_blocks)
-from env_search.warehouse.run import (run_warehouse, repair_warehouse,
+from env_search_EECBS.warehouseEECBS.module import (WarehouseModule, WarehouseEECBSConfig)
+                                        #  ,get_comp_map, get_additional_h_blocks,
+                                        #  get_additional_v_blocks)
+from env_search_EECBS.warehouseEECBS.run import (run_warehouse, repair_warehouse,
                                       process_warehouse_eval_result)
-from env_search.utils.worker_state import init_warehouse_module
+from env_search_EECBS.utils.worker_state import init_warehouse_module
 
-from env_search.utils import (kiva_obj_types, KIVA_ROBOT_BLOCK_WIDTH,
+from env_search_EECBS.utils import (kiva_obj_types, KIVA_ROBOT_BLOCK_WIDTH,
                               KIVA_WORKSTATION_BLOCK_WIDTH,
                               KIVA_ROBOT_BLOCK_HEIGHT, MIN_SCORE,
                               kiva_env_number2str, format_env_str,
@@ -94,7 +94,7 @@ class WarehouseManager:
         # repair_and_run_warehouse retrieves this module and uses it to
         # evaluate the function. Configuration is done with gin (i.e. the
         # params are in the config file).
-        self.module = WarehouseModule(config := WarehouseConfig())
+        self.module = WarehouseModule(config := WarehouseEECBSConfig())
         client.register_worker_callbacks(lambda: init_warehouse_module(config))
 
         self.emulation_model = None
@@ -193,8 +193,9 @@ class WarehouseManager:
                             else KIVA_ROBOT_BLOCK_WIDTH
         ADDITION_BLOCK_HEIGHT = 0 if self.w_mode else KIVA_ROBOT_BLOCK_HEIGHT
 
-        l_block, r_block = get_additional_h_blocks(ADDITION_BLOCK_WIDTH,
-                                                   self.lvl_height, self.w_mode)
+        l_block, r_block = 1,1                                                      #just for error management, need to change
+        # get_additional_h_blocks(ADDITION_BLOCK_WIDTH,
+        #                                            self.lvl_height, self.w_mode)
 
         # Repeat boths blocks by n_maps times
         l_blocks = np.tile(l_block, reps=(n_maps, 1, 1))
@@ -203,9 +204,9 @@ class WarehouseManager:
 
         if ADDITION_BLOCK_HEIGHT > 0:
             n_col_comp = self.lvl_width + 2 * ADDITION_BLOCK_WIDTH
-            t_block, b_block = \
-                get_additional_v_blocks(ADDITION_BLOCK_HEIGHT,
-                                        n_col_comp, self.w_mode)
+            t_block, b_block = 1,1                                                    #just for error management, need to change
+                # \get_additional_v_blocks(ADDITION_BLOCK_HEIGHT,
+                #                         n_col_comp, self.w_mode)
             t_blocks = np.tile(t_block, reps=(n_maps, 1, 1))
             b_blocks = np.tile(b_block, reps=(n_maps, 1, 1))
             map_comps = np.concatenate((t_blocks, map_comps, b_blocks), axis=1)
@@ -284,9 +285,9 @@ class WarehouseManager:
                 parent_map=parent_lvl,
                 sim_seed=seed,
                 repair_seed=self.seed,
-                w_mode=self.w_mode,
-                min_n_shelf=self.min_n_shelf,
-                max_n_shelf=self.max_n_shelf,
+                # w_mode=self.w_mode,
+                # min_n_shelf=self.min_n_shelf,
+                # max_n_shelf=self.max_n_shelf,
                 agentNum=self.agent_num,
             ) for lvl, parent_lvl, seed in zip(lvls, parent_lvls,
                                                evaluation_seeds)
@@ -372,7 +373,7 @@ class WarehouseManager:
                 map_comp_unrepaired=map_comp_unrepaired_sim[map_id *
                                                             self.n_evals],
                 map_np_repaired=map_np_repaired_sim[map_id * self.n_evals],
-                w_mode=self.w_mode,
+                # w_mode=self.w_mode,
                 max_n_shelf=self.max_n_shelf,
                 map_id=map_id,
             ) for (

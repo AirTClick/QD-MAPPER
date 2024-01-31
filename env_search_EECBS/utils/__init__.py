@@ -17,6 +17,7 @@ from env_search import MAP_DIR
 # Note 2: s (r_s) is essentially one of r s.t. in milp can make the graph
 # connected
 kiva_obj_types = ".@ersw"
+eecbs_obj_types = ".@s"
 KIVA_ROBOT_BLOCK_WIDTH = 4
 KIVA_WORKSTATION_BLOCK_WIDTH = 2
 MIN_SCORE = 0
@@ -97,3 +98,74 @@ def read_in_kiva_map(map_filepath):
 def set_spines_visible(ax: plt.Axes):
     for pos in ["top", "right", "bottom", "left"]:
         ax.spines[pos].set_visible(True)
+
+
+#EECBS
+
+def eecbs_env_str2number(env_str):
+    """
+    Convert kiva env in string format to np int array format.
+
+    Args:
+        env_str (List[str]): kiva env in string format
+
+    Returns:
+        env_np (np.ndarray)
+    """
+    env_np = []
+    for row_str in env_str:
+        # print(row_str)
+        row_np = [eecbs_obj_types.index(tile) for tile in row_str]
+        env_np.append(row_np)
+    return np.array(env_np, dtype=int)
+
+
+def eecbs_env_number2str(env_np):
+    """
+    Convert kiva env in np int array format to str format.
+
+    Args:
+        env_np (np.ndarray): kiva env in np array format
+
+    Returns:
+        env_str (List[str])
+    """
+    env_str = []
+    n_row, n_col = env_np.shape
+    for i in range(n_row):
+        curr_row = []
+        for j in range(n_col):
+            curr_row.append(eecbs_obj_types[env_np[i, j]])
+        env_str.append("".join(curr_row))
+    return env_str
+
+
+def flip_one_empty_to_s(env_np):
+    """
+    Change one of 'emtpy' in the env to 's' for milp
+    """
+    all_empty = np.argwhere(env_np == eecbs_obj_types.index("."))
+    if len(all_empty) == 0:
+        raise ValueError("No '.' found")
+    to_replace = all_empty[0]
+    env_np[tuple(to_replace)] = eecbs_obj_types.index('s')
+    return env_np
+
+
+def flip_tiles_eecbs(env_np, from_tile, to_tile):
+    """Replace ALL occurance of `from_tile` to `flip_target` in `to_tile"""
+    all_from_tiles = np.where(env_np == eecbs_obj_types.index(from_tile))
+    if len(all_from_tiles[0]) == 0:
+        raise ValueError(f"No '{from_tile}' found")
+    env_np[all_from_tiles] = eecbs_obj_types.index(to_tile)
+    return env_np
+
+def read_in_eecbs_map(map_filepath):
+    """
+    Read in eecbs map and return in str format
+    """
+    with open(map_filepath, "r") as f:
+        raw_env_json = json.load(f)
+        raw_env = raw_env_json["layout"]
+        name = raw_env_json["name"]
+    return raw_env, name

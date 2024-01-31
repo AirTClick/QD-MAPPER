@@ -7,9 +7,9 @@ import traceback
 import numpy as np
 
 from typing import List
-from env_search.warehouse.warehouse_result import WarehouseResult
-from env_search.utils.worker_state import get_warehouse_module
-from env_search.warehouse.module import WarehouseModule
+from env_search_EECBS.warehouseEECBS.warehouse_result import WarehouseResult
+from env_search_EECBS.utils.worker_state import get_warehouse_module
+from warehouseEECBS.module import WarehouseModule
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +19,9 @@ def repair_warehouse(
     parent_map: np.ndarray,
     sim_seed: int,
     repair_seed: int,
-    w_mode: bool,
-    min_n_shelf: int,
-    max_n_shelf: int,
+    # w_mode: bool,
+    # min_n_shelf: int,
+    # max_n_shelf: int,
     agentNum: int,
 ):
     start = time.time()
@@ -37,16 +37,16 @@ def repair_warehouse(
         (
             map_json,
             map_np_unrepaired,
-            map_comp_unrepaired,
+            map,
             map_np_repaired,
         ) = warehouse_module.repair(
             map=map,
             parent_map=parent_map,
             sim_seed=sim_seed,
             repair_seed=repair_seed,
-            w_mode=w_mode,
-            min_n_shelf=min_n_shelf,
-            max_n_shelf=max_n_shelf,
+            # w_mode=w_mode,
+            # min_n_shelf=min_n_shelf,
+            # max_n_shelf=max_n_shelf,
             agentNum=agentNum,
         )
     except TimeoutError as e:
@@ -135,7 +135,7 @@ def process_warehouse_eval_result(
     map_np_unrepaired,
     map_comp_unrepaired,
     map_np_repaired,
-    w_mode: bool,
+    # w_mode: bool,
     max_n_shelf: int,
     map_id: int,
 ):
@@ -149,7 +149,7 @@ def process_warehouse_eval_result(
         map_np_unrepaired=map_np_unrepaired,
         map_comp_unrepaired=map_comp_unrepaired,
         map_np_repaired=map_np_repaired,
-        w_mode=w_mode,
+        # w_mode=w_mode,
         max_n_shelf=max_n_shelf,
         map_id=map_id,
     )

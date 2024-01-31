@@ -7,14 +7,11 @@ import numpy as np
 import docplex
 
 from docplex.mp.model import Context, Model
-from env_search.utils import (kiva_obj_types, kiva_env_str2number,
-                              kiva_env_number2str, read_in_kiva_map,
-                              flip_one_r_to_s, flip_tiles, format_env_str,
-                              KIVA_ROBOT_BLOCK_WIDTH,
-                              KIVA_WORKSTATION_BLOCK_WIDTH,
-                              KIVA_ROBOT_BLOCK_HEIGHT)
-from env_search import MAP_DIR
-from env_search.analysis.visualize_env import visualize_kiva
+from env_search_EECBS.utils import (eecbs_obj_types, eecbs_env_str2number,
+                              eecbs_env_number2str, read_in_eecbs_map,
+                              flip_one_empty_to_s, flip_tiles_eecbs, format_env_str)
+from env_search_EECBS import MAP_DIR
+# from env_search.analysis.visualize_env import visualize_kiva
 
 from pprint import pprint
 
@@ -180,11 +177,11 @@ def add_edit_distance(mdl, graph, objects, add_movement=True):
 def add_reachability_helper(source_labels, sink_labels, blocking_labels, mdl,
                             adj, objs, cnt):
     source_objects = [
-        objs[kiva_obj_types.index(label)] for label in source_labels
+        objs[eecbs_obj_types.index(label)] for label in source_labels
     ]
-    sink_objects = [objs[kiva_obj_types.index(label)] for label in sink_labels]
+    sink_objects = [objs[eecbs_obj_types.index(label)] for label in sink_labels]
     blocking_objects = [
-        objs[kiva_obj_types.index(label)] for label in blocking_labels
+        objs[eecbs_obj_types.index(label)] for label in blocking_labels
     ]
     add_reachability(mdl, adj, source_objects, sink_objects, blocking_objects,
                      cnt)
@@ -203,18 +200,18 @@ def add_neighboaring_constraint(mdl, graph, objs, obj_t1, obj_t2):
         adj_var_t1 = []
         adj_var_t2 = []
         for j in neighbors:
-            adj_var_t1.append(objs[kiva_obj_types.index(obj_t1)][j])
-            adj_var_t2.append(objs[kiva_obj_types.index(obj_t2)][j])
+            adj_var_t1.append(objs[eecbs_obj_types.index(obj_t1)][j])
+            adj_var_t2.append(objs[eecbs_obj_types.index(obj_t2)][j])
 
         # 1. Sum(variables of adj t2) >= variable of curr t1
         # Make sure that if adj have no t2, curr node cannot be t1
         mdl.add_constraint(
-            sum(adj_var_t2) / 2 >= objs[kiva_obj_types.index(obj_t1)][i])
+            sum(adj_var_t2) / 2 >= objs[eecbs_obj_types.index(obj_t1)][i])
 
         # 2. Sum(variables of adj t1) >= variable of curr t2
         # Make sure that if adj have no t1, curr node cannot be t2
         mdl.add_constraint(
-            sum(adj_var_t1) >= objs[kiva_obj_types.index(obj_t2)][i])
+            sum(adj_var_t1) >= objs[eecbs_obj_types.index(obj_t2)][i])
 
 
 # env_np: environment in numpy array format.
@@ -228,26 +225,26 @@ def repair_env(
     warm_envs_np=None,
     time_limit=120,
     add_movement=True,
-    w_mode=False,
-    max_n_shelf=25,
-    min_n_shelf=10,
+    # w_mode=False,
+    # max_n_shelf=25,
+    # min_n_shelf=10,
     seed=0,
-    limit_n_shelf=True,
+    # limit_n_shelf=True,
 ):
     # While repairing, we will replace all 'w' with 'r' because 'w' and 'r'
     # cannot co-exist. Such a replacement can reduce the number of parameter in
     # the MILP model.
-    if w_mode:
-        env_np = flip_tiles(env_np, 'w', 'r')
-        if warm_envs_np is not None:
-            for i, warm_env_np in enumerate(warm_envs_np):
-                warm_envs_np[i] = flip_tiles(warm_env_np, 'w', 'r')
+    # if w_mode:
+    #     env_np = flip_tiles_eecbs(env_np, 'w', 'r')
+    #     if warm_envs_np is not None:
+    #         for i, warm_env_np in enumerate(warm_envs_np):
+    #             warm_envs_np[i] = flip_tiles_eecbs(warm_env_np, 'w', 'r')
 
-    # Flip one of r to s
-    env_np = flip_one_r_to_s(env_np)
+    # Flip one of empty space to s **
+    env_np = flip_one_empty_to_s(env_np)
     if warm_envs_np is not None:
         for i, warm_env_np in enumerate(warm_envs_np):
-            warm_envs_np[i] = flip_one_r_to_s(warm_env_np)
+            warm_envs_np[i] = flip_one_empty_to_s(warm_env_np)
 
     n, m = env_np.shape
 
@@ -273,14 +270,14 @@ def repair_env(
         context.cplex_parameters.randomseed = seed
 
     with Model(context=context) as mdl:
-
+        
         # Set parameters
-        mdl.parameters.mip.pool.relgap = 0.05
+        mdl.parameters.mip.pool.relgap = 0.05 #difference speed up
 
         objs = []
         # Exclude 'w' while creating variables because we use 'r' internally
         # while repairing the layouts
-        for obj_label in kiva_obj_types[:-1]:
+        for obj_label in eecbs_obj_types:
             curr_type = [
                 mdl.integer_var(name='obj_{}_{}'.format(obj_label, i),
                                 lb=0,
@@ -292,49 +289,49 @@ def repair_env(
         add_object_placement(mdl, objs)
 
         # Specify Number of shelves
-        if limit_n_shelf:
-            mdl.add_constraint(
-                sum(objs[kiva_obj_types.index("@")]) >= min_n_shelf)
-            mdl.add_constraint(
-                sum(objs[kiva_obj_types.index("@")]) <= max_n_shelf)
+        # if limit_n_shelf:
+        #     mdl.add_constraint(
+        #         sum(objs[eecbs_obj_types.index("@")]) >= min_n_shelf)
+        #     mdl.add_constraint(
+        #         sum(objs[eecbs_obj_types.index("@")]) <= max_n_shelf)
 
-        # mdl.add_constraint(sum(objs[kiva_obj_types.index("@")]) >= 1)
-        # mdl.add_constraint(sum(objs[kiva_obj_types.index("@")]) <= n * m / 2)
+        # mdl.add_constraint(sum(objs[eecbs_obj_types.index("@")]) >= 1)
+        # mdl.add_constraint(sum(objs[eecbs_obj_types.index("@")]) <= n * m / 2)
 
         # Endpoints shows up more than number of agents
-        # mdl.add_constraint(sum(objs[kiva_obj_types.index("e")]) >= agent_num)
+        # mdl.add_constraint(sum(objs[eecbs_obj_types.index("e")]) >= agent_num)
 
         # Only one 's'
-        mdl.add_constraint(sum(objs[kiva_obj_types.index("s")]) == 1)
+        mdl.add_constraint(sum(objs[eecbs_obj_types.index("s")]) == 1)
 
         # robot start "block" on either side cannot change
-        n_robot_start_loc = int((env_np == kiva_obj_types.index("r")).sum())
-        mdl.add_constraint(
-            sum(objs[kiva_obj_types.index("r")]) == n_robot_start_loc)
-        ADDITION_BLOCK_WIDTH = KIVA_WORKSTATION_BLOCK_WIDTH if w_mode \
-                               else KIVA_ROBOT_BLOCK_WIDTH
-        ADDITION_BLOCK_HEIGHT = 0 if w_mode else KIVA_ROBOT_BLOCK_HEIGHT
+        # n_robot_start_loc = int((env_np == eecbs_obj_types.index("r")).sum())
+        # mdl.add_constraint(
+        #     sum(objs[eecbs_obj_types.index("r")]) == n_robot_start_loc)
+        # ADDITION_BLOCK_WIDTH = KIVA_WORKSTATION_BLOCK_WIDTH if w_mode \
+        #                        else KIVA_ROBOT_BLOCK_WIDTH
+        # ADDITION_BLOCK_HEIGHT = 0 if w_mode else KIVA_ROBOT_BLOCK_HEIGHT
 
-        added = set()
-        for i in range(n):
-            for j in range(m):
-                if j < ADDITION_BLOCK_WIDTH or \
-                   j >= m - ADDITION_BLOCK_WIDTH:
-                    idx = i * m + j
-                    added.add(idx)
-                    mdl.add_constraint(objs[env_np[i, j]][idx] == 1)
+        # added = set()
+        # for i in range(n):
+        #     for j in range(m):
+        #         if j < ADDITION_BLOCK_WIDTH or \
+        #            j >= m - ADDITION_BLOCK_WIDTH:
+        #             idx = i * m + j
+        #             added.add(idx)
+        #             mdl.add_constraint(objs[env_np[i, j]][idx] == 1)
 
-        if ADDITION_BLOCK_HEIGHT > 0:
-            for i in range(n):
-                for j in range(m):
-                    if i < ADDITION_BLOCK_HEIGHT or \
-                    i >= n - ADDITION_BLOCK_HEIGHT:
-                        idx = i * m + j
-                        if idx not in added:
-                            mdl.add_constraint(objs[env_np[i, j]][idx] == 1)
+        # if ADDITION_BLOCK_HEIGHT > 0:
+        #     for i in range(n):
+        #         for j in range(m):
+        #             if i < ADDITION_BLOCK_HEIGHT or \
+        #             i >= n - ADDITION_BLOCK_HEIGHT:
+        #                 idx = i * m + j
+        #                 if idx not in added:
+        #                     mdl.add_constraint(objs[env_np[i, j]][idx] == 1)
 
         # Obstacle must be next to at least one endpoint and vice versa
-        add_neighboaring_constraint(mdl, adj, objs, "@", "e")
+        # add_neighboaring_constraint(mdl, adj, objs, "@", "e")
 
         # reachability
         # Note that we cannot add "r" to blocking because it will block flow
@@ -342,12 +339,12 @@ def repair_env(
         # matter here because robot start loc will be on the boarders of the map
         # and they cannot change
         source_labels = "s"
-        sink_labels = "er."
-        blocking_labels = "@r"
+        sink_labels = "."
+        blocking_labels = "@"
         # Under r mode, we need "well-formed" property to make sure that the
         # map has solution.
-        if not w_mode:
-            blocking_labels += "e"
+        # if not w_mode:
+        #     blocking_labels += "e"
         add_reachability_helper(source_labels, sink_labels, blocking_labels,
                                 mdl, adj, objs, 0)
 
@@ -369,13 +366,13 @@ def repair_env(
         # Add warm up solution to the model, if any.
         if warm_envs_np is not None:
             for warm_env_np in warm_envs_np:
-                warm_env_str = kiva_env_number2str(warm_env_np)
+                warm_env_str = eecbs_env_number2str(warm_env_np)
                 warm_sol = mdl.new_solution()
                 for i, row in enumerate(warm_env_str):
                     for j, tile in enumerate(row):
                         id = i * m + j
                         warm_sol.add_var_value('obj_{}_{}'.format(tile, id), 1)
-                        for c in kiva_obj_types[:-1]:
+                        for c in eecbs_obj_types[:-1]:
                             if c != tile:
                                 warm_sol.add_var_value(
                                     'obj_{}_{}'.format(c, id), 0)
@@ -410,56 +407,56 @@ def repair_env(
         # Flip s back to r
         # Note: We also flip original env back so that
         # caller does not worry about r and s.
-        new_env = flip_tiles(new_env, 's', 'r')
-        env_np = flip_tiles(env_np, 's', 'r')
+        new_env = flip_tiles_eecbs(new_env, 's', '.')
+        env_np = flip_tiles_eecbs(env_np, 's', '.')
         if warm_envs_np is not None:
             for i, warm_env_np in enumerate(warm_envs_np):
-                warm_envs_np[i] = flip_tiles(warm_env_np, 's', 'r')
+                warm_envs_np[i] = flip_tiles_eecbs(warm_env_np, 's', '.')
 
         # Under w mode, we also want to flip 'r' back to 'w'
-        if w_mode:
-            new_env = flip_tiles(new_env, 'r', 'w')
-            env_np = flip_tiles(env_np, 'r', 'w')
-            if warm_envs_np is not None:
-                for i, warm_env_np in enumerate(warm_envs_np):
-                    warm_envs_np[i] = flip_tiles(warm_env_np, 'r', 'w')
+        # if w_mode:
+        #     new_env = flip_tiles_eecbs(new_env, 'r', 'w')
+        #     env_np = flip_tiles_eecbs(env_np, 'r', 'w')
+        #     if warm_envs_np is not None:
+        #         for i, warm_env_np in enumerate(warm_envs_np):
+        #             warm_envs_np[i] = flip_tiles_eecbs(warm_env_np, 'r', 'w')
 
         return new_env
 
 
-def main(map_filepath, warm_filepath=None, w_mode=True, add_movement=True):
+def main(map_filepath, warm_filepath=None, w_mode=True, add_movement=False):
     # Read in envs
-    env_str, _ = read_in_kiva_map(map_filepath)
-    env_np = kiva_env_str2number(env_str)
+    env_str, _ = read_in_eecbs_map(map_filepath)
+    env_np = eecbs_env_str2number(env_str)
     env_np = env_np.astype(np.uint8)
 
     warm_env_np = None
     if warm_filepath is not None:
-        warm_env_str, _ = read_in_kiva_map(warm_filepath)
-        warm_env_np = kiva_env_str2number(warm_env_str)
+        warm_env_str, _ = read_in_eecbs_map(warm_filepath)
+        warm_env_np = eecbs_env_str2number(warm_env_str)
         warm_env_np = warm_env_np.astype(np.uint8)
 
     # Fix env
-    before_fix = format_env_str(kiva_env_number2str(env_np))
+    before_fix = format_env_str(eecbs_env_number2str(env_np))
     print("Before repair:")
     print(before_fix)
     repair_start_time = time.time()
     repaired_env = repair_env(
         env_np,
-        agent_num=100,
-        warm_envs_np=[warm_env_np],
-        w_mode=w_mode,
+        # agent_num=100,
+        warm_envs_np=warm_env_np,
+        # w_mode=w_mode,
         add_movement=add_movement,
-        max_n_shelf=120,
-        min_n_shelf=120,
+        # max_n_shelf=120,
+        # min_n_shelf=120,
     )
     after_fix = format_env_str(
-        kiva_env_number2str(repaired_env.astype(np.uint8)))
+        eecbs_env_number2str(repaired_env.astype(np.uint8)))
     print("\nAfter repair:")
     print(after_fix)
     time_spent = str(round(time.time() - repair_start_time, 2))
     print(f"Spend {time_spent} seconds on repairing.")
-    visualize_kiva(repaired_env, filenames=["repaired"])
+    # visualize_kiva(repaired_env, filenames=["repaired"])
 
 
 if __name__ == "__main__":

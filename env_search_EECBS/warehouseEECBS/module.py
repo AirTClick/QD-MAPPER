@@ -2,7 +2,7 @@
 
 Usage:
     # Run as a script to demo the WarehouseModule.
-    python env_search/warehouse/module.py
+    python env_search_EECBS/warehouse/module.py
 """
 
 import os
@@ -24,12 +24,12 @@ from itertools import repeat
 from typing import Collection, Optional
 from queue import Queue
 from typing import Collection
-from env_search import LOG_DIR
-from env_search.utils.logging import setup_logging
-from warehouseEECBS.milp_repair import repair_env
-from warehouseEECBS.warehouse_result import (WarehouseResult,
+from env_search_EECBS import LOG_DIR
+from env_search_EECBS.utils.logging import setup_logging
+from env_search_EECBS.warehouseEECBS.milp_repair import repair_env
+from env_search_EECBS.warehouseEECBS.warehouse_result import (WarehouseResult,
                                                    WarehouseMetadata)
-from env_search.utils import (eecbs_obj_types, MIN_SCORE,
+from env_search_EECBS.utils import (eecbs_obj_types, MIN_SCORE,
                               eecbs_env_number2str,
                               kiva_env_str2number, format_env_str,
                               read_in_kiva_map, flip_tiles)
@@ -348,7 +348,7 @@ class WarehouseModule:
         map_np_unrepaired: np.ndarray,
         map_comp_unrepaired: np.ndarray,
         map_np_repaired: np.ndarray,
-        w_mode: bool,
+        # w_mode: bool,
         max_n_shelf: int,
         map_id: int,
     ):
@@ -424,7 +424,7 @@ class WarehouseModule:
             # finished_len_mean=np.mean(
             #     collected_results.get("finished_len_mean")),
             # finished_len_std=np.mean(collected_results.get("finished_len_std")),
-            all_task_len_mean=all_task_len_mean,
+            all_task_len_mean=None,                                                     #not used in process_eval_result
             tasks_finished_timestep=tasks_finished_timestep,
             n_shelf_components=n_shelf_components,
         )
