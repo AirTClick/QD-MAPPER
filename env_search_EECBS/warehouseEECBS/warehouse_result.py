@@ -66,7 +66,7 @@ class WarehouseMetadata:
                                     # tasks in the map
     tasks_finished_timestep: List[np.ndarray] = None
 
-    # n_shelf_components: int = None # Number of connected shelf components
+    n_shelf_components: int = None # Number of connected shelf components
 
 
 @dataclass

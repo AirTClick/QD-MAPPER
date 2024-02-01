@@ -500,6 +500,7 @@ json KivaSystem::simulate(int simulation_time)
     double avg_task_len = this->G.get_avg_task_len(this->G.heuristics);
 
 	std::tie(tile_usage_mean, tile_usage_std) = helper::mean_std(tile_usage);
+	tile_usage_mean *= tile_usage_sum; 												//make tile_usage_mean not norm 
 	std::tie(num_wait_mean, num_wait_std) = helper::mean_std(num_wait);
 	std::tie(finished_len_mean, finished_len_std) = helper::mean_std(finished_task_len);
 

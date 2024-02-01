@@ -33,12 +33,18 @@ std::string run(const py::kwargs& kwargs) {
     namespace po = boost::program_options;
     clock_t start_time = clock();
 	json result;
+    std::vector<double> init_tile_usage;
+
 	result["finish"] = false; // status code to false by default
     result["solution_cost"] = -2.0;
     result["runtime"] = 0;
     result["solution_found"] = false;
-
     
+    result["tile_usage"] = init_tile_usage;
+    result["tile_usage_mean"] = 0.0;
+    result["tile_usage_std"] = 0.0;
+
+
     high_level_solver_type s;
 	if (kwargs["highLevelSolver"].cast<string>() == "A*")
 		s = high_level_solver_type::ASTAR;
@@ -153,6 +159,9 @@ std::string run(const py::kwargs& kwargs) {
             cout << "Failed to find solutions in Run " << i << endl;
         }
         ecbs.runtime = runtime;
+        //store tile_usage, mean, std inside result
+        result = ecbs.cal_tile_usage(instance, result);
+
         if (kwargs.contains("output"))
             ecbs.saveResults(kwargs["output"].cast<string>());
         if (ecbs.solution_found && kwargs.contains("outputPaths"))
@@ -169,6 +178,12 @@ std::string run(const py::kwargs& kwargs) {
         result["solution_found"] = ecbs.solution_found;
 
         cout << "For finish: " << result["finish"] << endl;
+
+        //test for tile_usage 
+        // std::cout << "Tile_usage Vector: ";
+		// for (const auto& num : result["tile_usage"]) {
+		// 	std::cout << num << " ";
+		// }
         
         ecbs.clearSearchEngines();
         
@@ -206,6 +221,9 @@ std::string run(const py::kwargs& kwargs) {
             cout << "Failed to find solutions in Run " << i << endl;
         }
         cbs.runtime = runtime;
+        //store tile_usage, mean, std inside result
+        result = cbs.cal_tile_usage(instance, result);
+
         if (kwargs.contains("output"))
             cbs.saveResults(kwargs["output"].cast<string>());
         if (cbs.solution_found && kwargs.contains("outputPaths"))
@@ -219,7 +237,13 @@ std::string run(const py::kwargs& kwargs) {
         result["solution_found"] = cbs.solution_found;
 
         cout << "For finish: " << result["finish"] << endl;
-        
+
+        //test for tile_usage 
+        // std::cout << "Tile_usage Vector: ";
+		// for (const auto& num : result["tile_usage"]) {
+		// 	std::cout << num << " ";
+		// }
+
         cbs.clearSearchEngines();
 
         cout << "Clean Done " <<  endl; 

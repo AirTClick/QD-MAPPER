@@ -95,6 +95,9 @@ public:
 	void clear(); // used for rapid random  restart
 
 	int getInitialPathLength(int agent) const {return (int) paths_found_initially[agent].size() - 1; }
+	json cal_tile_usage(Instance instance, json result);
+	// vector<double> cal_tile_usage(Instance instance);
+
 protected:
     bool rectangle_reasoning;  // using rectangle reasoning
 	bool corridor_reasoning;  // using corridor reasoning

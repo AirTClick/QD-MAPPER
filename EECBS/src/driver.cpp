@@ -182,6 +182,17 @@ int main(int argc, char** argv)
             cout << "Failed to find solutions in Run " << i << endl;
         }
         ecbs.runtime = runtime;
+		// tests for tile_usage 
+		// std::vector<double> tile_usage = ecbs.cal_tile_usage(instance);
+
+		// std::cout << "Vector: ";
+		// for (const auto& num : tile_usage) {
+		// 	std::cout << num << " ";
+		// }
+		// std::cout << std::endl;
+
+		cout << "run time: " << ecbs.runtime << endl;
+
         if (vm.count("output"))
 			// ecbs.saveResults(vm["output"].as<string>(), vm["agents"].as<string>());
             ecbs.saveResults(vm["output"].as<string>());
@@ -227,6 +238,17 @@ int main(int argc, char** argv)
             cout << "Failed to find solutions in Run " << i << endl;
         }
         cbs.runtime = runtime;
+
+		cout << "run time: " << cbs.runtime << endl;
+		//tests for tile_usage 
+		// std::vector<double> tile_usage = cbs.cal_tile_usage(instance);
+
+		// std::cout << "Vector: ";
+		// for (const auto& num : tile_usage) {
+		// 	std::cout << num << " ";
+		// }
+
+		std::cout << std::endl;
         if (vm.count("output"))
 			// cbs.saveResults(vm["output"].as<string>(), vm["agents"].as<string>());
             cbs.saveResults(vm["output"].as<string>());

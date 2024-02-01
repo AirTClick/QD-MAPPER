@@ -381,12 +381,12 @@ class Manager:  # pylint: disable = too-many-instance-attributes
         )
         self.metrics.add(
             "Best Objective",
-            np.max(objs),
+            np.min(objs),       #smaller, the better for runtime
             logger,
         )
         self.metrics.add(
             "Worst Objective",
-            np.min(objs),
+            np.max(objs),       #larger, the worse for runtime
             logger,
         )
         self.metrics.add(
@@ -619,6 +619,12 @@ class Manager:  # pylint: disable = too-many-instance-attributes
                 measures.append(np.full(self.archive.behavior_dim, np.nan))
                 metadata.append(None)
                 success_mask.append(False)
+
+            print("Objs: ", objs)
+            print("Measures: ", measures)
+
+            #objs = objective_values
+            #behavior_values = measures
 
             self.optimizer.tell(
                 objs,

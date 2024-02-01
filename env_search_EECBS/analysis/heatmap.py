@@ -46,6 +46,7 @@ def plot_generation_on_axis(
 ):
     # pylint: disable = unused-argument
     archive = load_archive_gen(logdir, gen)
+    print(archive.as_pandas())
     grid_archive_heatmap(
         archive,
         ax,
@@ -87,9 +88,9 @@ def post_process_figure(ax, fig, kiva, heatmap_only):
         else:
             sol_sim = gin.query_parameter("Manager.sol_size")
 
-            measure_names = gin.query_parameter("WarehouseConfig.measure_names")
+            measure_names = gin.query_parameter("WarehouseEECBSConfig.measure_names")
             ax.set_ylabel(MEASURE_NAMES[measure_names[0]], fontsize=26)
-            ax.set_xlabel(MEASURE_NAMES[measure_names[1]], fontsize=26)
+            # ax.set_xlabel(MEASURE_NAMES[measure_names[1]], fontsize=26)
 
             range_y, range_x = gin.query_parameter("GridArchive.ranges")
             if sol_sim == 108:
@@ -181,7 +182,7 @@ def plot_generation_3D(mode, logdir, gen, plot_kwargs, filenames, kiva):
                 figsize = (6 * dim_z, 5.5)
                 height_ratios = ([0.03, 0.87, 0.08])
                 measure_names = gin.query_parameter(
-                    "WarehouseConfig.measure_names")
+                    "WarehouseEECBSConfig.measure_names")
             fig = plt.figure(figsize=figsize)
             spec = fig.add_gridspec(ncols=dim_z,
                                     nrows=3,

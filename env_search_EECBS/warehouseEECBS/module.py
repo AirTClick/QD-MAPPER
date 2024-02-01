@@ -365,11 +365,16 @@ class WarehouseModule:
         # Collect the results
         keys = curr_result_json[0].keys()
         collected_results = {key: [] for key in keys}
-        print(collected_results)
+        
+        # print("Repaired shape: ",np.shape(map_np_repaired))
+        # print("Comp unrepaired shape: ", np.shape(map_comp_unrepaired))
+        # print("Unrepaired shape: ",np.shape(map_np_unrepaired))
+        # print(collected_results)
         for result_json in curr_result_json:
             for key in keys:
                 collected_results[key].append(result_json[key])
 
+        # print(collected_results)
         # Calculate n_shelf and n_endpoint
         # Note: we use the number of searchable block (aka the portion of
         # the layout in the middle) as the totol number of tiles
@@ -392,16 +397,20 @@ class WarehouseModule:
             f"Map ID {map_id}: Number of connected shelf components: {n_shelf_components}")
 
         # Post process result if necessary
-        # tile_usage = np.array(collected_results.get("tile_usage"))
-        # tile_usage = tile_usage.reshape(n_evals, *map_np_repaired.shape)
+        tile_usage = np.array(collected_results.get("tile_usage"))
+        # print("Tile_usage shape: ", tile_usage.shape)
+        tile_usage = tile_usage.reshape(n_evals, *map_np_repaired.shape)
         # tasks_finished_timestep = [np.array(x) for x in collected_results.get("tasks_finished_timestep")]
 
-        run_time = np.array(collected_results.get("run_time"))
+        # print("run_time in json: ",collected_results.get("runtime"))
+        run_time = np.array(collected_results.get("runtime"))
+        # print("shape of run_time: ", run_time.shape)
+
+        # print("solution_cost in json: ", collected_results.get("solution_cost"))
         solution_cost = np.array(collected_results.get("solution_cost")) 
 
         # Get objective based on type
-        objs = None
-        objs = np.array(collected_results.get("solution_cost")) 
+        objs = run_time
         # if self.config.obj_type == "throughput":
         #     objs = np.array(collected_results.get("throughput"))
         # elif self.config.obj_type == "throughput_plus_n_shelf":
@@ -418,7 +427,6 @@ class WarehouseModule:
         metadata = WarehouseMetadata(
             objs=objs,
             # throughput=collected_results.get("throughput"),
-            run_time = run_time,
             solution_cost=solution_cost,
             map_int_unrepaired=map_comp_unrepaired,
             map_int=map_np_repaired,
@@ -427,9 +435,9 @@ class WarehouseModule:
             n_shelf=n_shelf,
             # n_endpoint=n_endpoint,
 
-            # tile_usage=tile_usage,
-            # tile_usage_mean=np.mean(collected_results.get("tile_usage_mean")),
-            # tile_usage_std=np.mean(collected_results.get("tile_usage_std")),
+            tile_usage=tile_usage,
+            tile_usage_mean=np.mean(collected_results.get("tile_usage_mean")),
+            tile_usage_std=np.mean(collected_results.get("tile_usage_std")),
 
             # num_wait=collected_results.get("num_wait"),
             # num_wait_mean=np.mean(collected_results.get("num_wait_mean")),
@@ -438,7 +446,7 @@ class WarehouseModule:
             # finished_len_mean=np.mean(
             #     collected_results.get("finished_len_mean")),
             # finished_len_std=np.mean(collected_results.get("finished_len_std")),
-            all_task_len_mean=None,                                                     #not used in process_eval_result
+            # all_task_len_mean=None,                                                     #not used in process_eval_result
             # tasks_finished_timestep=tasks_finished_timestep,
             n_shelf_components=n_shelf_components,
         )
@@ -822,6 +830,8 @@ def single_simulation(seed, agent_num, kwargs, results_dir):
 
     solution_cost = result_json["solution_cost"]
 
+    # print("Tile_usage_shape: ", len(result_json["tile_usage"]))
+
     # if result_json["throughput"] > max_obj:
     #     max_obj = result_json["throughput"]
 
@@ -948,7 +958,7 @@ def main(
             seeds.extend(repeat(seed + i, n_evals))
             agent_nums.extend([agent_num + j for j in range(n_evals)])
 
-        throughputs = pool.starmap(
+        solution_cost = pool.starmap(
             single_simulation,
             zip(seeds,
                 agent_nums,
@@ -959,7 +969,7 @@ def main(
         agent_nums = [agent_num for _ in range(n_evals)]
         seeds = np.random.choice(np.arange(10000), size=n_evals, replace=False)
 
-        throughputs = pool.starmap(
+        solution_cost = pool.starmap(
             single_simulation,
             zip(seeds,
                 agent_nums,
@@ -967,15 +977,15 @@ def main(
                 repeat(results_dir, n_evals)),
         )
 
-    avg_obj = np.mean(throughputs)
-    max_obj = np.max(throughputs)
-    min_obj = np.min(throughputs)
+    avg_obj = np.mean(solution_cost)
+    max_obj = np.max(solution_cost)
+    min_obj = np.min(solution_cost)
 
     n_evals = n_evals * n_sim if mode == "inc_agents" else n_evals
 
-    print(f"Average throughput over {n_evals} simulations: {avg_obj}")
-    print(f"Max throughput over {n_evals} simulations: {max_obj}")
-    print(f"Min throughput over {n_evals} simulations: {min_obj}")
+    print(f"Average Solution Cost over {n_evals} simulations: {avg_obj}")
+    print(f"Max Solution Cost over {n_evals} simulations: {max_obj}")
+    print(f"Min Solution cost over {n_evals} simulations: {min_obj}")
 
 
 

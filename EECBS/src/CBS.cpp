@@ -1694,6 +1694,52 @@ inline int CBS::getAgentLocation(int agent_id, size_t timestep) const
 	return paths[agent_id]->at(t).location;
 }
 
+// calculate the tile_usage with the output path
+// vector<double> CBS::cal_tile_usage(Instance instance)
+json CBS::cal_tile_usage(Instance instance, json result)
+{	
+	std::vector<double> tile_usage((instance.num_of_rows * instance.num_of_cols),0.0);
+	int row;
+	int col;
+	for (int i = 0; i < num_of_agents; i++)
+    {
+		for (const auto & t : *paths[i]){
+			row = search_engines[0]->instance.getRowCoordinate(t.location);
+			col = search_engines[0]->instance.getColCoordinate(t.location);
+			tile_usage[row * instance.num_of_cols + col] += 1.0;
+		}
+    }	
+	double tile_usage_sum = 0.0;
+	for (int i = 0; i < tile_usage.size(); ++i) {
+        tile_usage_sum += tile_usage[i];
+    }	
+
+	for (int i = 0; i < tile_usage.size(); ++i) {
+        tile_usage[i] /= tile_usage_sum;
+    }
+	//mean
+	double tile_usage_mean = tile_usage_sum/tile_usage.size();
+
+	//std
+	std::vector<double> diff(tile_usage.size());
+	std::transform(tile_usage.begin(), tile_usage.end(), diff.begin(),
+                       [tile_usage_mean](double x)
+                       { return x - tile_usage_mean; });
+	
+	double sq_sum = std::inner_product(diff.begin(), diff.end(),
+                                           diff.begin(), 0.0);
+
+	double tile_usage_std = sqrt(sq_sum / tile_usage.size());
+
+
+	result["tile_usage"] = tile_usage;
+	result["tile_usage_mean"] = tile_usage_mean;
+	result["tile_usage_std"] = tile_usage_std;
+	
+	//return tile_usage;
+	return result;
+}
+
 
 // used for rapid random  restart
 void CBS::clear()
