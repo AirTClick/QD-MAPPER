@@ -338,9 +338,12 @@ class WarehouseModule:
         # if planning_window is not None:
         #     kwargs["planning_window"] = planning_window
 
+        logger.info(f"Map evaluate: {map_id} \n{map_json}")
+
         one_sim_result_jsonstr = warehouse_sim_EECBS.run(**kwargs)
 
         result_json = json.loads(one_sim_result_jsonstr)
+        
         return result_json
 
 
@@ -392,6 +395,10 @@ class WarehouseModule:
         #     f"Map ID {map_id}: Average length of all possible tasks: {all_task_len_mean}")
 
         # Calculate number of connected shelf components
+        format_env = format_env_str(eecbs_env_number2str(map_np_repaired))
+
+        logger.info(f"Repaired Map: {map_id}: \n{format_env}")
+
         n_shelf_components = calc_num_shelf_components(map_np_repaired)
         logger.info(
             f"Map ID {map_id}: Number of connected shelf components: {n_shelf_components}")
@@ -408,7 +415,12 @@ class WarehouseModule:
 
         # print("solution_cost in json: ", collected_results.get("solution_cost"))
         solution_cost = np.array(collected_results.get("solution_cost")) 
-        Suboptimality = collected_results.get("Suboptimality")
+
+        Suboptimality = np.array(collected_results.get("suboptimality"))
+
+        # print("suboptimality_list: ", Suboptimality)
+
+        average_suboptimality = np.mean(Suboptimality)
         # Get objective based on type
         objs = run_time
         # if self.config.obj_type == "throughput":
@@ -449,7 +461,7 @@ class WarehouseModule:
             # all_task_len_mean=None,                                                     #not used in process_eval_result
             # tasks_finished_timestep=tasks_finished_timestep,
             n_shelf_components=n_shelf_components,
-            Suboptimality = Suboptimality;
+            average_suboptimality = average_suboptimality,
         )
         result = WarehouseResult.from_raw(
             warehouse_metadata=metadata,

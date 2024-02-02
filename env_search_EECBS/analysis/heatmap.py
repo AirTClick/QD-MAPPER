@@ -29,9 +29,10 @@ plt.rcParams.update({
 MEASURE_NAMES = {
     "n_shelf": "Number of shelves",
     "tile_usage_std": "Tile usage std",
-    "num_wait_mean": "Avg number of wait",
-    "all_task_len_mean": "Mean task length",
+    # "num_wait_mean": "Avg number of wait",
+    # "all_task_len_mean": "Mean task length",
     "n_shelf_components": "Number of shelf components",
+    "average_suboptimality" : "Average of Suboptimality",
 }
 
 

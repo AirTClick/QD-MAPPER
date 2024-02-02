@@ -568,7 +568,7 @@ class Manager:  # pylint: disable = too-many-instance-attributes
         logger.info("total_evals (old): %d", self.total_evals)
         self.total_evals += len(sols)
         logger.info("total_evals (new): %d", self.total_evals)
-
+        
         logger.info("Distributing evaluations")
 
         results = self.env_manager.eval_pipeline(
@@ -601,6 +601,8 @@ class Manager:  # pylint: disable = too-many-instance-attributes
                     measures.append(meas)
                     metadata.append(meta)
                     success_mask.append(True)
+                    # print("Measure above: ", measures)
+                    
             else:
                 failed_level_info = self.env_manager.add_failed_info(sol, r)
                 self.failed_levels.append(failed_level_info)
@@ -620,8 +622,11 @@ class Manager:  # pylint: disable = too-many-instance-attributes
                 metadata.append(None)
                 success_mask.append(False)
 
-            print("Objs: ", objs)
-            print("Measures: ", measures)
+            # print("Objs_shape: ", len(objs))
+            # print("Objs: ", objs)
+            # print("Measures_shape: ", len(measures))
+            # print("Measures: ", measures)
+            # print("Dim, ", self.archive.behavior_dim)
 
             #objs = objective_values
             #behavior_values = measures

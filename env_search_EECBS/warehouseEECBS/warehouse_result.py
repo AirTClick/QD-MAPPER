@@ -40,9 +40,12 @@ class WarehouseMetadata:
     map_str: List[List[str]] = None
     objs: np.ndarray = None  # Objectives
 
+    #FOR EECBS
     run_time : List[float] = None
     solution_cost : List[float] = None
-    
+    average_suboptimality: float = None
+
+    #FOR RHCR
     throughput : List[float] = None # throughput of the simulation
 
     tile_usage: np.ndarray = None # (n_eval, n_row, n_col) 3D np array
@@ -67,7 +70,6 @@ class WarehouseMetadata:
     tasks_finished_timestep: List[np.ndarray] = None
 
     n_shelf_components: int = None # Number of connected shelf components
-    Suboptimality: float = 0.0 
 
 @dataclass
 class WarehouseResult:  # pylint: disable = too-many-instance-attributes
@@ -132,6 +134,7 @@ class WarehouseResult:  # pylint: disable = too-many-instance-attributes
         agg_measures = WarehouseResult._obtain_measure_values(
             asdict(warehouse_metadata), opts["measure_names"])
 
+        # print("AGG_MEASURES: ", agg_measures)
         return WarehouseResult(
             warehouse_metadata=asdict(warehouse_metadata),
             agg_obj=agg_obj,

@@ -12,13 +12,13 @@ experiment.name = 'Warehouse Generation'
 
 # Parameters for GridArchive:
 # ======================================================================================================================
-GridArchive.dims = [15, 100]
-GridArchive.ranges = [[5, 20], [9, 14]]
+GridArchive.dims = [80, 100]
+GridArchive.ranges = [[40, 120], [1.0, 1.5]]
 
 # Parameters for downsample/GridArchive:
 # ======================================================================================================================
 downsample/GridArchive.dims = [15, 25]
-downsample/GridArchive.ranges = [[5, 20], [9, 14]]
+downsample/GridArchive.ranges = [[5, 20], [1.0, 1.3]]
 
 # Parameters for Manager:
 # ======================================================================================================================
@@ -29,10 +29,10 @@ Manager.env_manager_class = @WarehouseManager
 Manager.initial_sols = 100
 Manager.inner_itrs = 10000
 Manager.is_em = False
-Manager.max_evals = 10
+Manager.max_evals = 100
 Manager.plot_metrics_freq = 1
 Manager.reload_save_freq = 1
-Manager.sol_size = 108
+Manager.sol_size = 1024
 
 # Need more exploration 
 # Parameters for MapElitesBaselineEmitter:
@@ -49,7 +49,7 @@ MapElitesBaselineEmitter.num_objects = %num_objects
 # ======================================================================================================================
 # WarehouseEECBSConfig.agentNum=5                      #number of agents
 # WarehouseEECBSConfig.measure_names = ['n_shelf_components', 'all_task_len_mean']
-WarehouseEECBSConfig.measure_names = ['n_shelf_components', 'Suboptimality']
+WarehouseEECBSConfig.measure_names = ['n_shelf_components', 'average_suboptimality']
 WarehouseEECBSConfig.aggregation_type = 'mean'
 WarehouseEECBSConfig.cutoffTime=7200                 #cutoff time (seconds)
 WarehouseEECBSConfig.screen=1                        #screen option (0: none; 1: results; 2:all)#
@@ -95,9 +95,9 @@ WarehouseEmulationModel.train_sample_size = 20000
 
 # Parameters for WarehouseManager:
 # ======================================================================================================================
-WarehouseManager.agent_num = 2
-WarehouseManager.lvl_height = 9
-WarehouseManager.lvl_width = 12
+WarehouseManager.agent_num = 10
+WarehouseManager.lvl_height = 32
+WarehouseManager.lvl_width = 32
 WarehouseManager.max_n_shelf = %max_n_shelf
 WarehouseManager.min_n_shelf = %min_n_shelf
 WarehouseManager.n_endpt = 2
