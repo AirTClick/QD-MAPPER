@@ -90,7 +90,7 @@ def post_process_figure(ax, fig, kiva, heatmap_only):
 
             measure_names = gin.query_parameter("WarehouseEECBSConfig.measure_names")
             ax.set_ylabel(MEASURE_NAMES[measure_names[0]], fontsize=26)
-            # ax.set_xlabel(MEASURE_NAMES[measure_names[1]], fontsize=26)
+            ax.set_xlabel(MEASURE_NAMES[measure_names[1]], fontsize=26)
 
             range_y, range_x = gin.query_parameter("GridArchive.ranges")
             if sol_sim == 108:

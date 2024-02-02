@@ -182,6 +182,9 @@ int main(int argc, char** argv)
             cout << "Failed to find solutions in Run " << i << endl;
         }
         ecbs.runtime = runtime;
+		double suboptimality = ecbs.cal_suboptimality(instance,ecbs.solution_cost);
+
+        cout << "Suboptimality: " << suboptimality << endl;
 		// tests for tile_usage 
 		// std::vector<double> tile_usage = ecbs.cal_tile_usage(instance);
 

@@ -763,6 +763,38 @@ void ECBS::computeConflictPriority(shared_ptr<Conflict>& con, ECBSNode& node)
 	}
 }
 
+double ECBS::cal_suboptimality(Instance instance, double solution_cost)
+{
+	int num_of_cols = instance.num_of_cols;
+	int num_of_rows = instance.num_of_rows;	
+
+	std::vector<int> start_locations = search_engines[0]->instance.get_start_locations();
+	std::vector<int> goal_locations = search_engines[0]->instance.get_goal_locations();
+
+	std::vector<double> initial_path(search_engines.size());
+
+	// take the initial path of all agents out
+	for (int i= 0;i < search_engines.size(); i++)
+	{
+		std::vector<int> my_heuristic = search_engines[i]->my_heuristic;  //take the vector of heuristic from the goal loc to all locations on the map
+		int single_start_location = start_locations[i];  //take the start location of the agent i 
+
+		// int row = single_start_location / num_of_cols;
+		// int col = single_start_location / num_of_rows;
+
+		// cout << "Make sure the heuristic of the goal location is zero: " << my_heuristic[goal_locations[i]] << endl;
+
+		initial_path[i] += my_heuristic[single_start_location];
+	}
+
+	double path_sum = accumulate(initial_path.begin(),initial_path.end(),0.0);
+
+	double suboptimality = solution_cost / path_sum;
+
+	return suboptimality;
+	
+
+}
 
 // used for rapid random  restart
 void ECBS::clear()

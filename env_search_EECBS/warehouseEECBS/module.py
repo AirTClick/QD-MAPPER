@@ -408,7 +408,7 @@ class WarehouseModule:
 
         # print("solution_cost in json: ", collected_results.get("solution_cost"))
         solution_cost = np.array(collected_results.get("solution_cost")) 
-
+        Suboptimality = collected_results.get("Suboptimality")
         # Get objective based on type
         objs = run_time
         # if self.config.obj_type == "throughput":
@@ -449,6 +449,7 @@ class WarehouseModule:
             # all_task_len_mean=None,                                                     #not used in process_eval_result
             # tasks_finished_timestep=tasks_finished_timestep,
             n_shelf_components=n_shelf_components,
+            Suboptimality = Suboptimality;
         )
         result = WarehouseResult.from_raw(
             warehouse_metadata=metadata,

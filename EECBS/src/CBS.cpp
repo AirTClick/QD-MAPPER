@@ -1741,6 +1741,7 @@ json CBS::cal_tile_usage(Instance instance, json result)
 }
 
 
+
 // used for rapid random  restart
 void CBS::clear()
 {

@@ -16,7 +16,11 @@ public:
 		int num_of_agents = 0, int num_of_rows = 0, int num_of_cols = 0, int num_of_obstacles = 0, int warehouse_width = 0);
 	Instance(json& G_json, int num_of_agents);
 
+	vector<int> get_goal_locations() const;
+	vector<int> get_start_locations() const;
+
 	void printAgents() const;
+	
 
 
 		inline bool isObstacle(int loc) const { return my_map[loc]; }

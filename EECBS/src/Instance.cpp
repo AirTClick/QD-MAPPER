@@ -491,3 +491,13 @@ list<int> Instance::getNeighbors(int curr) const
 	}
 	return neighbors;
 }
+
+vector<int> Instance::get_start_locations() const
+{
+	return start_locations;
+}
+
+vector<int> Instance::get_goal_locations() const
+{
+	return goal_locations;
+}

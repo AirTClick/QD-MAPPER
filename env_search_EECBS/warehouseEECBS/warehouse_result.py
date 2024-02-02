@@ -67,7 +67,7 @@ class WarehouseMetadata:
     tasks_finished_timestep: List[np.ndarray] = None
 
     n_shelf_components: int = None # Number of connected shelf components
-
+    Suboptimality: float = 0.0 
 
 @dataclass
 class WarehouseResult:  # pylint: disable = too-many-instance-attributes

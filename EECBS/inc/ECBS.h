@@ -15,6 +15,8 @@ public:
 	// Runs the algorithm until the problem is solved or time is exhausted 
 	bool solve(double time_limit, int cost_lowerbound = 0);
     void clear(); // used for rapid random  restart
+	double cal_suboptimality(Instance instance, double solution_cost);
+
 
 private:
 	vector<int> min_f_vals; // lower bounds of the cost of the shortest path
