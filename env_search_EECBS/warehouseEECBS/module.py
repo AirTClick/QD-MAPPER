@@ -17,6 +17,7 @@ import warnings
 import warehouse_sim_EECBS  # type: ignore # ignore pylance warning
 import numpy as np
 import multiprocessing
+import scipy
 
 from typing import List
 from dataclasses import dataclass
@@ -127,7 +128,7 @@ class WarehouseModule:
         sim_seed: int,
         # w_mode: bool,
         # min_n_obstacle: int,
-        # max_n_obstacle: int,
+        max_n_obstacles: int,
         agentNum: int,
     ):
         map_np_unrepaired = copy.deepcopy(map)
@@ -198,7 +199,7 @@ class WarehouseModule:
                 agentNum,
                 add_movement=False,
                 # min_n_obstacle=min_n_obstacle,
-                # max_n_obstacle=max_n_obstacle,
+                max_n_obstacles=max_n_obstacles,
                 seed=repair_seed,
                 # w_mode=w_mode,
                 warm_envs_np=warm_up_sols,
@@ -225,7 +226,7 @@ class WarehouseModule:
                 add_movement=True,
                 warm_envs_np=warm_up_sols,
                 # min_n_obstacle=min_n_obstacle,
-                # max_n_obstacle=max_n_obstacle,
+                max_n_obstacles=max_n_obstacles,
                 seed=repair_seed,
                 # w_mode=w_mode,
                 # limit_n_obstacle=limit_n_obstacle,
@@ -403,6 +404,12 @@ class WarehouseModule:
         logger.info(
             f"Map ID {map_id}: Number of connected shelf components: {n_shelf_components}")
 
+        #Connectivity of the Graph (need for heatmap)
+        std_connectivity = cal_connectivity(map_np_repaired)
+        #average degrees of all the grids in the Graph 
+        avg_degrees = cal_avg_degrees(map_np_repaired)
+
+
         # Post process result if necessary
         tile_usage = np.array(collected_results.get("tile_usage"))
         # print("Tile_usage shape: ", tile_usage.shape)
@@ -462,6 +469,8 @@ class WarehouseModule:
             # tasks_finished_timestep=tasks_finished_timestep,
             n_shelf_components=n_shelf_components,
             average_suboptimality = average_suboptimality,
+            std_connectivity = std_connectivity,
+            avg_degrees = avg_degrees,
         )
         result = WarehouseResult.from_raw(
             warehouse_metadata=metadata,
@@ -668,6 +677,123 @@ def calc_num_shelf_components(repaired_env):
                 n_shelf_components += 1
                 BFS_shelf_component((i, j), repaired_env, env_visited)
     return n_shelf_components
+
+def cal_connectivity(repaired_env):
+    n_row, n_col = repaired_env.shape
+    total_grid = n_row * n_col
+    distance_matrix = np.zeros((total_grid,total_grid), dtype=int) 
+    connectivity_graph = np.zeros(repaired_env.shape, dtype=int)
+
+    #build the distance matrix for graphs
+    for i in range(n_row):
+        for j in range(n_col):
+            if i == 0 and j == 0:
+                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
+            elif i == n_row-1 and j == 0:
+                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
+            elif i == 0 and j == n_col - 1:
+                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+            elif i == n_row-1 and j == n_col - 1:
+                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+            #upper and down edge 
+            elif i == 0:
+                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
+            elif i == n_row -1:
+                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
+            #left and right edge  
+            elif j == 0:
+                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
+            elif j == n_col -1:
+                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+            #normal cases
+            else:
+                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
+
+    distance_graph = scipy.sparse.csr_matrix(distance_matrix)
+
+    #The matrix of distances between graph nodes. dist_matrix[i,j] gives the shortest distance from point i to point j along the graph.
+    dist_matrix, predecessors= scipy.sparse.csgraph.floyd_warshall(csgraph=distance_graph, directed=False, return_predecessors=True)
+
+    for i in range(predecessors.shape[0]):
+        for j in range(predecessors.shape[1]):
+            if predecessors[i,j] != -9999:
+                # print("Processor: ", predecessors[i,j])
+                result_row = predecessors[i,j] // n_col
+                # print("Row: ", result_row)
+                result_col = predecessors[i,j] % n_col
+                # print("Col: ", result_col)
+                connectivity_graph[result_row,result_col] += 1
+
+    normalized_graph = connectivity_graph/(np.sum(connectivity_graph))
+
+    connectivity_std = np.std(connectivity_graph)
+
+    return connectivity_std
+
+
+
+
+
+def cal_avg_degrees(repaired_env):
+    n_row, n_col = repaired_env.shape
+    sum_degree = 0
+    total_grids = n_row * n_col 
+    for i in range(n_row):
+        for j in range(n_col):
+            #four edge cases in the corner 
+            if i == 0 and j == 0:
+                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1
+            elif i == n_row-1 and j == 0:
+                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1 
+            elif i == 0 and j == n_col - 1:
+                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1  
+            elif i == n_row-1 and j == n_col - 1:
+                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1  
+            #upper and down edge 
+            elif i == 0:
+                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1 
+                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1   
+            elif i == n_row -1:
+                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1 
+                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1   
+            #left and right edge  
+            elif j == 0:
+                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1 
+                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1   
+            elif j == n_col -1:
+                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1 
+                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1    
+            #normal cases
+            else:
+                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1 
+                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1 
+                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1 
+        
+    return (sum_degree/total_grids)
 
 
 # def get_additional_h_blocks(ADDITION_BLOCK_WIDTH, n_row, w_mode):

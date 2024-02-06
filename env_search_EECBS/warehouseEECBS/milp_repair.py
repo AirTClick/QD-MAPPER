@@ -226,7 +226,7 @@ def repair_env(
     time_limit=120,
     add_movement=True,
     # w_mode=False,
-    # max_n_shelf=25,
+    max_n_obstacles=25,
     # min_n_shelf=10,
     seed=0,
     # limit_n_shelf=True,
@@ -306,6 +306,9 @@ def repair_env(
 
         # Only one 's'
         mdl.add_constraint(sum(objs[eecbs_obj_types.index("s")]) == 1)
+
+        # constraint on the number of obstacles in the map
+        mdl.add_constraint(sum(objs[eecbs_obj_types.index("@")]) <= max_n_obstacles)
 
         # robot start "block" on either side cannot change
         # n_robot_start_loc = int((env_np == eecbs_obj_types.index("r")).sum())

@@ -44,6 +44,8 @@ class WarehouseMetadata:
     run_time : List[float] = None
     solution_cost : List[float] = None
     average_suboptimality: float = None
+    std_connectivity: float = None
+    avg_degrees: float = None
 
     #FOR RHCR
     throughput : List[float] = None # throughput of the simulation

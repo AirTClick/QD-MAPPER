@@ -33,6 +33,8 @@ MEASURE_NAMES = {
     # "all_task_len_mean": "Mean task length",
     "n_shelf_components": "Number of shelf components",
     "average_suboptimality" : "Average of Suboptimality",
+    "std_connectivity" : "std of connectivity",
+    "avg_degrees" : "average of degrees",
 }
 
 
@@ -337,7 +339,7 @@ def heatmap(logdir: str,
         #     vmax += 1.5
 
     vmin = 0
-    vmax = 7
+    vmax = 2
 
     # Plotting arguments for grid_archive_heatmap.
     plot_kwargs = {
