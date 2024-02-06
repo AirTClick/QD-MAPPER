@@ -301,6 +301,9 @@ def repair_env(
         # Endpoints shows up more than number of agents
         # mdl.add_constraint(sum(objs[eecbs_obj_types.index("e")]) >= agent_num)
 
+        #number of empty space needs to be less than number of agents 
+        mdl.add_constraint(sum(objs[eecbs_obj_types.index(".")]) >= agent_num)
+
         # Only one 's'
         mdl.add_constraint(sum(objs[eecbs_obj_types.index("s")]) == 1)
 
