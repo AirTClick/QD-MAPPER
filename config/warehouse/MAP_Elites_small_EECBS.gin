@@ -13,8 +13,8 @@ experiment.name = 'Warehouse Generation'
 
 # Parameters for GridArchive:
 # ======================================================================================================================
-GridArchive.dims = [80, 100]
-GridArchive.ranges = [[0.0005, 0.0008], [3.0, 3.3]]
+GridArchive.dims = [100, 100]
+GridArchive.ranges = [[0.00065, 0.0008], [3.05, 3.25]]
 
 # Parameters for downsample/GridArchive:
 # ======================================================================================================================
@@ -30,7 +30,7 @@ Manager.env_manager_class = @WarehouseManager
 Manager.initial_sols = 100
 Manager.inner_itrs = 10000
 Manager.is_em = False
-Manager.max_evals = 100
+Manager.max_evals = 5000
 Manager.plot_metrics_freq = 1
 Manager.reload_save_freq = 1
 Manager.sol_size = 1024
@@ -52,7 +52,7 @@ MapElitesBaselineEmitter.num_objects = %num_objects
 # WarehouseEECBSConfig.measure_names = ['n_shelf_components', 'all_task_len_mean']
 WarehouseEECBSConfig.measure_names = ['std_connectivity', 'avg_degrees']
 WarehouseEECBSConfig.aggregation_type = 'mean'
-WarehouseEECBSConfig.cutoffTime=10                 #cutoff time (seconds)
+WarehouseEECBSConfig.cutoffTime=5                #cutoff time (seconds)
 WarehouseEECBSConfig.screen=1                        #screen option (0: none; 1: results; 2:all)#
 WarehouseEECBSConfig.stats=False                     #write to files some detailed statistics
 
@@ -96,7 +96,7 @@ WarehouseEmulationModel.train_sample_size = 20000
 
 # Parameters for WarehouseManager:
 # ======================================================================================================================
-WarehouseManager.agent_num = 15
+WarehouseManager.agent_num = 100
 WarehouseManager.lvl_height = 32
 WarehouseManager.lvl_width = 32
 WarehouseManager.max_n_shelf = %max_n_shelf

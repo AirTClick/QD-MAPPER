@@ -381,12 +381,12 @@ class Manager:  # pylint: disable = too-many-instance-attributes
         )
         self.metrics.add(
             "Best Objective",
-            np.min(objs),       #smaller, the better for runtime
+            np.max(objs),       #smaller, the better for runtime
             logger,
         )
         self.metrics.add(
             "Worst Objective",
-            np.max(objs),       #larger, the worse for runtime
+            np.min(objs),       #larger, the worse for runtime
             logger,
         )
         self.metrics.add(
