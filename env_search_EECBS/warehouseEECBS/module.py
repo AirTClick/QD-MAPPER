@@ -429,7 +429,7 @@ class WarehouseModule:
 
         average_suboptimality = np.mean(Suboptimality)
         # Get objective based on type
-        objs = run_time
+        objs = -run_time
         # if self.config.obj_type == "throughput":
         #     objs = np.array(collected_results.get("throughput"))
         # elif self.config.obj_type == "throughput_plus_n_shelf":
@@ -681,53 +681,59 @@ def calc_num_shelf_components(repaired_env):
 def cal_connectivity(repaired_env):
     n_row, n_col = repaired_env.shape
     total_grid = n_row * n_col
+    num_of_obstacle = 0
+    total_grids = n_row * n_col
     distance_matrix = np.zeros((total_grid,total_grid), dtype=int) 
     connectivity_graph = np.zeros(repaired_env.shape, dtype=int)
 
     #build the distance matrix for graphs
     for i in range(n_row):
         for j in range(n_col):
-            if i == 0 and j == 0:
-                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
-                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
-            elif i == n_row-1 and j == 0:
-                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
-                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
-            elif i == 0 and j == n_col - 1:
-                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
-                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
-            elif i == n_row-1 and j == n_col - 1:
-                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
-                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
-            #upper and down edge 
-            elif i == 0:
-                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
-                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
-                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
-            elif i == n_row -1:
-                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
-                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
-                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
-            #left and right edge  
-            elif j == 0:
-                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
-                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
-                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
-            elif j == n_col -1:
-                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
-                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
-                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
-            #normal cases
-            else:
-                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
-                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
-                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
-                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
+            if repaired_env[i,j] == eecbs_obj_types.index("@"):
+                num_of_obstacle += 1
+            else: 
+                if i == 0 and j == 0:
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
+                elif i == n_row-1 and j == 0:
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
+                elif i == 0 and j == n_col - 1:
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+                elif i == n_row-1 and j == n_col - 1:
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+                #upper and down edge 
+                elif i == 0:
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
+                elif i == n_row -1:
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
+                #left and right edge  
+                elif j == 0:
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
+                elif j == n_col -1:
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+                #normal cases
+                else:
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
 
     distance_graph = scipy.sparse.csr_matrix(distance_matrix)
 
     #The matrix of distances between graph nodes. dist_matrix[i,j] gives the shortest distance from point i to point j along the graph.
     dist_matrix, predecessors= scipy.sparse.csgraph.floyd_warshall(csgraph=distance_graph, directed=False, return_predecessors=True)
+
 
     for i in range(predecessors.shape[0]):
         for j in range(predecessors.shape[1]):
@@ -741,7 +747,25 @@ def cal_connectivity(repaired_env):
 
     normalized_graph = connectivity_graph/(np.sum(connectivity_graph))
 
-    connectivity_std = np.std(connectivity_graph)
+    # print("Conectivity graph: ", connectivity_graph)
+    # print("Normalized graph: ", normalized_graph)
+    
+    # print("Sum: ", np.sum(connectivity_graph))
+    # print("Mean: ", np.mean(connectivity_graph))
+    connectivity_graph_nozero = normalized_graph[normalized_graph != 0]
+    # sqr_diff= np.sum(np.square(normalized_graph-1))
+
+    # total_obstacle_diff = 1 * num_of_obstacle
+
+    # sq_sum_diff = sqr_diff - total_obstacle_diff
+
+    # connectivity_std = np.sqrt(sq_sum_diff / (total_grids - num_of_obstacle))
+
+    connectivity_std = np.std(connectivity_graph_nozero)
+    before_norm = connectivity_std * (np.sum(connectivity_graph))
+
+    # print("Connectivity_Std: ",connectivity_std)
+    # print("Connectivity_Std before norm: ",before_norm)
 
     return connectivity_std
 
@@ -752,48 +776,52 @@ def cal_connectivity(repaired_env):
 def cal_avg_degrees(repaired_env):
     n_row, n_col = repaired_env.shape
     sum_degree = 0
+    num_of_obstacle = 0
     total_grids = n_row * n_col 
     for i in range(n_row):
         for j in range(n_col):
-            #four edge cases in the corner 
-            if i == 0 and j == 0:
-                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1
-                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1
-            elif i == n_row-1 and j == 0:
-                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1
-                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1 
-            elif i == 0 and j == n_col - 1:
-                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1
-                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1  
-            elif i == n_row-1 and j == n_col - 1:
-                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1
-                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1  
-            #upper and down edge 
-            elif i == 0:
-                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1
-                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1 
-                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1   
-            elif i == n_row -1:
-                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1
-                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1 
-                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1   
-            #left and right edge  
-            elif j == 0:
-                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1
-                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1 
-                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1   
-            elif j == n_col -1:
-                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1
-                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1 
-                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1    
-            #normal cases
+            #four edge cases in the corner
+            if repaired_env[i,j] == eecbs_obj_types.index("@"):
+                num_of_obstacle += 1 
             else:
-                if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1
-                if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1 
-                if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1 
-                if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1 
+                if i == 0 and j == 0:
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1
+                elif i == n_row-1 and j == 0:
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1 
+                elif i == 0 and j == n_col - 1:
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1  
+                elif i == n_row-1 and j == n_col - 1:
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1  
+                #upper and down edge 
+                elif i == 0:
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1 
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1   
+                elif i == n_row -1:
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1 
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1   
+                #left and right edge  
+                elif j == 0:
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1 
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1   
+                elif j == n_col -1:
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1 
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1    
+                #normal cases
+                else:
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): sum_degree += 1
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): sum_degree += 1 
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): sum_degree += 1 
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): sum_degree += 1 
         
-    return (sum_degree/total_grids)
+    return (sum_degree/(total_grids-num_of_obstacle))
 
 
 # def get_additional_h_blocks(ADDITION_BLOCK_WIDTH, n_row, w_mode):
