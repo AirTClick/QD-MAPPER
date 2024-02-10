@@ -26,7 +26,7 @@ fi
 
 SINGULARITY_OPTS="--cleanenv --env MALLOC_TRIM_THRESHOLD_=0"
 singularity exec ${SINGULARITY_OPTS} singularity/ubuntu_warehouse.sif \
-    python env_search/analysis/tile_usage.py \
+    python env_search_EECBS/analysis/tile_usage.py \
         --logdir "$LOGDIR" \
         --logdir-type "$LOGDIR_TYPE" \
         --mode "$MODE"

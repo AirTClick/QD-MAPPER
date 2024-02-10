@@ -183,6 +183,10 @@ int main(int argc, char** argv)
         }
         ecbs.runtime = runtime;
 		double suboptimality = ecbs.cal_suboptimality(instance,ecbs.solution_cost);
+		// if (runtime >= 5.0)
+		// {
+		// 	suboptimality = -1;
+		// }
 
         cout << "Suboptimality: " << suboptimality << endl;
 		// tests for tile_usage 

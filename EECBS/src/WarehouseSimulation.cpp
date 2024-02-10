@@ -163,7 +163,13 @@ std::string run(const py::kwargs& kwargs) {
         //store tile_usage, mean, std inside result
         result =  ecbs.cal_tile_usage(instance, result);
         result["suboptimality"] = ecbs.cal_suboptimality(instance,ecbs.solution_cost);
+        
+        // if (runtime >= 5.0)
+        // {
+        //     result["suboptimality"] = -1.0;
+        // }
 
+        // cout << "For suboptimality: " << result["suboptimality"] << endl; 
         // cout << "Suboptimality: " << result["suboptimality"] << endl;
 
         if (kwargs.contains("output"))
@@ -181,7 +187,7 @@ std::string run(const py::kwargs& kwargs) {
         result["solution_cost"] = ecbs.solution_cost;
         result["solution_found"] = ecbs.solution_found;
 
-        cout << "For finish: " << result["finish"] << endl;
+        // cout << "For finish: " << result["finish"] << endl;
 
         //test for tile_usage 
         // std::cout << "Tile_usage Vector: ";

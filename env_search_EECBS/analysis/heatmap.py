@@ -339,7 +339,7 @@ def heatmap(logdir: str,
         #     vmax += 1.5
 
     vmin = 0
-    vmax = 2
+    vmax = 5
 
     # Plotting arguments for grid_archive_heatmap.
     plot_kwargs = {

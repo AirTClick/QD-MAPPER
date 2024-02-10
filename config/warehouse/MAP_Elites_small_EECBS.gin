@@ -13,8 +13,8 @@ experiment.name = 'Warehouse Generation'
 
 # Parameters for GridArchive:
 # ======================================================================================================================
-GridArchive.dims = [100, 100]
-GridArchive.ranges = [[0.00065, 0.0008], [3.05, 3.25]]
+GridArchive.dims = [80, 80]
+GridArchive.ranges = [[0.0006, 0.0008], [3.05, 3.25]]
 
 # Parameters for downsample/GridArchive:
 # ======================================================================================================================
@@ -30,7 +30,7 @@ Manager.env_manager_class = @WarehouseManager
 Manager.initial_sols = 100
 Manager.inner_itrs = 10000
 Manager.is_em = False
-Manager.max_evals = 5000
+Manager.max_evals = 10000
 Manager.plot_metrics_freq = 1
 Manager.reload_save_freq = 1
 Manager.sol_size = 1024
@@ -38,7 +38,7 @@ Manager.sol_size = 1024
 # Need more exploration 
 # Parameters for MapElitesBaselineEmitter:
 # ======================================================================================================================
-MapElitesBaselineEmitter.batch_size = 10
+MapElitesBaselineEmitter.batch_size = 20
 MapElitesBaselineEmitter.geometric_k = True
 MapElitesBaselineEmitter.initial_population = 20
 # MapElitesBaselineEmitter.max_n_shelf = %max_n_shelf
@@ -60,7 +60,7 @@ WarehouseEECBSConfig.stats=False                     #write to files some detail
 WarehouseEECBSConfig.highLevelSolver="EES"           #the high-level solver (A*, A*eps, EES, NEW)
 WarehouseEECBSConfig.lowLevelSolver=True             #using suboptimal solver in the low level
 WarehouseEECBSConfig.inadmissibleH="Global"            #inadmissible heuristics (Zero, Global, Path, Local, Conflict)
-WarehouseEECBSConfig.suboptimality=1.2               #suboptimality bound
+WarehouseEECBSConfig.suboptimality=1.2             #suboptimality bound
 
 # CBS improvement
 WarehouseEECBSConfig.heuristics="WDG"                #admissible heuristics for the high-level search (Zero, CG,DG, WDG)
@@ -96,7 +96,7 @@ WarehouseEmulationModel.train_sample_size = 20000
 
 # Parameters for WarehouseManager:
 # ======================================================================================================================
-WarehouseManager.agent_num = 100
+WarehouseManager.agent_num = 150
 WarehouseManager.lvl_height = 32
 WarehouseManager.lvl_width = 32
 WarehouseManager.max_n_shelf = %max_n_shelf

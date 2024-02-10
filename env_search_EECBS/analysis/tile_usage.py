@@ -19,9 +19,7 @@ from env_search_EECBS.analysis.utils import load_experiment, load_metrics
 from env_search_EECBS.analysis.visualize_env import visualize_kiva
 from env_search_EECBS.utils.logging import setup_logging
 from env_search_EECBS.mpl_styles.utils import mpl_style_file
-from env_search_EECBS.utils import (set_spines_visible, KIVA_ROBOT_BLOCK_WIDTH,
-                              KIVA_WORKSTATION_BLOCK_WIDTH,
-                              KIVA_ROBOT_BLOCK_HEIGHT, kiva_env_number2str,
+from env_search_EECBS.utils import (set_spines_visible,eecbs_env_str2number,
                               kiva_env_str2number, read_in_kiva_map)
 
 mpl.use("agg")
@@ -64,7 +62,7 @@ def plot_tile_usage(
         square=True,
         cmap="Reds",
         ax=ax_tile_use,
-        # cbar_ax=ax_tile_use_cbar,
+        cbar_ax=ax_tile_use_cbar,
         cbar=True,
         rasterized=False,
         annot_kws={"size": 30},
@@ -73,9 +71,9 @@ def plot_tile_usage(
         xticklabels=False,
         yticklabels=False,
         vmin=0,
-        vmax=get_tile_usage_vmax(env_h, env_w),
+        vmax=0.005,
         cbar_kws={
-            # "orientation": "horizontal",
+            "orientation": "horizontal",
             "shrink": 0.7,
         },
     )
@@ -261,19 +259,22 @@ def tile_usage_heatmap_from_qd(
             for _, to_plot in to_plots.iterrows():
                 index_0 = to_plot["index_0"]
                 index_1 = to_plot["index_1"]
-                obj = to_plot["objective"]
+                obj = -to_plot["objective"]
                 metadata = to_plot["metadata"]["warehouse_metadata"]
-                throughput = np.mean(metadata["throughput"])
+                #runtime is stored as objs in warehouse_metadata
+                print(metadata["average_suboptimality"])
+                runtime = -np.mean(metadata["objs"])
                 print(
-                    f"Index ({index_0}, {index_1}): objective = {obj}, throughput = {throughput}"
+                    f"Index ({index_0}, {index_1}): objective = {obj}, runtime = {runtime}"
                 )
-                w_mode = gin.query_parameter("WarehouseManager.w_mode")
+                # w_mode = gin.query_parameter("WarehouseManager.w_mode")
 
                 grid_kws = {"height_ratios": (0.475, 0.475, 0.05)}
                 fig, (ax_map, ax_tile_use, ax_tile_use_cbar) = plt.subplots(
                     3,
                     1,
-                    figsize=get_figsize_qd(w_mode),
+                    # figsize=get_figsize_qd(w_mode),
+                    figsize = (8,16),
                     gridspec_kw=grid_kws,
                 )
 
@@ -281,23 +282,23 @@ def tile_usage_heatmap_from_qd(
                 repaired_env_str = metadata["map_str"]
                 print("\n".join(repaired_env_str))
                 print()
-                repaired_env = kiva_env_str2number(repaired_env_str)
+                repaired_env = eecbs_env_str2number(repaired_env_str)
                 visualize_kiva(repaired_env, ax=ax_map, dpi=300)
 
                 tile_usage = np.array(metadata["tile_usage"])
                 env_h = gin.query_parameter("WarehouseManager.lvl_height")
                 env_w = gin.query_parameter("WarehouseManager.lvl_width")
-                ADDITION_BLOCK_WIDTH = KIVA_WORKSTATION_BLOCK_WIDTH if w_mode \
-                                       else KIVA_ROBOT_BLOCK_WIDTH
-                ADDITION_BLOCK_HEIGHT = 0 if w_mode else KIVA_ROBOT_BLOCK_HEIGHT
-                env_w += 2 * ADDITION_BLOCK_WIDTH
-                env_h += 2 * ADDITION_BLOCK_HEIGHT
+                # ADDITION_BLOCK_WIDTH = KIVA_WORKSTATION_BLOCK_WIDTH if w_mode \
+                #                        else KIVA_ROBOT_BLOCK_WIDTH
+                # ADDITION_BLOCK_HEIGHT = 0 if w_mode else KIVA_ROBOT_BLOCK_HEIGHT
+                # env_w += 2 * ADDITION_BLOCK_WIDTH
+                # env_h += 2 * ADDITION_BLOCK_HEIGHT
                 if len(tile_usage.shape) == 2:
                     tile_usage = tile_usage[np.newaxis, ...]
 
                 # mkdir for tileusage
                 tile_usage_dir = logdir.dir("tile_usages")
-
+                print(tile_usage.shape)
                 for i in range(tile_usage.shape[0]):
                     curr_tile_usage = tile_usage[i]
                     plot_tile_usage(

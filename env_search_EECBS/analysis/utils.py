@@ -271,7 +271,7 @@ def grid_archive_heatmap(archive,
     # Color for each cell in the heatmap.
     colors = np.full((y_dim, x_dim), np.nan)
     for elite in archive:
-        colors[elite.idx[1], elite.idx[0]] = elite.obj
+        colors[elite.idx[1], elite.idx[0]] = -elite.obj
 
     if transpose_bcs:
         # Since the archive is 2D, transpose by swapping the x and y boundaries
