@@ -427,6 +427,9 @@ class Manager:  # pylint: disable = too-many-instance-attributes
             emitter_seeds = self.rng.integers(np.iinfo(np.int32).max / 2,
                                               size=n_emitters,
                                               endpoint=True)
+
+            # print("initial_solution: ", initial_solution)
+            # breakpoint()
             emitters.extend([
                 emitter_class(archive, initial_solution, seed=s)
                 for s in emitter_seeds

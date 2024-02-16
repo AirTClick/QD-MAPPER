@@ -35,6 +35,8 @@ MEASURE_NAMES = {
     "average_suboptimality" : "Average of Suboptimality",
     "std_connectivity" : "std of connectivity",
     "avg_degrees" : "average of degrees",
+    "avg_run_time" : "average run time",
+    "layout_entropy" : "Environment entropy"
 }
 
 

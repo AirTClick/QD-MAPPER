@@ -84,8 +84,10 @@ def plot_tile_usage(
     set_spines_visible(ax_tile_use)
     ax_tile_use.figure.tight_layout()
 
+    # print(filenames)
     for filename in filenames:
         fig.savefig(logdir.file(filename), dpi=dpi)
+    # print("END")
 
 
 def get_figsize_qd(w_mode=True):
@@ -182,6 +184,61 @@ def tile_usage_heatmap_from_qd(
     df = pd.read_pickle(logdir.file(f"archive/archive_{gen}.pkl"))
     global_opt_env = None
 
+
+
+    # k= -np.array(df["objective"])
+    # std_c = np.array(df["behavior_0"]) 
+    # index_c_small = np.where(std_c < 0.00065)
+    # index_c_medium = np.where((std_c> 0.00065) & (std_c < 0.00075))
+    # index_c_high = np.where((std_c> 0.0006) & (std_c < 0.00075))
+    # np_c_small = k[index_c_small]
+    # np_c_m = k[index_c_medium]
+    # np_c_h = k[index_c_high] 
+    # print("Avg_runtime for std_connectivity < 0.00065: ",np.mean(np_c_small))
+    # print("std_runtime for std_connectivity < 0.00065: ",np.std(np_c_small))
+
+    # print("----------------------------------------------------\n")
+
+    # print("Avg_runtime for std_connectivity < 0.00075: ",np.mean(np_c_m))
+    # print("std_runtime for std_connectivity < 0.00075: ",np.std(np_c_m))
+
+    # print("----------------------------------------------------\n")
+
+    # print("Avg_runtime for std_connectivity > 0.00075: ",np.mean(np_c_h))
+    # print("std_runtime for std_connectivity > 0.00075: ",np.std(np_c_h))
+    
+
+
+
+    # std_e = np.array(df["behavior_1"]) 
+    # index_e_small = np.where(std_e < 3.15)
+    # index_e_medium = np.where(std_e >= 3.15)
+    # np_e_small = k[index_e_small]
+    # np_e_m = k[index_e_medium]
+    # print("Avg_runtime for avg_degrees < 3.15: ",np.mean(np_e_small))
+    # print("std_runtime for avg_degrees < 3.15: ",np.std(np_e_small))
+
+    # print("----------------------------------------------------\n")
+
+    # print("Avg_runtime for avg_degrees > 3.15: ",np.mean(np_e_m))
+    # print("std_runtime for avg_degrees > 3.15: ",np.std(np_e_m))
+
+
+    # regional = np.where( (df["behavior_0"]<0.00065) & (df["behavior_1"]<3.15))
+    # regional_bot_lef = k[regional]
+
+    # print("avg_runtime for avg_degrees < 3.15 & std_connectivity < 0.00065: ",np.mean(regional_bot_lef))
+
+    # breakpoint()
+    # print("Runtime: ", df["objective"])
+    # k = -np.array(df["objective"])
+    # print("std: ",np.std(k))
+    # print("Mean: ",np.mean(k))
+    # print(df["index_0"])
+    # print("----------------------")
+    # print(df["index_1"])
+
+    # breakpoint()
     if index_0 is not None and index_1 is not None:
         to_plots = df[(df["index_0"] == index_0) & (df["index_1"] == index_1)]
         if to_plots.empty:
@@ -200,7 +257,7 @@ def tile_usage_heatmap_from_qd(
                              df["index_1"].max()]["objective"].idxmax()
         index_1_min = df.loc[df["index_1"] ==
                              df["index_1"].min()]["objective"].idxmax()
-
+        
         # Add global optimal env
         global_opt = df["objective"].idxmax()
         global_opt_env = df.iloc[global_opt]["metadata"]["warehouse_metadata"][
@@ -263,9 +320,12 @@ def tile_usage_heatmap_from_qd(
                 metadata = to_plot["metadata"]["warehouse_metadata"]
                 #runtime is stored as objs in warehouse_metadata
                 print(metadata["average_suboptimality"])
-                runtime = -np.mean(metadata["objs"])
+                print("Connectivity: ", metadata["std_connectivity"])
+                print("avg_degrees: ",metadata["avg_degrees"])
+                runtime = np.mean(metadata["avg_run_time"])
+                entropy = metadata["layout_entropy"]
                 print(
-                    f"Index ({index_0}, {index_1}): objective = {obj}, runtime = {runtime}"
+                    f"Index ({index_0}, {index_1}): objective = {obj}, entropy = {entropy}"
                 )
                 # w_mode = gin.query_parameter("WarehouseManager.w_mode")
 
@@ -286,6 +346,9 @@ def tile_usage_heatmap_from_qd(
                 visualize_kiva(repaired_env, ax=ax_map, dpi=300)
 
                 tile_usage = np.array(metadata["tile_usage"])
+                
+                # print("Std_tile_usage: ", metadata["tile_usage_mean"])
+                # print("Mean_tile_usage: ", metadata["tile_usage_std"])
                 env_h = gin.query_parameter("WarehouseManager.lvl_height")
                 env_w = gin.query_parameter("WarehouseManager.lvl_width")
                 # ADDITION_BLOCK_WIDTH = KIVA_WORKSTATION_BLOCK_WIDTH if w_mode \

@@ -14,7 +14,7 @@ experiment.name = 'Warehouse Generation'
 # Parameters for GridArchive:
 # ======================================================================================================================
 GridArchive.dims = [80, 80]
-GridArchive.ranges = [[0.0006, 0.0008], [3.05, 3.25]]
+GridArchive.ranges = [[0.0003, 0.0008], [0.0, 1.0]]
 
 # Parameters for downsample/GridArchive:
 # ======================================================================================================================
@@ -30,15 +30,15 @@ Manager.env_manager_class = @WarehouseManager
 Manager.initial_sols = 100
 Manager.inner_itrs = 10000
 Manager.is_em = False
-Manager.max_evals = 10000
+Manager.max_evals = 500
 Manager.plot_metrics_freq = 1
 Manager.reload_save_freq = 1
-Manager.sol_size = 1024
+Manager.sol_size = 1730
 
 # Need more exploration 
 # Parameters for MapElitesBaselineEmitter:
 # ======================================================================================================================
-MapElitesBaselineEmitter.batch_size = 20
+MapElitesBaselineEmitter.batch_size = 1
 MapElitesBaselineEmitter.geometric_k = True
 MapElitesBaselineEmitter.initial_population = 20
 # MapElitesBaselineEmitter.max_n_shelf = %max_n_shelf
@@ -50,7 +50,7 @@ MapElitesBaselineEmitter.num_objects = %num_objects
 # ======================================================================================================================
 # WarehouseEECBSConfig.agentNum=5                      #number of agents
 # WarehouseEECBSConfig.measure_names = ['n_shelf_components', 'all_task_len_mean']
-WarehouseEECBSConfig.measure_names = ['std_connectivity', 'avg_degrees']
+WarehouseEECBSConfig.measure_names = ['std_connectivity', 'avg_run_time']
 WarehouseEECBSConfig.aggregation_type = 'mean'
 WarehouseEECBSConfig.cutoffTime=5                #cutoff time (seconds)
 WarehouseEECBSConfig.screen=1                        #screen option (0: none; 1: results; 2:all)#
@@ -106,3 +106,14 @@ WarehouseManager.n_endpt = 2
 WarehouseManager.n_evals = 5
 WarehouseManager.num_objects = %num_objects
 WarehouseManager.w_mode = True
+
+WarehouseManager.is_nca = True
+WarehouseManager.nca_iter = 50 
+WarehouseManager.seed_env_path = 'maps/nca/eecbs_large_seed_block.json'
+
+# Parameters for WarehouseNCA:
+# ======================================================================================================================
+WarehouseNCA.kernel_size = 3
+WarehouseNCA.n_aux_chan = 0
+WarehouseNCA.n_hid_chan = 32
+WarehouseNCA.nc = 2

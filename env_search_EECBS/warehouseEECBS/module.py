@@ -18,10 +18,12 @@ import warehouse_sim_EECBS  # type: ignore # ignore pylance warning
 import numpy as np
 import multiprocessing
 import scipy
+import time
 
+from scipy.stats import entropy
 from typing import List
 from dataclasses import dataclass
-from itertools import repeat
+from itertools import repeat, product
 from typing import Collection, Optional
 from queue import Queue
 from typing import Collection
@@ -114,6 +116,7 @@ class WarehouseEECBSConfig:
     obj_type : str = gin.REQUIRED,
     use_warm_up : bool = gin.REQUIRED,
     hamming_only : bool = gin.REQUIRED,
+    # obj_name : str = gin.REQUIRED,
 
 
 class WarehouseModule:
@@ -400,15 +403,27 @@ class WarehouseModule:
 
         logger.info(f"Repaired Map: {map_id}: \n{format_env}")
 
-        n_shelf_components = calc_num_shelf_components(map_np_repaired)
-        logger.info(
-            f"Map ID {map_id}: Number of connected shelf components: {n_shelf_components}")
+        # Calculate layout entropy
+        start_entropy = time.time()
+        entropy = calc_layout_entropy(map_np_repaired)
+        logger.info(f"Map ID {map_id}: Layout entropy: {entropy}")
+        logger.info("cal_entropy done after %f sec", time.time() - start_entropy)
+
+
+        # start_components = time.time()
+        # n_shelf_components = calc_num_shelf_components(map_np_repaired)
+        # logger.info(
+        #     f"Map ID {map_id}: Number of connected shelf components: {n_shelf_components}")
+        # logger.info("cal_shelf_comp done after %f sec", time.time() - start_components)
 
         #Connectivity of the Graph (need for heatmap)
-        std_connectivity = cal_connectivity(map_np_repaired)
+        start_connectivity = time.time() 
+        std_connectivity,connectivity_graph = cal_connectivity(map_np_repaired)
+        logger.info("cal_shelf_comp done after %f sec", time.time() - start_connectivity) 
         #average degrees of all the grids in the Graph 
+        start_degree = time.time()  
         avg_degrees = cal_avg_degrees(map_np_repaired)
-
+        logger.info("cal_degree done after %f sec", time.time() - start_degree) 
 
         # Post process result if necessary
         tile_usage = np.array(collected_results.get("tile_usage"))
@@ -418,6 +433,7 @@ class WarehouseModule:
 
         # print("run_time in json: ",collected_results.get("runtime"))
         run_time = np.array(collected_results.get("runtime"))
+        avg_run_time = np.mean(run_time)
         # print("shape of run_time: ", run_time.shape)
 
         # print("solution_cost in json: ", collected_results.get("solution_cost"))
@@ -429,7 +445,8 @@ class WarehouseModule:
 
         average_suboptimality = np.mean(Suboptimality)
         # Get objective based on type
-        objs = -run_time
+        # objs = -entropy
+        objs = -entropy
         # if self.config.obj_type == "throughput":
         #     objs = np.array(collected_results.get("throughput"))
         # elif self.config.obj_type == "throughput_plus_n_shelf":
@@ -447,6 +464,7 @@ class WarehouseModule:
             objs=objs,
             # throughput=collected_results.get("throughput"),
             solution_cost=solution_cost,
+            avg_run_time=avg_run_time,
             map_int_unrepaired=map_comp_unrepaired,
             map_int=map_np_repaired,
             map_int_raw=map_np_unrepaired,
@@ -467,10 +485,12 @@ class WarehouseModule:
             # finished_len_std=np.mean(collected_results.get("finished_len_std")),
             # all_task_len_mean=None,                                                     #not used in process_eval_result
             # tasks_finished_timestep=tasks_finished_timestep,
-            n_shelf_components=n_shelf_components,
+            # n_shelf_components=n_shelf_components,
             average_suboptimality = average_suboptimality,
             std_connectivity = std_connectivity,
             avg_degrees = avg_degrees,
+            layout_entropy=entropy,
+            connectivity_graph = connectivity_graph,
         )
         result = WarehouseResult.from_raw(
             warehouse_metadata=metadata,
@@ -767,7 +787,7 @@ def cal_connectivity(repaired_env):
     # print("Connectivity_Std: ",connectivity_std)
     # print("Connectivity_Std before norm: ",before_norm)
 
-    return connectivity_std
+    return connectivity_std,connectivity_graph
 
 
 
@@ -977,7 +997,45 @@ def cal_avg_degrees(repaired_env):
 #         )
 #     return map_comp
 
+def calc_layout_entropy(map_np_repaired):
+    """
+    Calculate entropy of the storage area of the layout.
 
+    We first formulate the layout as a tile pattern distribution by following
+    Lucas, Simon M. M. and Vanessa Volz. “Tile pattern KL-divergence for
+    analysing and evolving game levels.” Proceedings of the Genetic and
+    Evolutionary Computation Conference (2019).
+
+    Then we calculate the entropy.
+    """
+    # Separate the storage area
+    h, w = map_np_repaired.shape
+    storage_area = map_np_repaired
+    # if w_mode:
+    #     storage_area = map_np_repaired[:,
+    #         KIVA_WORKSTATION_BLOCK_WIDTH:w-KIVA_WORKSTATION_BLOCK_WIDTH]
+    # else:
+    #     storage_area = map_np_repaired[
+    #         KIVA_ROBOT_BLOCK_WIDTH:h-KIVA_ROBOT_BLOCK_WIDTH,
+    #         KIVA_ROBOT_BLOCK_WIDTH:w-KIVA_ROBOT_BLOCK_WIDTH]
+
+    # Generate list of patterns (we use 2 x 2)
+    storage_obj_types = eecbs_obj_types[:2]
+    tile_patterns = {
+        "".join(x): 0 for x in product(storage_obj_types, repeat=4)
+    }
+
+    s_h, s_w = storage_area.shape
+    # Iterate over 2x2 blocks
+    for i in range(s_h - 1):
+        for j in range(s_w - 1):
+            curr_block = storage_area[i:i+2,j:j+2]
+            curr_pattern = "".join(eecbs_env_number2str(curr_block))
+            tile_patterns[curr_pattern] += 1
+    pattern_dist = list(tile_patterns.values())
+
+    # Use number of patterns as the base to bound the entropy to [0, 1]
+    return entropy(pattern_dist, base=len(pattern_dist))
 
 def single_simulation(seed, agent_num, kwargs, results_dir):
     kwargs["seed"] = int(seed)

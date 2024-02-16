@@ -4,6 +4,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 from env_search_EECBS import MAP_DIR
+import random
 
 
 # 4 object types for kiva map:
@@ -145,10 +146,15 @@ def flip_one_empty_to_s(env_np):
     Change one of 'emtpy' in the env to 's' for milp
     """
     all_empty = np.argwhere(env_np == eecbs_obj_types.index("."))
+    h,w = env_np.shape
     if len(all_empty) == 0:
-        raise ValueError("No '.' found")
-    to_replace = all_empty[0]
-    env_np[tuple(to_replace)] = eecbs_obj_types.index('s')
+        index_h = random.randint(0,h-1)
+        index_w = random.randint(0,w-1)
+        to_replace = (index_h,index_w)
+        env_np[tuple(to_replace)] = eecbs_obj_types.index('s')
+    else:
+        to_replace = all_empty[0]
+        env_np[tuple(to_replace)] = eecbs_obj_types.index('s')
     return env_np
 
 
@@ -169,3 +175,15 @@ def read_in_eecbs_map(map_filepath):
         raw_env = raw_env_json["layout"]
         name = raw_env_json["name"]
     return raw_env, name
+
+def n_params(model):
+    model_parameters = filter(lambda p: p.requires_grad, model.parameters())
+    params = sum([np.prod(p.size()) for p in model_parameters])
+
+    # params_ = 0
+    # state_dict = model.state_dict()
+    # for _, param in state_dict.items():
+    #     params_ += np.prod(param.shape)
+    # print("validate: ", params_)
+
+    return params

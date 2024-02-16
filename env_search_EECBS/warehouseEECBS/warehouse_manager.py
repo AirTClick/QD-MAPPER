@@ -6,8 +6,17 @@ from typing import List, Tuple
 import gin
 import numpy as np
 import copy
+
+import torch
+# import multiprocessing
+import torch.multiprocessing as multiprocessing
+
 from dask.distributed import Client
 from logdir import LogDir
+from tqdm import tqdm
+from itertools import repeat
+
+from env_search_EECBS.device import DEVICE
 
 # from env_search_EECBS.maze.agents.rl_agent import RLAgentConfig
 from env_search_EECBS.warehouseEECBS.emulation_model.buffer import Experience
@@ -22,15 +31,29 @@ from env_search_EECBS.warehouseEECBS.module import (WarehouseModule, WarehouseEE
 from env_search_EECBS.warehouseEECBS.run import (run_warehouse, repair_warehouse,
                                       process_warehouse_eval_result)
 from env_search_EECBS.utils.worker_state import init_warehouse_module
-
+from env_search_EECBS.warehouseEECBS.generator.nca_generator import WarehouseNCA
 from env_search_EECBS.utils import (kiva_obj_types, KIVA_ROBOT_BLOCK_WIDTH,
                               KIVA_WORKSTATION_BLOCK_WIDTH,
                               KIVA_ROBOT_BLOCK_HEIGHT, MIN_SCORE,
-                              kiva_env_number2str, format_env_str,
-                              read_in_kiva_map, flip_tiles)
+                              eecbs_env_number2str, format_env_str,
+                              read_in_eecbs_map, flip_tiles,
+                              eecbs_env_str2number)
 
 logger = logging.getLogger(__name__)
 
+def _nca_generate_one_slice_lvl(sols, seed_map_torch, nca_iter):
+    """Helper function to generate environments with NCA model
+    """
+    warehouseNCA = WarehouseNCA()
+    lvls = []
+    for sol in sols:
+        warehouseNCA.set_params(sol)
+        lvl, _ = warehouseNCA.generate(
+            seed_map_torch,
+            n_iter=nca_iter,
+        )
+        lvls.append(lvl)
+    return torch.cat(lvls)
 
 @gin.configurable(denylist=["client", "rng"])
 class WarehouseManager:
@@ -68,6 +91,11 @@ class WarehouseManager:
         max_n_shelf: int = gin.REQUIRED,
         max_n_obstacles :int = gin.REQUIRED,
         w_mode: bool = gin.REQUIRED,
+
+        is_nca: bool = gin.REQUIRED,
+        nca_iter: int = gin.REQUIRED,
+        seed_env_path: str = gin.REQUIRED,
+
         n_endpt: bool = gin.REQUIRED,
         agent_num: int = gin.REQUIRED,
     ):
@@ -78,6 +106,17 @@ class WarehouseManager:
         self.eval_batch_idx = 0  # index of each batch of evaluation
 
         self.logdir = logdir
+        #nca related
+        self.is_nca = is_nca
+        self.nca_iter = nca_iter
+        seed_map_str, _ = read_in_eecbs_map(seed_env_path)
+        seed_map_int = eecbs_env_str2number(seed_map_str)
+        self.seed_map_torch = torch.tensor(seed_map_int[np.newaxis, :, :],
+                                           # device=DEVICE,
+                                           )
+
+        if self.is_nca:
+            self.warehouseNCA = WarehouseNCA().to(DEVICE)
 
         self.lvl_width = lvl_width
         self.lvl_height = lvl_height
@@ -127,6 +166,11 @@ class WarehouseManager:
             Randomly generated solutions.
         """
         batch_size, solution_dim = size
+
+        # For NCA, initial solutions are parameters of NCA generators.
+        if self.is_nca:
+            return self.rng.normal(0, 100, size=size), None
+        
         if self.num_objects == 2:
             # If we know the exact number of shelves and we have one only
             # two objects (floor or shelf), we can generate solutions
@@ -171,6 +215,57 @@ class WarehouseManager:
     def em_train(self):
         self.emulation_model.train()
 
+    def _nca_generate_lvls(self, sols):
+        """Helper function to generate environments using NCA parameters.
+
+        Args:
+            sols: Emitted solutions.
+
+        Returns:
+            lvls: NCA generated environments.
+        """
+        # nca_start_time = time.time()
+        n_lvls = len(sols)
+
+        # Splitting into 5 workers empirically brings the optimal balance
+        # between the overhead of creating NCA model and parallelization of NCA
+        # generation
+        n_workers = min(5, n_lvls)
+        sols_split = np.array_split(sols, n_workers)
+        pool = multiprocessing.Pool(n_workers)
+        lvls = pool.starmap(
+            _nca_generate_one_slice_lvl,
+            zip(
+                sols_split,
+                repeat(self.seed_map_torch, n_workers),
+                repeat(self.nca_iter, n_workers),
+            ),
+        )
+        lvls = torch.cat(lvls)
+        # lvls = np.array(lvls).reshape(
+        #     (n_lvls, self.lvl_height, self.lvl_width)).astype(int)
+        # nca_time_lapsed = time.time() - nca_start_time
+        # logger.info(f"NCA takes {round(nca_time_lapsed, 3)} seconds")
+
+        ########## Single-process version ##########
+        # n_lvls = len(sols)
+        # nca_start_time = time.time()
+        # # warehouseNCA = WarehouseNCA()
+        # lvls = []
+        # # for i in tqdm(range(n_lvls)):
+        # for i in range(n_lvls):
+        #     self.warehouseNCA.set_params(sols[i])
+        #     lvl, _ = self.warehouseNCA.generate(
+        #         self.seed_map_torch,
+        #         n_iter=self.nca_iter,
+        #     )
+        #     lvls.append(lvl)
+        # lvls = torch.cat(lvls)
+        # nca_time_lapsed = time.time() - nca_start_time
+        # logger.info(f"NCA takes {round(nca_time_lapsed, 3)} seconds")
+        ########## Single-process version ##########
+        return lvls
+
     def emulation_pipeline(self, sols):
         """Pipeline that takes solutions and uses the emulation model to predict
         the objective and measures.
@@ -187,8 +282,13 @@ class WarehouseManager:
                 corresponding solution.
         """
         n_maps = len(sols)
-        maps = np.array(sols).reshape(
-            (n_maps, self.lvl_height, self.lvl_width)).astype(int)
+
+        # For NCA, use NCA model to generate actual lvls
+        if self.is_nca:
+            maps = self._nca_generate_lvls(sols)
+        else:
+            maps = np.array(sols).reshape(
+                (n_maps, self.lvl_height, self.lvl_width)).astype(int)
 
         # Add l and r block in a batched fashion
         ADDITION_BLOCK_WIDTH = KIVA_WORKSTATION_BLOCK_WIDTH if self.w_mode \
@@ -258,8 +358,16 @@ class WarehouseManager:
             Results of the evaluation.
         """
         n_lvls = len(sols)
-        lvls = np.array(sols).reshape(
-            (n_lvls, self.lvl_height, self.lvl_width)).astype(int)
+        # For NCA, use NCA model to generate actual lvls
+        if self.is_nca:
+            lvls = self._nca_generate_lvls(sols)
+            lvls = lvls.cpu().numpy()
+            # print("lvl: ", lvls.shape)  #32*32
+            # print("sols: ", sols.shape)  #1730 fit for nca
+            # breakpoint()
+        else:
+            lvls = np.array(sols).reshape(
+                (n_lvls, self.lvl_height, self.lvl_width)).astype(int)
 
         if parent_sols is not None:
             parent_lvls = np.array(parent_sols)

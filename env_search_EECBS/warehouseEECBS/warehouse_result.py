@@ -38,15 +38,19 @@ class WarehouseMetadata:
                                           # (unrepaired)
     map_int: np.ndarray = None  # Generated layout in integer (repaired)
     map_str: List[List[str]] = None
-    objs: np.ndarray = None  # Objectives
+    # objs: np.ndarray = None  # Objectives
+    objs: float = None
+    
 
     #FOR EECBS
-    run_time : List[float] = None
+    avg_run_time : float = None
     solution_cost : List[float] = None
     average_suboptimality: float = None
     std_connectivity: float = None
     avg_degrees: float = None
+    connectivity_graph: np.ndarray = None
 
+    layout_entropy: float = None
     #FOR RHCR
     throughput : List[float] = None # throughput of the simulation
 
@@ -126,12 +130,12 @@ class WarehouseResult:  # pylint: disable = too-many-instance-attributes
 
         opts.setdefault("aggregation", "mean")
 
-        if opts["aggregation"] == "mean":
-            agg_obj = maybe_mean(warehouse_metadata.objs)
-        elif opts["aggregation"] == "median":
-            agg_obj = maybe_median(warehouse_metadata.objs)
-        else:
-            raise ValueError(f"Unknown aggregation {opts['aggregation']}")
+        # if opts["aggregation"] == "mean":
+        #     agg_obj = maybe_mean(warehouse_metadata.objs)
+        # elif opts["aggregation"] == "median":
+        #     agg_obj = maybe_median(warehouse_metadata.objs)
+        # else:
+        #     raise ValueError(f"Unknown aggregation {opts['aggregation']}")
 
         agg_measures = WarehouseResult._obtain_measure_values(
             asdict(warehouse_metadata), opts["measure_names"])
@@ -139,7 +143,8 @@ class WarehouseResult:  # pylint: disable = too-many-instance-attributes
         # print("AGG_MEASURES: ", agg_measures)
         return WarehouseResult(
             warehouse_metadata=asdict(warehouse_metadata),
-            agg_obj=agg_obj,
+            # agg_obj=agg_obj,
+            agg_obj=warehouse_metadata.objs,
             agg_measures=agg_measures,
             # std_obj=maybe_std(objs, std_indices),
             # std_measure=maybe_std(measures, std_indices),
