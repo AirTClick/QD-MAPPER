@@ -247,7 +247,6 @@ def tile_usage_heatmap_from_qd(
         # Plot the "extreme" points in the archive
         # Choose the largest measure1 or measure2. If tie, choose the one with
         # larger objective.
-        # df.loc[df["index_0"]==df["index_0"].max()]["objective"].idxmax()
 
         index_0_max = df.loc[df["index_0"] ==
                              df["index_0"].max()]["objective"].idxmax()
@@ -258,11 +257,11 @@ def tile_usage_heatmap_from_qd(
         index_1_min = df.loc[df["index_1"] ==
                              df["index_1"].min()]["objective"].idxmax()
         
+        # find out 
         # print("index_0: ", df[df["behavior_0"]>0.0007])
         # print("index_1: ", df[(df["behavior_1"]<0.5) & (df["behavior_0"]>0.00065) & (df["objective"] > -2.5)])
         # print("index_1: ", df[(df["behavior_1"]>0.5) & (df["behavior_0"]>0.00065) & (df["objective"] < -5.0)])
         # print("index_1: ", df[(df["behavior_1"]<0.4) & (df["behavior_0"]<0.0004) & (df["objective"] < -2.5)])
-        # breakpoint()
         # print("index_1: ", df[df["behavior_1"]<0.5],"21,3","21,7","22,4","20,78","21,65","24,76")
         # print(df.loc[69]["objective"])
         # print(df.loc[df["index_1"] ==76]["objective"].idxmin())
@@ -280,13 +279,13 @@ def tile_usage_heatmap_from_qd(
             # 625 #high suboptimality, low runtime
 
             #entropy vs connectivity with obj = runtime, some interesting index
-            809, #high connectivity, < 0.5 environment entropy, relative low runtime
-            1187, #high connectivity, low environment entropy, high runtime
-            1226, #high connectivity, low environment entropy, high runtime
-            1066, #low connectivity, > 0.5 environment entropy, high runtime 
-            1418,   #low connectivity, > 0.5 environment entropy, low runtime 
-            328,
-            1476,
+            # 809, #high connectivity, < 0.5 environment entropy, relative low runtime
+            # 1187, #high connectivity, low environment entropy, high runtime
+            # 1226, #high connectivity, low environment entropy, high runtime
+            # 1066, #low connectivity, > 0.5 environment entropy, high runtime 
+            # 1418,   #low connectivity, > 0.5 environment entropy, low runtime 
+            # 328,
+            # 1476,
             index_0_max,
             index_0_min,
             index_1_max,
