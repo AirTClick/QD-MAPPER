@@ -7,7 +7,7 @@ from functools import partial
 
 from dask.distributed import get_worker
 
-from env_search.warehouse.module import WarehouseConfig, WarehouseModule
+from env_search_EECBS.warehouseEECBS.module import WarehouseEECBSConfig, WarehouseModule
 
 
 #
@@ -34,7 +34,7 @@ def get_worker_state(key: str) -> object:
 WAREHOUSE_MOD_ATTR = "warehouse_module"
 
 
-def init_warehouse_module(config: WarehouseConfig):
+def init_warehouse_module(config: WarehouseEECBSConfig):
     """Initializes this worker's warehouse module."""
     set_worker_state(WAREHOUSE_MOD_ATTR, WarehouseModule(config))
 

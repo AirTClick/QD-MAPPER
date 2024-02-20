@@ -1,7 +1,7 @@
 """Visualizes heatmaps from an experiment.
 
 Usage:
-    python env_search/analysis/throughput.py --logdirs_plot <log_dir_plot>
+    python env_search_EECBS/analysis/throughput.py --logdirs_plot <log_dir_plot>
 """
 import os
 import json
@@ -14,7 +14,7 @@ import numpy as np
 import yaml
 import scipy.stats as st
 
-from env_search.analysis.utils import get_color, algo_name_map
+from env_search_EECBS.analysis.utils import get_color, algo_name_map
 
 
 mpl.use("agg")

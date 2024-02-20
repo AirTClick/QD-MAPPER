@@ -1,4 +1,5 @@
 numpy==1.21.4
+numba==0.53.0
 tqdm
 fire==0.4.0
 gin-config==0.4.0

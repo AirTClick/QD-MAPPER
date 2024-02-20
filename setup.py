@@ -22,11 +22,11 @@ BOOST_LIB_DIR = "/usr/lib/x86_64-linux-gnu"
 
 ext_modules = [
     Pybind11Extension(
-        name="warehouse_sim",
+        name="warehouse_sim_EECBS",
         # os.listdir("RHCR/src"),
         # ["RHCR/src/WarehouseSimulation.cpp"],
-        sources=sorted(glob("RHCR/src/*.cpp")),
-        include_dirs = ["RHCR/inc", BOOST_INC_DIR], # -D<string>=<string>
+        sources=sorted(glob("EECBS/src/*.cpp")),
+        include_dirs = ["EECBS/inc", BOOST_INC_DIR], # -D<string>=<string>
         # Example: passing in the version to the compiled code
         define_macros = [('VERSION_INFO', __version__)], # -D<string>=<string>
         undef_macros=[],  # [string] -D<string>

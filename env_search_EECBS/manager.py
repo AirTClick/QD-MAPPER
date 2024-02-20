@@ -12,12 +12,12 @@ from dask.distributed import Client
 from logdir import LogDir
 from ribs.archives import ArchiveBase, Elite
 
-from env_search.archives import GridArchive
-from env_search.emitters import ImprovementEmitter, MapElitesBaselineEmitter, RandomEmitter
-from env_search.optimizers import Optimizer
-from env_search.utils.logging import worker_log
-from env_search.utils.metric_logger import MetricLogger
-from env_search.warehouse.warehouse_manager import WarehouseManager
+from env_search_EECBS.archives import GridArchive
+from env_search_EECBS.emitters import ImprovementEmitter, MapElitesBaselineEmitter, RandomEmitter
+from env_search_EECBS.optimizers import Optimizer
+from env_search_EECBS.utils.logging import worker_log
+from env_search_EECBS.utils.metric_logger import MetricLogger
+from env_search_EECBS.warehouseEECBS.warehouse_manager import WarehouseManager
 
 # Just to get rid of pylint warning about unused import (adding a comment after
 # each line above messes with formatting).
@@ -381,12 +381,12 @@ class Manager:  # pylint: disable = too-many-instance-attributes
         )
         self.metrics.add(
             "Best Objective",
-            np.max(objs),
+            np.max(objs),       #smaller, the better for runtime
             logger,
         )
         self.metrics.add(
             "Worst Objective",
-            np.min(objs),
+            np.min(objs),       #larger, the worse for runtime
             logger,
         )
         self.metrics.add(
@@ -427,6 +427,9 @@ class Manager:  # pylint: disable = too-many-instance-attributes
             emitter_seeds = self.rng.integers(np.iinfo(np.int32).max / 2,
                                               size=n_emitters,
                                               endpoint=True)
+
+            # print("initial_solution: ", initial_solution)
+            # breakpoint()
             emitters.extend([
                 emitter_class(archive, initial_solution, seed=s)
                 for s in emitter_seeds
@@ -568,7 +571,7 @@ class Manager:  # pylint: disable = too-many-instance-attributes
         logger.info("total_evals (old): %d", self.total_evals)
         self.total_evals += len(sols)
         logger.info("total_evals (new): %d", self.total_evals)
-
+        
         logger.info("Distributing evaluations")
 
         results = self.env_manager.eval_pipeline(
@@ -601,6 +604,8 @@ class Manager:  # pylint: disable = too-many-instance-attributes
                     measures.append(meas)
                     metadata.append(meta)
                     success_mask.append(True)
+                    # print("Measure above: ", measures)
+                    
             else:
                 failed_level_info = self.env_manager.add_failed_info(sol, r)
                 self.failed_levels.append(failed_level_info)
@@ -619,6 +624,15 @@ class Manager:  # pylint: disable = too-many-instance-attributes
                 measures.append(np.full(self.archive.behavior_dim, np.nan))
                 metadata.append(None)
                 success_mask.append(False)
+
+            # print("Objs_shape: ", len(objs))
+            # print("Objs: ", objs)
+            # print("Measures_shape: ", len(measures))
+            # print("Measures: ", measures)
+            # print("Dim, ", self.archive.behavior_dim)
+
+            #objs = objective_values
+            #behavior_values = measures
 
             self.optimizer.tell(
                 objs,

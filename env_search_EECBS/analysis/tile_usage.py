@@ -15,13 +15,11 @@ from tqdm import tqdm
 from logdir import LogDir
 from pathlib import Path
 from pprint import pprint
-from env_search.analysis.utils import load_experiment, load_metrics
-from env_search.analysis.visualize_env import visualize_kiva
-from env_search.utils.logging import setup_logging
-from env_search.mpl_styles.utils import mpl_style_file
-from env_search.utils import (set_spines_visible, KIVA_ROBOT_BLOCK_WIDTH,
-                              KIVA_WORKSTATION_BLOCK_WIDTH,
-                              KIVA_ROBOT_BLOCK_HEIGHT, kiva_env_number2str,
+from env_search_EECBS.analysis.utils import load_experiment, load_metrics
+from env_search_EECBS.analysis.visualize_env import visualize_kiva
+from env_search_EECBS.utils.logging import setup_logging
+from env_search_EECBS.mpl_styles.utils import mpl_style_file
+from env_search_EECBS.utils import (set_spines_visible,eecbs_env_str2number,
                               kiva_env_str2number, read_in_kiva_map)
 
 mpl.use("agg")
@@ -64,7 +62,7 @@ def plot_tile_usage(
         square=True,
         cmap="Reds",
         ax=ax_tile_use,
-        # cbar_ax=ax_tile_use_cbar,
+        cbar_ax=ax_tile_use_cbar,
         cbar=True,
         rasterized=False,
         annot_kws={"size": 30},
@@ -73,9 +71,9 @@ def plot_tile_usage(
         xticklabels=False,
         yticklabels=False,
         vmin=0,
-        vmax=get_tile_usage_vmax(env_h, env_w),
+        vmax=0.005,
         cbar_kws={
-            # "orientation": "horizontal",
+            "orientation": "horizontal",
             "shrink": 0.7,
         },
     )
@@ -86,8 +84,10 @@ def plot_tile_usage(
     set_spines_visible(ax_tile_use)
     ax_tile_use.figure.tight_layout()
 
+    # print(filenames)
     for filename in filenames:
         fig.savefig(logdir.file(filename), dpi=dpi)
+    # print("END")
 
 
 def get_figsize_qd(w_mode=True):
@@ -184,6 +184,61 @@ def tile_usage_heatmap_from_qd(
     df = pd.read_pickle(logdir.file(f"archive/archive_{gen}.pkl"))
     global_opt_env = None
 
+
+
+    # k= -np.array(df["objective"])
+    # std_c = np.array(df["behavior_0"]) 
+    # index_c_small = np.where(std_c < 0.00065)
+    # index_c_medium = np.where((std_c> 0.00065) & (std_c < 0.00075))
+    # index_c_high = np.where((std_c> 0.0006) & (std_c < 0.00075))
+    # np_c_small = k[index_c_small]
+    # np_c_m = k[index_c_medium]
+    # np_c_h = k[index_c_high] 
+    # print("Avg_runtime for std_connectivity < 0.00065: ",np.mean(np_c_small))
+    # print("std_runtime for std_connectivity < 0.00065: ",np.std(np_c_small))
+
+    # print("----------------------------------------------------\n")
+
+    # print("Avg_runtime for std_connectivity < 0.00075: ",np.mean(np_c_m))
+    # print("std_runtime for std_connectivity < 0.00075: ",np.std(np_c_m))
+
+    # print("----------------------------------------------------\n")
+
+    # print("Avg_runtime for std_connectivity > 0.00075: ",np.mean(np_c_h))
+    # print("std_runtime for std_connectivity > 0.00075: ",np.std(np_c_h))
+    
+
+
+
+    # std_e = np.array(df["behavior_1"]) 
+    # index_e_small = np.where(std_e < 3.15)
+    # index_e_medium = np.where(std_e >= 3.15)
+    # np_e_small = k[index_e_small]
+    # np_e_m = k[index_e_medium]
+    # print("Avg_runtime for avg_degrees < 3.15: ",np.mean(np_e_small))
+    # print("std_runtime for avg_degrees < 3.15: ",np.std(np_e_small))
+
+    # print("----------------------------------------------------\n")
+
+    # print("Avg_runtime for avg_degrees > 3.15: ",np.mean(np_e_m))
+    # print("std_runtime for avg_degrees > 3.15: ",np.std(np_e_m))
+
+
+    # regional = np.where( (df["behavior_0"]<0.00065) & (df["behavior_1"]<3.15))
+    # regional_bot_lef = k[regional]
+
+    # print("avg_runtime for avg_degrees < 3.15 & std_connectivity < 0.00065: ",np.mean(regional_bot_lef))
+
+    # breakpoint()
+    # print("Runtime: ", df["objective"])
+    # k = -np.array(df["objective"])
+    # print("std: ",np.std(k))
+    # print("Mean: ",np.mean(k))
+    # print(df["index_0"])
+    # print("----------------------")
+    # print(df["index_1"])
+
+    # breakpoint()
     if index_0 is not None and index_1 is not None:
         to_plots = df[(df["index_0"] == index_0) & (df["index_1"] == index_1)]
         if to_plots.empty:
@@ -192,7 +247,6 @@ def tile_usage_heatmap_from_qd(
         # Plot the "extreme" points in the archive
         # Choose the largest measure1 or measure2. If tie, choose the one with
         # larger objective.
-        # df.loc[df["index_0"]==df["index_0"].max()]["objective"].idxmax()
 
         index_0_max = df.loc[df["index_0"] ==
                              df["index_0"].max()]["objective"].idxmax()
@@ -202,17 +256,41 @@ def tile_usage_heatmap_from_qd(
                              df["index_1"].max()]["objective"].idxmax()
         index_1_min = df.loc[df["index_1"] ==
                              df["index_1"].min()]["objective"].idxmax()
-
+        
+        # find out 
+        # print("index_0: ", df[df["behavior_0"]>0.0007])
+        # print("index_1: ", df[(df["behavior_1"]<0.5) & (df["behavior_0"]>0.00065) & (df["objective"] > -2.5)])
+        # print("index_1: ", df[(df["behavior_1"]>0.5) & (df["behavior_0"]>0.00065) & (df["objective"] < -5.0)])
+        # print("index_1: ", df[(df["behavior_1"]<0.4) & (df["behavior_0"]<0.0004) & (df["objective"] < -2.5)])
+        # print("index_1: ", df[df["behavior_1"]<0.5],"21,3","21,7","22,4","20,78","21,65","24,76")
+        # print(df.loc[69]["objective"])
+        # print(df.loc[df["index_1"] ==76]["objective"].idxmin())
         # Add global optimal env
         global_opt = df["objective"].idxmax()
         global_opt_env = df.iloc[global_opt]["metadata"]["warehouse_metadata"][
             "map_str"]
         to_plots = df.iloc[[
+
+            #runtime vs suboptimality with obj = entropy, some interesting index
+            # df.loc[df["index_1"] ==76]["objective"].idxmin(), #high suboptimality, high runtime
+            # df.loc[df["index_0"] ==21]["objective"].idxmin(), #high suboptimality, high runtime
+            # df.loc[df["index_0"] ==21]["objective"].idxmax(), #high suboptimality, low runtime
+            # 69, #high suboptimality, low runtime
+            # 625 #high suboptimality, low runtime
+
+            #entropy vs connectivity with obj = runtime, some interesting index
+            # 809, #high connectivity, < 0.5 environment entropy, relative low runtime
+            # 1187, #high connectivity, low environment entropy, high runtime
+            # 1226, #high connectivity, low environment entropy, high runtime
+            # 1066, #low connectivity, > 0.5 environment entropy, high runtime 
+            # 1418,   #low connectivity, > 0.5 environment entropy, low runtime 
+            # 328,
+            # 1476,
             index_0_max,
             index_0_min,
             index_1_max,
             index_1_min,
-            global_opt,
+            # global_opt,
         ]]
     elif mode == "extreme-3D":
         # In 3D case, we fix the third dimension and plot the "extreme" points
@@ -261,19 +339,25 @@ def tile_usage_heatmap_from_qd(
             for _, to_plot in to_plots.iterrows():
                 index_0 = to_plot["index_0"]
                 index_1 = to_plot["index_1"]
-                obj = to_plot["objective"]
+                obj = -to_plot["objective"]
                 metadata = to_plot["metadata"]["warehouse_metadata"]
-                throughput = np.mean(metadata["throughput"])
+                #runtime is stored as objs in warehouse_metadata
+                print("suboptimality: ", metadata["average_suboptimality"])
+                print("Connectivity: ", metadata["std_connectivity"])
+                print("avg_degrees: ",metadata["avg_degrees"])
+                runtime = np.mean(metadata["avg_run_time"])
+                entropy = metadata["layout_entropy"]
                 print(
-                    f"Index ({index_0}, {index_1}): objective = {obj}, throughput = {throughput}"
+                    f"Index ({index_0}, {index_1}): objective = {obj}, entropy = {entropy}"
                 )
-                w_mode = gin.query_parameter("WarehouseManager.w_mode")
+                # w_mode = gin.query_parameter("WarehouseManager.w_mode")
 
                 grid_kws = {"height_ratios": (0.475, 0.475, 0.05)}
                 fig, (ax_map, ax_tile_use, ax_tile_use_cbar) = plt.subplots(
                     3,
                     1,
-                    figsize=get_figsize_qd(w_mode),
+                    # figsize=get_figsize_qd(w_mode),
+                    figsize = (8,16),
                     gridspec_kw=grid_kws,
                 )
 
@@ -281,23 +365,30 @@ def tile_usage_heatmap_from_qd(
                 repaired_env_str = metadata["map_str"]
                 print("\n".join(repaired_env_str))
                 print()
-                repaired_env = kiva_env_str2number(repaired_env_str)
+                repaired_env = eecbs_env_str2number(repaired_env_str)
                 visualize_kiva(repaired_env, ax=ax_map, dpi=300)
 
                 tile_usage = np.array(metadata["tile_usage"])
+                
+                # print("Std_tile_usage: ", metadata["tile_usage_mean"])
+                # print("Mean_tile_usage: ", metadata["tile_usage_std"])
+                run_time_Test = metadata["objs"]
+                print("Runtime:",metadata["objs"])
+                print("Std_runtime: ", np.std(run_time_Test))
+
                 env_h = gin.query_parameter("WarehouseManager.lvl_height")
                 env_w = gin.query_parameter("WarehouseManager.lvl_width")
-                ADDITION_BLOCK_WIDTH = KIVA_WORKSTATION_BLOCK_WIDTH if w_mode \
-                                       else KIVA_ROBOT_BLOCK_WIDTH
-                ADDITION_BLOCK_HEIGHT = 0 if w_mode else KIVA_ROBOT_BLOCK_HEIGHT
-                env_w += 2 * ADDITION_BLOCK_WIDTH
-                env_h += 2 * ADDITION_BLOCK_HEIGHT
+                # ADDITION_BLOCK_WIDTH = KIVA_WORKSTATION_BLOCK_WIDTH if w_mode \
+                #                        else KIVA_ROBOT_BLOCK_WIDTH
+                # ADDITION_BLOCK_HEIGHT = 0 if w_mode else KIVA_ROBOT_BLOCK_HEIGHT
+                # env_w += 2 * ADDITION_BLOCK_WIDTH
+                # env_h += 2 * ADDITION_BLOCK_HEIGHT
                 if len(tile_usage.shape) == 2:
                     tile_usage = tile_usage[np.newaxis, ...]
 
                 # mkdir for tileusage
                 tile_usage_dir = logdir.dir("tile_usages")
-
+                print(tile_usage.shape)
                 for i in range(tile_usage.shape[0]):
                     curr_tile_usage = tile_usage[i]
                     plot_tile_usage(

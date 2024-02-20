@@ -1,6 +1,6 @@
-# Multi-Robot Coordination and Layout Design for Automated Warehousing
+# A Quality Diversity Approach to Automatically Generate Multi-Agent Path Finding Benchmark Maps 
 
-This repository is the official implementation of **[Multi-Robot Coordination and Layout Design for Automated Warehousing](https://arxiv.org/abs/2305.06436)** published in IJCAI 2023. The repository builds on top of the repositories of [Deep Surrogate Assisted Generation of Environment (DSAGE)](https://github.com/icaros-usc/dsage) and [Rolling-Horizon Collision Resolution (RHCR)](https://github.com/Jiaoyang-Li/RHCR).
+This repository is the official implementation of **[A Quality Diversity Approach to Automatically Generate Multi-Agent Path Finding Benchmark Maps]**. The repository builds on top of the repositories of [Multi-Robot Coordination and Layout Design for Automated Warehousing](https://github.com/lunjohnzhang/warehouse_env_gen_public) and [EECBS: Bounded-Suboptimal Search for Multi-Agent Path Finding](https://github.com/Jiaoyang-Li/EECBS).
 
 ## Installation
 
@@ -79,19 +79,19 @@ following files:
 To run one experiment locally, use:
 
 ```bash
-bash scripts/run_local.sh CONFIG SEED NUM_WORKERS
+bash scripts/run_local_EECBS.sh CONFIG SEED NUM_WORKERS
 ```
 
 For instance, with 4 workers:
 
 ```bash
-bash scripts/run_local.sh config/foo.gin 42 4
+bash scripts/run_local_EECBS.sh config/warehouse/CMA-ME_small_EECBS.gin 42 4
 ```
 
 `CONFIG` is the [gin](https://github.com/google/gin-config) experiment config
-for `env_search/main.py`.
+for `env_search_EECBS/main.py`.
 
-### Running on Slurm
+<!-- ### Running on Slurm
 
 Use the following command to run an experiment on an HPC with Slurm (and
 Singularity) installed:
@@ -104,9 +104,9 @@ For example:
 
 ```bash
 bash scripts/run_slurm.sh config/foo.gin 42 config/hpc/test.sh
-```
+``` -->
 
-`CONFIG` is the experiment config for `env_search/main.py`, and `HPC_CONFIG` is a shell
+<!-- `CONFIG` is the experiment config for `env_search/main.py`, and `HPC_CONFIG` is a shell
 file that is sourced by the script to provide configuration for the Slurm
 cluster. See `config/hpc` for example files.
 
@@ -114,7 +114,7 @@ Once the script has run, it will output commands like the following:
 
 - `tail -f ...` - You can use this to monitor stdout and stderr of the main
   experiment script. Run it.
-- `bash scripts/slurm_cancel.sh ...` - This will cancel the job.
+- `bash scripts/slurm_cancel.sh ...` - This will cancel the job. -->
 
 ### Reloading
 
@@ -129,15 +129,15 @@ bash scripts/run_slurm.sh config/foo.gin 42 config/hpc/test.sh -r logs/.../
 ```
 
 The experiment will then run to completion in the same logging directory. This
-works with `scripts/run_local.sh` too.
+works with `scripts/run_local_EECBS.sh` too.
 
 ## Reproducing Paper Results
 
 The `config/` directory contains the config files required to run the experiments shown in the paper.
 
-| Config file                                                      | QD Search Experiment                      |
-| ---------------------------------------------------------------- | ----------------------------------------- |
-| config/warehouse/DSAGE_home-location_scenario_DPP.gin            | DSAGE + DPP in home-location              |
+| Config file                                                      | Objective                      |                                     Measures |
+| ---------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------- | 
+<!-- | config/warehouse/DSAGE_home-location_scenario_DPP.gin            | DSAGE + DPP in home-location              |
 | config/warehouse/DSAGE_home-location_scenario_RHCR_40_agents.gin | DSAGE + RHCR (40 agents) in home-location |
 | config/warehouse/DSAGE_home-location_scenario_RHCR_60_agents.gin | DSAGE + RHCR (60 agents) in home-location |
 | config/warehouse/DSAGE_home-location_scenario_RHCR_88_agents.gin | DSAGE + RHCR (88 agents) in home-location |
@@ -148,4 +148,5 @@ The `config/` directory contains the config files required to run the experiment
 | config/warehouse/DSAGE_large_workstation_scenario_RHCR.gin       | DSAGE + RHCR in large workstation         |
 | config/warehouse/MAP-Elites_small_workstation_scenario_RHCR.gin  | MAP-Elites + RHCR in small workstation    |
 | config/warehouse/MAP-Elites_medium_workstation_scenario_RHCR.gin | MAP-Elites + RHCR in medium workstation   |
-| config/warehouse/MAP-Elites_large_workstation_scenario_RHCR.gin  | MAP-Elites + RHCR in large workstation    |
+| config/warehouse/MAP-Elites_large_workstation_scenario_RHCR.gin  | MAP-Elites + RHCR in large workstation    | -->
+| config/warehouse/CMA-ME_small_EECBS.gin          | Map Entropy         | std_connectivity & avg_run_time      |

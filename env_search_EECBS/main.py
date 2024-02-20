@@ -14,8 +14,8 @@ from logdir import LogDir
 from typing import Optional, Union
 from dask.distributed import Client
 from dask_jobqueue import SLURMCluster
-from env_search.manager import Manager
-from env_search.utils.logging import setup_logging
+from env_search_EECBS.manager import Manager
+from env_search_EECBS.utils.logging import setup_logging
 from dask import config as cfg
 
 cfg.set({'distributed.scheduler.worker-ttl': None})

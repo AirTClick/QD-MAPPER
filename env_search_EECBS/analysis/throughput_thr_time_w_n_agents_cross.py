@@ -4,9 +4,9 @@ import fire
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-from env_search.analysis.throughput_vs_n_agents_cross import throughput_vs_n_agents_cross
+from env_search_EECBS.analysis.throughput_vs_n_agents_cross import throughput_vs_n_agents_cross
 
-from env_search.analysis.throughput_thr_time_cross import throughput_thr_time_cross
+from env_search_EECBS.analysis.throughput_thr_time_cross import throughput_thr_time_cross
 
 mpl.use("agg")
 

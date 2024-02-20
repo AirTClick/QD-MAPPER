@@ -25,7 +25,7 @@ fi
 if [ "${MODE}" = "constant" ]
 then
     singularity exec --cleanenv singularity/ubuntu_warehouse.sif \
-    python env_search/warehouse/module.py \
+    python env_search/warehouseEECBS/module.py \
         --warehouse-config "$SIM_CONFIG" \
         --map-filepath "$MAP_FILE" \
         --agent-num "$AGENT_NUM" \

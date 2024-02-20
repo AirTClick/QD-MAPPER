@@ -13,13 +13,13 @@ import pickle as pkl
 
 from loguru import logger
 
-from env_search.device import DEVICE
-from env_search.warehouse.emulation_model.emulation_model import WarehouseEmulationModel
-from env_search.analysis.utils import load_archive_gen, load_experiment, load_metrics
-from env_search.utils import kiva_env_str2number, flip_tiles
-from env_search.mpl_styles.utils import mpl_style_file
-from env_search.analysis.visualize_env import visualize_kiva
-from env_search.analysis.tile_usage import get_figsize_qd, plot_tile_usage
+from env_search_EECBS.device import DEVICE
+from env_search_EECBS.warehouseEECBS.emulation_model.emulation_model import WarehouseEmulationModel
+from env_search_EECBS.analysis.utils import load_archive_gen, load_experiment, load_metrics
+from env_search_EECBS.utils import kiva_env_str2number, flip_tiles
+from env_search_EECBS.mpl_styles.utils import mpl_style_file
+from env_search_EECBS.analysis.visualize_env import visualize_kiva
+from env_search_EECBS.analysis.tile_usage import get_figsize_qd, plot_tile_usage
 
 
 def main(

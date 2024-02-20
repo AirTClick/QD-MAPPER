@@ -1,7 +1,7 @@
 """Visualizes heatmaps from an experiment.
 
 Usage:
-    python -m env_search.analysis.heatmap -l LOGDIR
+    python -m env_search_EECBS.analysis.heatmap -l LOGDIR
 """
 import os
 import shutil
@@ -12,11 +12,11 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import ribs.visualize
-from env_search.archives import GridArchive
+from env_search_EECBS.archives import GridArchive
 from loguru import logger
 
-from env_search.analysis.utils import load_archive_gen, load_experiment, load_metrics, load_surrogate_archive, grid_archive_heatmap
-from env_search.mpl_styles.utils import mpl_style_file
+from env_search_EECBS.analysis.utils import load_archive_gen, load_experiment, load_metrics, load_surrogate_archive, grid_archive_heatmap
+from env_search_EECBS.mpl_styles.utils import mpl_style_file
 
 mpl.use("agg")
 
@@ -29,9 +29,14 @@ plt.rcParams.update({
 MEASURE_NAMES = {
     "n_shelf": "Number of shelves",
     "tile_usage_std": "Tile usage std",
-    "num_wait_mean": "Avg number of wait",
-    "all_task_len_mean": "Mean task length",
+    # "num_wait_mean": "Avg number of wait",
+    # "all_task_len_mean": "Mean task length",
     "n_shelf_components": "Number of shelf components",
+    "average_suboptimality" : "Average of Suboptimality",
+    "std_connectivity" : "std of connectivity",
+    "avg_degrees" : "average of degrees",
+    "avg_run_time" : "average run time",
+    "layout_entropy" : "Map entropy"
 }
 
 
@@ -46,6 +51,7 @@ def plot_generation_on_axis(
 ):
     # pylint: disable = unused-argument
     archive = load_archive_gen(logdir, gen)
+    print(archive.as_pandas())
     grid_archive_heatmap(
         archive,
         ax,
@@ -87,7 +93,7 @@ def post_process_figure(ax, fig, kiva, heatmap_only):
         else:
             sol_sim = gin.query_parameter("Manager.sol_size")
 
-            measure_names = gin.query_parameter("WarehouseConfig.measure_names")
+            measure_names = gin.query_parameter("WarehouseEECBSConfig.measure_names")
             ax.set_ylabel(MEASURE_NAMES[measure_names[0]], fontsize=26)
             ax.set_xlabel(MEASURE_NAMES[measure_names[1]], fontsize=26)
 
@@ -181,7 +187,7 @@ def plot_generation_3D(mode, logdir, gen, plot_kwargs, filenames, kiva):
                 figsize = (6 * dim_z, 5.5)
                 height_ratios = ([0.03, 0.87, 0.08])
                 measure_names = gin.query_parameter(
-                    "WarehouseConfig.measure_names")
+                    "WarehouseEECBSConfig.measure_names")
             fig = plt.figure(figsize=figsize)
             spec = fig.add_gridspec(ncols=dim_z,
                                     nrows=3,
@@ -335,7 +341,7 @@ def heatmap(logdir: str,
         #     vmax += 1.5
 
     vmin = 0
-    vmax = 7
+    vmax = 1
 
     # Plotting arguments for grid_archive_heatmap.
     plot_kwargs = {
