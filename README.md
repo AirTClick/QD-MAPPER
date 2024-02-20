@@ -125,11 +125,11 @@ experiment. To do so, execute the same command as before, but append the path to
 the logging directory of the failed experiment.
 
 ```bash
-bash scripts/run_slurm.sh config/foo.gin 42 config/hpc/test.sh -r logs/.../
+bash scripts/run_local_EECBS.sh.sh config/foo.gin 42 config/hpc/test.sh -r logs/.../
 ```
-
+<!-- 
 The experiment will then run to completion in the same logging directory. This
-works with `scripts/run_local_EECBS.sh` too.
+works with `scripts/run_local_EECBS.sh` too. -->
 
 ## Reproducing Paper Results
 
