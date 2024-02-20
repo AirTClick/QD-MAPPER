@@ -149,4 +149,4 @@ The `config/` directory contains the config files required to run the experiment
 | config/warehouse/MAP-Elites_small_workstation_scenario_RHCR.gin  | MAP-Elites + RHCR in small workstation    |
 | config/warehouse/MAP-Elites_medium_workstation_scenario_RHCR.gin | MAP-Elites + RHCR in medium workstation   |
 | config/warehouse/MAP-Elites_large_workstation_scenario_RHCR.gin  | MAP-Elites + RHCR in large workstation    | -->
-| config/warehouse/CMA-ME_small_EECBS.gin          | Map Entropy         | std_connectivity & avg_run_time
+| config/warehouse/CMA-ME_small_EECBS.gin          | Map Entropy         | std_connectivity & avg_run_time|
