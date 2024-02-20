@@ -46,7 +46,7 @@ class WarehouseMetadata:
     avg_run_time : float = None
     solution_cost : List[float] = None
     average_suboptimality: float = None
-    std_connectivity: float = None
+    std_BC: float = None
     avg_degrees: float = None
     connectivity_graph: np.ndarray = None
 

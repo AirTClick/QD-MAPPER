@@ -418,7 +418,7 @@ class WarehouseModule:
 
         #Connectivity of the Graph (need for heatmap)
         start_connectivity = time.time() 
-        std_connectivity,connectivity_graph = cal_connectivity(map_np_repaired)
+        std_BC,connectivity_graph = cal_connectivity(map_np_repaired)
         logger.info("cal_shelf_comp done after %f sec", time.time() - start_connectivity) 
         #average degrees of all the grids in the Graph 
         start_degree = time.time()  
@@ -487,7 +487,7 @@ class WarehouseModule:
             # tasks_finished_timestep=tasks_finished_timestep,
             # n_shelf_components=n_shelf_components,
             average_suboptimality = average_suboptimality,
-            std_connectivity = std_connectivity,
+            std_BC = std_BC,
             avg_degrees = avg_degrees,
             layout_entropy=entropy,
             connectivity_graph = connectivity_graph,

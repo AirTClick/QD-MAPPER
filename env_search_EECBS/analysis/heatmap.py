@@ -33,7 +33,7 @@ MEASURE_NAMES = {
     # "all_task_len_mean": "Mean task length",
     "n_shelf_components": "Number of shelf components",
     "average_suboptimality" : "Average of Suboptimality",
-    "std_connectivity" : "std of connectivity",
+    "std_BC" : "std of Betweenness Centrality",
     "avg_degrees" : "average of degrees",
     "avg_run_time" : "average run time",
     "layout_entropy" : "Map entropy"
