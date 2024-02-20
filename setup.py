@@ -48,8 +48,8 @@ ParallelCompile("NPY_NUM_BUILD_JOBS").install()
 setup(
     name="warehouse_env_gen",
     version=__version__,
-    author="Yulun Zhang",
-    author_email="yulunz@andrew.cmu.edu",
+    author="Anonymous",
+    author_email="Anonymous@email.com",
     ext_modules=ext_modules,
     extras_require={"test": "pytest"},
     # Currently, build_ext only provides an optional "highest supported C++
