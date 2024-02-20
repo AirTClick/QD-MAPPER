@@ -1,6 +1,6 @@
-# Multi-Robot Coordination and Layout Design for Automated Warehousing
+# A Quality Diversity Approach to Automatically Generate Multi-Agent Path Finding Benchmark Maps 
 
-This repository is the official implementation of **[Multi-Robot Coordination and Layout Design for Automated Warehousing](https://arxiv.org/abs/2305.06436)** published in IJCAI 2023. The repository builds on top of the repositories of [Deep Surrogate Assisted Generation of Environment (DSAGE)](https://github.com/icaros-usc/dsage) and [Rolling-Horizon Collision Resolution (RHCR)](https://github.com/Jiaoyang-Li/RHCR).
+This repository is the official implementation of **[A Quality Diversity Approach to Automatically Generate Multi-Agent Path Finding Benchmark Maps]**. The repository builds on top of the repositories of [Multi-Robot Coordination and Layout Design for Automated Warehousing](https://github.com/lunjohnzhang/warehouse_env_gen_public) and [EECBS: Bounded-Suboptimal Search for Multi-Agent Path Finding](https://github.com/Jiaoyang-Li/EECBS).
 
 ## Installation
 

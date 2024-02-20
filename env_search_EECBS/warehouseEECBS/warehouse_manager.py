@@ -6,6 +6,7 @@ from typing import List, Tuple
 import gin
 import numpy as np
 import copy
+import time
 
 import torch
 # import multiprocessing
@@ -225,42 +226,46 @@ class WarehouseManager:
             lvls: NCA generated environments.
         """
         # nca_start_time = time.time()
-        n_lvls = len(sols)
 
-        # Splitting into 5 workers empirically brings the optimal balance
-        # between the overhead of creating NCA model and parallelization of NCA
-        # generation
-        n_workers = min(5, n_lvls)
-        sols_split = np.array_split(sols, n_workers)
-        pool = multiprocessing.Pool(n_workers)
-        lvls = pool.starmap(
-            _nca_generate_one_slice_lvl,
-            zip(
-                sols_split,
-                repeat(self.seed_map_torch, n_workers),
-                repeat(self.nca_iter, n_workers),
-            ),
-        )
-        lvls = torch.cat(lvls)
+
+        # n_lvls = len(sols)
+
+        # # Splitting into 5 workers empirically brings the optimal balance
+        # # between the overhead of creating NCA model and parallelization of NCA
+        # # generation
+        # n_workers = min(5, n_lvls)
+        # sols_split = np.array_split(sols, n_workers)
+        # pool = multiprocessing.Pool(n_workers)
+        # lvls = pool.starmap(
+        #     _nca_generate_one_slice_lvl,
+        #     zip(
+        #         sols_split,
+        #         repeat(self.seed_map_torch, n_workers),
+        #         repeat(self.nca_iter, n_workers),
+        #     ),
+        # )
+        # lvls = torch.cat(lvls)
+
+
         # lvls = np.array(lvls).reshape(
         #     (n_lvls, self.lvl_height, self.lvl_width)).astype(int)
         # nca_time_lapsed = time.time() - nca_start_time
         # logger.info(f"NCA takes {round(nca_time_lapsed, 3)} seconds")
 
         ########## Single-process version ##########
-        # n_lvls = len(sols)
+        n_lvls = len(sols)
         # nca_start_time = time.time()
-        # # warehouseNCA = WarehouseNCA()
-        # lvls = []
-        # # for i in tqdm(range(n_lvls)):
-        # for i in range(n_lvls):
-        #     self.warehouseNCA.set_params(sols[i])
-        #     lvl, _ = self.warehouseNCA.generate(
-        #         self.seed_map_torch,
-        #         n_iter=self.nca_iter,
-        #     )
-        #     lvls.append(lvl)
-        # lvls = torch.cat(lvls)
+        # warehouseNCA = WarehouseNCA()
+        lvls = []
+        # for i in tqdm(range(n_lvls)):
+        for i in range(n_lvls):
+            self.warehouseNCA.set_params(sols[i])
+            lvl, _ = self.warehouseNCA.generate(
+                self.seed_map_torch,
+                n_iter=self.nca_iter,
+            )
+            lvls.append(lvl)
+        lvls = torch.cat(lvls)
         # nca_time_lapsed = time.time() - nca_start_time
         # logger.info(f"NCA takes {round(nca_time_lapsed, 3)} seconds")
         ########## Single-process version ##########
@@ -360,6 +365,7 @@ class WarehouseManager:
         n_lvls = len(sols)
         # For NCA, use NCA model to generate actual lvls
         if self.is_nca:
+            # start_time = time.time() 
             lvls = self._nca_generate_lvls(sols)
             lvls = lvls.cpu().numpy()
             # print("lvl: ", lvls.shape)  #32*32
@@ -369,6 +375,9 @@ class WarehouseManager:
             lvls = np.array(sols).reshape(
                 (n_lvls, self.lvl_height, self.lvl_width)).astype(int)
 
+        # logger.info("nca done after %f sec", time.time() - start_time)
+
+        # breakpoint()
         if parent_sols is not None:
             parent_lvls = np.array(parent_sols)
         else:

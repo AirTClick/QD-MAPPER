@@ -1053,7 +1053,7 @@ def single_simulation(seed, agent_num, kwargs, results_dir):
     
     result_json = json.loads(result_jsonstr)
 
-    solution_cost = result_json["solution_cost"]
+    solution_cost = result_json["runtime"]
 
     # print("Tile_usage_shape: ", len(result_json["tile_usage"]))
 
@@ -1173,7 +1173,7 @@ def main(
     #         kwargs["planning_window"] = planning_window
     # except ValueError:
     #     pass
-
+    n_success = 0
     n_workers = 32
     pool = multiprocessing.Pool(n_workers)
     if mode == "inc_agents":
@@ -1202,15 +1202,23 @@ def main(
                 repeat(results_dir, n_evals)),
         )
 
+    # n_failure = np.array(solution_cost) > 5
+    # n_success = 400 - np.sum(n_failure)
+    
     avg_obj = np.mean(solution_cost)
+    std_obj = np.std(solution_cost)
     max_obj = np.max(solution_cost)
     min_obj = np.min(solution_cost)
 
     n_evals = n_evals * n_sim if mode == "inc_agents" else n_evals
 
-    print(f"Average Solution Cost over {n_evals} simulations: {avg_obj}")
-    print(f"Max Solution Cost over {n_evals} simulations: {max_obj}")
-    print(f"Min Solution cost over {n_evals} simulations: {min_obj}")
+    # print(f"Number of success simulations: {n_success}")
+    
+
+    print(f"Average Runtime over {n_evals} simulations: {avg_obj}")
+    print(f"Std Runtime over {n_evals} simulations: {std_obj}")
+    print(f"Max Runtime over {n_evals} simulations: {max_obj}")
+    print(f"Min Runtime over {n_evals} simulations: {min_obj}")
 
 
 

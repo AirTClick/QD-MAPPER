@@ -182,6 +182,7 @@ int main(int argc, char** argv)
             cout << "Failed to find solutions in Run " << i << endl;
         }
         ecbs.runtime = runtime;
+		// print("Runtime: ",runtime)
 		double suboptimality = ecbs.cal_suboptimality(instance,ecbs.solution_cost);
 		// if (runtime >= 5.0)
 		// {

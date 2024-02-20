@@ -36,7 +36,7 @@ MEASURE_NAMES = {
     "std_connectivity" : "std of connectivity",
     "avg_degrees" : "average of degrees",
     "avg_run_time" : "average run time",
-    "layout_entropy" : "Environment entropy"
+    "layout_entropy" : "Map entropy"
 }
 
 
@@ -341,7 +341,7 @@ def heatmap(logdir: str,
         #     vmax += 1.5
 
     vmin = 0
-    vmax = 5
+    vmax = 1
 
     # Plotting arguments for grid_archive_heatmap.
     plot_kwargs = {

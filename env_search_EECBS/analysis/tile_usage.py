@@ -258,16 +258,40 @@ def tile_usage_heatmap_from_qd(
         index_1_min = df.loc[df["index_1"] ==
                              df["index_1"].min()]["objective"].idxmax()
         
+        # print("index_0: ", df[df["behavior_0"]>0.0007])
+        # print("index_1: ", df[(df["behavior_1"]<0.5) & (df["behavior_0"]>0.00065) & (df["objective"] > -2.5)])
+        # print("index_1: ", df[(df["behavior_1"]>0.5) & (df["behavior_0"]>0.00065) & (df["objective"] < -5.0)])
+        # print("index_1: ", df[(df["behavior_1"]<0.4) & (df["behavior_0"]<0.0004) & (df["objective"] < -2.5)])
+        # breakpoint()
+        # print("index_1: ", df[df["behavior_1"]<0.5],"21,3","21,7","22,4","20,78","21,65","24,76")
+        # print(df.loc[69]["objective"])
+        # print(df.loc[df["index_1"] ==76]["objective"].idxmin())
         # Add global optimal env
         global_opt = df["objective"].idxmax()
         global_opt_env = df.iloc[global_opt]["metadata"]["warehouse_metadata"][
             "map_str"]
         to_plots = df.iloc[[
+
+            #runtime vs suboptimality with obj = entropy, some interesting index
+            # df.loc[df["index_1"] ==76]["objective"].idxmin(), #high suboptimality, high runtime
+            # df.loc[df["index_0"] ==21]["objective"].idxmin(), #high suboptimality, high runtime
+            # df.loc[df["index_0"] ==21]["objective"].idxmax(), #high suboptimality, low runtime
+            # 69, #high suboptimality, low runtime
+            # 625 #high suboptimality, low runtime
+
+            #entropy vs connectivity with obj = runtime, some interesting index
+            809, #high connectivity, < 0.5 environment entropy, relative low runtime
+            1187, #high connectivity, low environment entropy, high runtime
+            1226, #high connectivity, low environment entropy, high runtime
+            1066, #low connectivity, > 0.5 environment entropy, high runtime 
+            1418,   #low connectivity, > 0.5 environment entropy, low runtime 
+            328,
+            1476,
             index_0_max,
             index_0_min,
             index_1_max,
             index_1_min,
-            global_opt,
+            # global_opt,
         ]]
     elif mode == "extreme-3D":
         # In 3D case, we fix the third dimension and plot the "extreme" points
@@ -319,7 +343,7 @@ def tile_usage_heatmap_from_qd(
                 obj = -to_plot["objective"]
                 metadata = to_plot["metadata"]["warehouse_metadata"]
                 #runtime is stored as objs in warehouse_metadata
-                print(metadata["average_suboptimality"])
+                print("suboptimality: ", metadata["average_suboptimality"])
                 print("Connectivity: ", metadata["std_connectivity"])
                 print("avg_degrees: ",metadata["avg_degrees"])
                 runtime = np.mean(metadata["avg_run_time"])
@@ -349,6 +373,10 @@ def tile_usage_heatmap_from_qd(
                 
                 # print("Std_tile_usage: ", metadata["tile_usage_mean"])
                 # print("Mean_tile_usage: ", metadata["tile_usage_std"])
+                run_time_Test = metadata["objs"]
+                print("Runtime:",metadata["objs"])
+                print("Std_runtime: ", np.std(run_time_Test))
+
                 env_h = gin.query_parameter("WarehouseManager.lvl_height")
                 env_w = gin.query_parameter("WarehouseManager.lvl_width")
                 # ADDITION_BLOCK_WIDTH = KIVA_WORKSTATION_BLOCK_WIDTH if w_mode \

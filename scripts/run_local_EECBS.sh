@@ -104,7 +104,7 @@ print_header "Running experiment"
 echo
 print_thick_line
 # shellcheck disable=SC2086
-singularity exec ${SINGULARITY_OPTS} --nv singularity/ubuntu_warehouse.sif \
+singularity exec ${SINGULARITY_OPTS} singularity/ubuntu_warehouse.sif \
   python env_search_EECBS/main.py \
     --config "$CONFIG" \
     --address "127.0.0.1:$SCHEDULER_PORT" \
