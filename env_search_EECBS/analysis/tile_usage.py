@@ -223,10 +223,6 @@ def tile_usage_heatmap_from_qd(
     # print("Avg_runtime for avg_degrees > 3.15: ",np.mean(np_e_m))
     # print("std_runtime for avg_degrees > 3.15: ",np.std(np_e_m))
 
-
-    # regional = np.where( (df["behavior_0"]<0.00065) & (df["behavior_1"]<3.15))
-    # regional_bot_lef = k[regional]
-
     # print("avg_runtime for avg_degrees < 3.15 & std_connectivity < 0.00065: ",np.mean(regional_bot_lef))
 
     # breakpoint()
