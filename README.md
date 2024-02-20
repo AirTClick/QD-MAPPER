@@ -135,7 +135,7 @@ works with `scripts/run_local_EECBS.sh` too.
 
 The `config/` directory contains the config files required to run the experiments shown in the paper.
 
-| Config file                                                      | Objective                      |                                     Measures
+| Config file                                                      | Objective                      |                                     Measures |
 | ---------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------- | 
 <!-- | config/warehouse/DSAGE_home-location_scenario_DPP.gin            | DSAGE + DPP in home-location              |
 | config/warehouse/DSAGE_home-location_scenario_RHCR_40_agents.gin | DSAGE + RHCR (40 agents) in home-location |
