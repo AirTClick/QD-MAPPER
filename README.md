@@ -137,7 +137,7 @@ The `config/` directory contains the config files required to run the experiment
 
 | Config file                                                      | Objective                      |                                     Measures |
 | ---------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------- | 
-<!-- | config/warehouse/DSAGE_home-location_scenario_DPP.gin            | DSAGE + DPP in home-location              |
+| config/warehouse/DSAGE_home-location_scenario_DPP.gin            | DSAGE + DPP in home-location              |
 | config/warehouse/DSAGE_home-location_scenario_RHCR_40_agents.gin | DSAGE + RHCR (40 agents) in home-location |
 | config/warehouse/DSAGE_home-location_scenario_RHCR_60_agents.gin | DSAGE + RHCR (60 agents) in home-location |
 | config/warehouse/DSAGE_home-location_scenario_RHCR_88_agents.gin | DSAGE + RHCR (88 agents) in home-location |
@@ -148,6 +148,6 @@ The `config/` directory contains the config files required to run the experiment
 | config/warehouse/DSAGE_large_workstation_scenario_RHCR.gin       | DSAGE + RHCR in large workstation         |
 | config/warehouse/MAP-Elites_small_workstation_scenario_RHCR.gin  | MAP-Elites + RHCR in small workstation    |
 | config/warehouse/MAP-Elites_medium_workstation_scenario_RHCR.gin | MAP-Elites + RHCR in medium workstation   |
-| config/warehouse/MAP-Elites_large_workstation_scenario_RHCR.gin  | MAP-Elites + RHCR in large workstation    | -->
-| config/warehouse/CMA-ME_small_EECBS.gin          | 
-Map Entropy         | std_connectivity avg_run_time      |
+| config/warehouse/MAP-Elites_large_workstation_scenario_RHCR.gin  | MAP-Elites + RHCR in large workstation    |
+<!-- | config/warehouse/CMA-ME_small_EECBS.gin          | 
+Map Entropy         | std_connectivity avg_run_time      | -->
