@@ -79,19 +79,19 @@ following files:
 To run one experiment locally, use:
 
 ```bash
-bash scripts/run_local.sh CONFIG SEED NUM_WORKERS
+bash scripts/run_local_EECBS.sh CONFIG SEED NUM_WORKERS
 ```
 
 For instance, with 4 workers:
 
 ```bash
-bash scripts/run_local.sh config/foo.gin 42 4
+bash scripts/run_local_EECBS.sh config/warehouse/CMA-ME_small_EECBS.gin 42 4
 ```
 
 `CONFIG` is the [gin](https://github.com/google/gin-config) experiment config
 for `env_search/main.py`.
 
-### Running on Slurm
+<!-- ### Running on Slurm
 
 Use the following command to run an experiment on an HPC with Slurm (and
 Singularity) installed:
@@ -104,7 +104,7 @@ For example:
 
 ```bash
 bash scripts/run_slurm.sh config/foo.gin 42 config/hpc/test.sh
-```
+``` -->
 
 `CONFIG` is the experiment config for `env_search/main.py`, and `HPC_CONFIG` is a shell
 file that is sourced by the script to provide configuration for the Slurm
