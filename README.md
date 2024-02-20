@@ -89,7 +89,7 @@ bash scripts/run_local_EECBS.sh config/warehouse/CMA-ME_small_EECBS.gin 42 4
 ```
 
 `CONFIG` is the [gin](https://github.com/google/gin-config) experiment config
-for `env_search/main.py`.
+for `env_search_EECBS/main.py`.
 
 <!-- ### Running on Slurm
 
@@ -106,7 +106,7 @@ For example:
 bash scripts/run_slurm.sh config/foo.gin 42 config/hpc/test.sh
 ``` -->
 
-`CONFIG` is the experiment config for `env_search/main.py`, and `HPC_CONFIG` is a shell
+<!-- `CONFIG` is the experiment config for `env_search/main.py`, and `HPC_CONFIG` is a shell
 file that is sourced by the script to provide configuration for the Slurm
 cluster. See `config/hpc` for example files.
 
@@ -114,7 +114,7 @@ Once the script has run, it will output commands like the following:
 
 - `tail -f ...` - You can use this to monitor stdout and stderr of the main
   experiment script. Run it.
-- `bash scripts/slurm_cancel.sh ...` - This will cancel the job.
+- `bash scripts/slurm_cancel.sh ...` - This will cancel the job. -->
 
 ### Reloading
 
@@ -129,13 +129,13 @@ bash scripts/run_slurm.sh config/foo.gin 42 config/hpc/test.sh -r logs/.../
 ```
 
 The experiment will then run to completion in the same logging directory. This
-works with `scripts/run_local.sh` too.
+works with `scripts/run_local_EECBS.sh` too.
 
 ## Reproducing Paper Results
 
 The `config/` directory contains the config files required to run the experiments shown in the paper.
 
-| Config file                                                      | QD Search Experiment                      |
+| Config file                                                      | Objective                      |                                     Measures
 | ---------------------------------------------------------------- | ----------------------------------------- |
 | config/warehouse/DSAGE_home-location_scenario_DPP.gin            | DSAGE + DPP in home-location              |
 | config/warehouse/DSAGE_home-location_scenario_RHCR_40_agents.gin | DSAGE + RHCR (40 agents) in home-location |
@@ -149,3 +149,4 @@ The `config/` directory contains the config files required to run the experiment
 | config/warehouse/MAP-Elites_small_workstation_scenario_RHCR.gin  | MAP-Elites + RHCR in small workstation    |
 | config/warehouse/MAP-Elites_medium_workstation_scenario_RHCR.gin | MAP-Elites + RHCR in medium workstation   |
 | config/warehouse/MAP-Elites_large_workstation_scenario_RHCR.gin  | MAP-Elites + RHCR in large workstation    |
+| config/warehouse/CMA-ME_small_EECBS.gin | Map Entropy | std_connectivity & avg_run_time
