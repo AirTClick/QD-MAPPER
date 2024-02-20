@@ -137,8 +137,8 @@ The `config/` directory contains the config files required to run the experiment
 
 | Config file                                                      | Objective                      |                                     Measures |
 | ---------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------- | 
-| config/warehouse/CMA-ME_small_EECBS_obj_run_time.gin | Run Time | std_connectivity & map_entropy |
-| config/warehouse/CMA-ME_small_EECBS.gin           | Map Entropy            | std_connectivity & avg_run_time |
+| config/warehouse/CMA-ME_small_EECBS_obj_run_time.gin | Run Time | std_BC & map_entropy |
+| config/warehouse/CMA-ME_small_EECBS.gin           | Map Entropy            | std_BC & avg_run_time |
 | config/warehouse/CMA-ME_small_EECBS_obj_entropy_suboptimality.gin | Map Entropy|average_suboptimality & avg_run_time |
 <!-- | config/warehouse/DSAGE_home-location_scenario_RHCR_88_agents.gin | DSAGE + RHCR (88 agents) in home-location |
 | config/warehouse/MAP-Elites_home-location_scenario_DPP.gin       | MAP-Elites + DPP in home-location         |

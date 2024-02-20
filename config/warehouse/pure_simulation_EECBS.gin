@@ -22,7 +22,7 @@
 # WarehouseEECBSConfig.sipp=0                          #using SIPPS as the low-level solver
 # WarehouseEECBSConfig.restart=0                       #rapid random restart times
 
-WarehouseEECBSConfig.measure_names = ['std_connectivity', 'layout_entropy']
+WarehouseEECBSConfig.measure_names = ['std_BC', 'layout_entropy']
 WarehouseEECBSConfig.aggregation_type = 'mean'
 WarehouseEECBSConfig.cutoffTime=5                #cutoff time (seconds)
 WarehouseEECBSConfig.screen=1                        #screen option (0: none; 1: results; 2:all)#

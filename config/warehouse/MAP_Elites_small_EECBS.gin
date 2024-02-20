@@ -50,7 +50,7 @@ MapElitesBaselineEmitter.num_objects = %num_objects
 # ======================================================================================================================
 # WarehouseEECBSConfig.agentNum=5                      #number of agents
 # WarehouseEECBSConfig.measure_names = ['n_shelf_components', 'all_task_len_mean']
-WarehouseEECBSConfig.measure_names = ['std_connectivity', 'avg_run_time']
+WarehouseEECBSConfig.measure_names = ['std_BC', 'avg_run_time']
 WarehouseEECBSConfig.aggregation_type = 'mean'
 WarehouseEECBSConfig.cutoffTime=5                #cutoff time (seconds)
 WarehouseEECBSConfig.screen=1                        #screen option (0: none; 1: results; 2:all)#
