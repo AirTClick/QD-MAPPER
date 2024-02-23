@@ -254,7 +254,6 @@ def tile_usage_heatmap_from_qd(
                              df["index_1"].min()]["objective"].idxmax()
         
         # find out 
-        # print("index_0: ", df[df["behavior_0"]>0.0007])
         # print("index_1: ", df[(df["behavior_1"]<0.5) & (df["behavior_0"]>0.00065) & (df["objective"] > -2.5)])
         # print("index_1: ", df[(df["behavior_1"]>0.5) & (df["behavior_0"]>0.00065) & (df["objective"] < -5.0)])
         # print("index_1: ", df[(df["behavior_1"]<0.4) & (df["behavior_0"]<0.0004) & (df["objective"] < -2.5)])
@@ -262,6 +261,38 @@ def tile_usage_heatmap_from_qd(
         # print(df.loc[69]["objective"])
         # print(df.loc[df["index_1"] ==76]["objective"].idxmin())
         # Add global optimal env
+        # print("index_1: ", df[(df["behavior_1"]>2.5) & (df["behavior_0"]>1.13)]) 
+        k = df.iloc[1418]["metadata"]["warehouse_metadata"]["connectivity_graph"]
+
+        grid_kws = {"height_ratios": (0.475, 0.475, 0.05)}
+
+        fig, (ax_map, ax_tile_use, ax_tile_use_cbar) = plt.subplots(
+                    3,
+                    1,
+                    # figsize=get_figsize_qd(w_mode),
+                    figsize = (8,16),
+                    gridspec_kw=grid_kws,
+                )
+        
+        sns.heatmap(
+        k,
+        square=True,
+        cmap="Reds",
+        ax=ax_tile_use,
+        cbar_ax=ax_tile_use_cbar,
+        cbar=True,
+        rasterized=False,
+        annot_kws={"size": 30},
+        linewidths=1,
+        linecolor="black",
+        xticklabels=False,
+        yticklabels=False,
+        vmin=0,
+        vmax=1500,
+        )
+
+        fig.savefig(logdir.file("low_runtime_low_BC"), dpi=dpi)
+        breakpoint()
         global_opt = df["objective"].idxmax()
         global_opt_env = df.iloc[global_opt]["metadata"]["warehouse_metadata"][
             "map_str"]
@@ -282,6 +313,7 @@ def tile_usage_heatmap_from_qd(
             # 1418,   #low connectivity, > 0.5 environment entropy, low runtime 
             # 328,
             # 1476,
+            42,
             index_0_max,
             index_0_min,
             index_1_max,
@@ -344,7 +376,7 @@ def tile_usage_heatmap_from_qd(
                 runtime = np.mean(metadata["avg_run_time"])
                 entropy = metadata["layout_entropy"]
                 print(
-                    f"Index ({index_0}, {index_1}): objective = {obj}, entropy = {entropy}"
+                    f"Index ({index_0}, {index_1}): objective = {obj}, runtime = {runtime}"
                 )
                 # w_mode = gin.query_parameter("WarehouseManager.w_mode")
 
