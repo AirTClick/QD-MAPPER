@@ -14,14 +14,17 @@ ENDIF()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
-
-include_directories("EECBS/inc")
+include_directories("PBS/inc")
+# include_directories("EECBS/inc")
 # include_directories("RHCR/inc")
 
 # Get the source files except for the main API .cpp file
-file(GLOB SOURCES "EECBS/src/*.cpp")
+file(GLOB SOURCES "PBS/src/*.cpp")
+# file(GLOB SOURCES "EECBS/src/*.cpp")
 # file(GLOB SOURCES "RHCR/src/*.cpp")
-list(FILTER SOURCES EXCLUDE REGEX "EECBS/src/WarehouseSimulation.cpp")
+
+list(FILTER SOURCES EXCLUDE REGEX "PBS/src/WarehouseSimulation.cpp")
+# list(FILTER SOURCES EXCLUDE REGEX "EECBS/src/WarehouseSimulation.cpp")
 # list(FILTER SOURCES EXCLUDE REGEX "RHCR/src/WarehouseSimulation.cpp")
 
 # Find Boost
@@ -32,9 +35,13 @@ include_directories( ${Boost_INCLUDE_DIRS} )
 add_subdirectory(pybind11)
 
 # Need to add other source files so that pybind11 can find the implementations
-pybind11_add_module(warehouse_sim_EECBS "EECBS/src/WarehouseSimulation.cpp" ${SOURCES})
+pybind11_add_module(warehouse_sim_PBS "PBS/src/WarehouseSimulation.cpp" ${SOURCES})
+
+# pybind11_add_module(warehouse_sim_EECBS "EECBS/src/WarehouseSimulation.cpp" ${SOURCES})
 # pybind11_add_module(warehouse_sim "RHCR/src/WarehouseSimulation.cpp" ${SOURCES})
-target_link_libraries(warehouse_sim_EECBS PRIVATE ${Boost_LIBRARIES})
+target_link_libraries(warehouse_sim_PBS PRIVATE ${Boost_LIBRARIES})
+
+# target_link_libraries(warehouse_sim_EECBS PRIVATE ${Boost_LIBRARIES})
 
 # # Add lifelone executable
 # add_executable(lifelong ${SOURCES} )

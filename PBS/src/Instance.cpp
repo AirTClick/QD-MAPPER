@@ -43,6 +43,22 @@ Instance::Instance(const string& map_fname, const string& agent_fname,
 
 }
 
+Instance::Instance(json& G_json, int num_of_agents):  
+	num_of_agents(num_of_agents)
+{
+	bool succ = load_map_from_jsonstr(G_json);
+
+	if(num_of_agents>0)
+	{
+		generateRandomAgents(0);
+	}
+	else
+	{
+		cerr << "Num of agents not positive." << endl;
+			exit(-1);	
+	}
+}
+
 
 int Instance::randomWalk(int curr, int steps) const
 {
@@ -453,4 +469,36 @@ list<int> Instance::getNeighbors(int curr) const
 			neighbors.emplace_back(next);
 	}
 	return neighbors;
+}
+
+vector<int> Instance::get_start_locations() const
+{
+	return start_locations;
+}
+
+vector<int> Instance::get_goal_locations() const
+{
+	return goal_locations;
+}
+
+bool Instance::load_map_from_jsonstr(json G_json) 
+{	
+	string line;
+	this->num_of_rows = G_json["n_row"];
+	this->num_of_cols = G_json["n_col"];
+
+	this->map_size = num_of_cols * num_of_rows;
+
+	this->my_map.resize(this->map_size, false);	
+
+	for (int i = 0; i < this->num_of_rows; i++) {
+		// getline(myfile, line);
+		line = G_json["layout"][i];
+		for (int j = 0; j < this->num_of_cols; j++) {
+			this->my_map[linearizeCoordinate(i, j)] = (line[j] != '.');
+		}
+	}
+
+	return true;
+
 }

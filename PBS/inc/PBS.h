@@ -42,9 +42,12 @@ public:
 	~PBS();
 
 	// Save results
-	void saveResults(const string &fileName, const string &instanceName) const;
+	// void saveResults(const string &fileName, const string &instanceName) const;
+	void saveResults(const string &fileName) const;
 	void saveCT(const string &fileName) const; // write the CT to a file
     void savePaths(const string &fileName) const; // write the paths to a file
+	double cal_suboptimality(Instance instance, double solution_cost);
+	json cal_tile_usage(Instance instance, json result);
 	void clear(); // used for rapid random  restart
 private:
 	conflict_selection conflict_seletion_rule;

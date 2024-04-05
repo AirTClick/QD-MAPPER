@@ -440,7 +440,8 @@ void PBS::printResults() const
     }*/
 }
 
-void PBS::saveResults(const string &fileName, const string &instanceName) const
+// void PBS::saveResults(const string &fileName, const string &instanceName) const
+void PBS::saveResults(const string &fileName) const
 {
 	std::ifstream infile(fileName);
 	bool exist = infile.good();
@@ -465,7 +466,7 @@ void PBS::saveResults(const string &fileName, const string &instanceName) const
 		runtime_detect_conflicts << "," << runtime_build_CT << "," << runtime_build_CAT << "," <<
 		runtime_path_finding << "," << runtime_generate_child << "," <<
 
-		runtime_preprocessing << "," << getSolverName() << "," << instanceName << endl;
+		runtime_preprocessing << "," << getSolverName() << "," << endl;
 	stats.close();
 }
 
@@ -832,4 +833,81 @@ bool PBS::hasHigherPriority(int low, int high) const // return true if agent low
         }
     }
     return false;
+}
+
+double PBS::cal_suboptimality(Instance instance, double solution_cost)
+{
+	int num_of_cols = instance.num_of_cols;
+	int num_of_rows = instance.num_of_rows;	
+
+	std::vector<int> start_locations = search_engines[0]->instance.get_start_locations();
+	std::vector<int> goal_locations = search_engines[0]->instance.get_goal_locations();
+
+	std::vector<double> initial_path(search_engines.size());
+
+	// take the initial path of all agents out
+	for (int i= 0;i < search_engines.size(); i++)
+	{
+		std::vector<int> my_heuristic = search_engines[i]->my_heuristic;  //take the vector of heuristic from the goal loc to all locations on the map
+		int single_start_location = start_locations[i];  //take the start location of the agent i 
+
+		// int row = single_start_location / num_of_cols;
+		// int col = single_start_location / num_of_rows;
+
+		// cout << "Make sure the heuristic of the goal location is zero: " << my_heuristic[goal_locations[i]] << endl;
+
+		initial_path[i] += my_heuristic[single_start_location];
+	}
+
+	double path_sum = accumulate(initial_path.begin(),initial_path.end(),0.0);
+
+	double suboptimality = solution_cost / path_sum;
+
+	return suboptimality;
+	
+
+}
+
+json PBS::cal_tile_usage(Instance instance, json result)
+{	
+	std::vector<double> tile_usage((instance.num_of_rows * instance.num_of_cols),0.0);
+	int row;
+	int col;
+	for (int i = 0; i < num_of_agents; i++)
+    {
+		for (const auto & t : *paths[i]){
+			row = search_engines[0]->instance.getRowCoordinate(t.location);
+			col = search_engines[0]->instance.getColCoordinate(t.location);
+			tile_usage[row * instance.num_of_cols + col] += 1.0;
+		}
+    }	
+	double tile_usage_sum = 0.0;
+	for (int i = 0; i < tile_usage.size(); ++i) {
+        tile_usage_sum += tile_usage[i];
+    }	
+
+	for (int i = 0; i < tile_usage.size(); ++i) {
+        tile_usage[i] /= tile_usage_sum;
+    }
+	//mean
+	double tile_usage_mean = tile_usage_sum/tile_usage.size();
+
+	//std
+	std::vector<double> diff(tile_usage.size());
+	std::transform(tile_usage.begin(), tile_usage.end(), diff.begin(),
+                       [tile_usage_mean](double x)
+                       { return x - tile_usage_mean; });
+	
+	double sq_sum = std::inner_product(diff.begin(), diff.end(),
+                                           diff.begin(), 0.0);
+
+	double tile_usage_std = sqrt(sq_sum / tile_usage.size());
+
+
+	result["tile_usage"] = tile_usage;
+	result["tile_usage_mean"] = tile_usage_mean;
+	result["tile_usage_std"] = tile_usage_std;
+	
+	//return tile_usage;
+	return result;
 }

@@ -262,7 +262,11 @@ def tile_usage_heatmap_from_qd(
         # print(df.loc[df["index_1"] ==76]["objective"].idxmin())
         # Add global optimal env
         # print("index_1: ", df[(df["behavior_1"]>2.5) & (df["behavior_0"]>1.13)]) 
-        k = df.iloc[1418]["metadata"]["warehouse_metadata"]["connectivity_graph"]
+
+        #purely draw the std of BC for a specific graph
+        # print(df[(df["index_1"]==79) & (df["index_0"]==79)])
+        # breakpoint()
+        k = df.iloc[111]["metadata"]["warehouse_metadata"]["connectivity_graph"]
 
         grid_kws = {"height_ratios": (0.475, 0.475, 0.05)}
 
@@ -293,6 +297,8 @@ def tile_usage_heatmap_from_qd(
 
         fig.savefig(logdir.file("low_runtime_low_BC"), dpi=dpi)
         breakpoint()
+
+
         global_opt = df["objective"].idxmax()
         global_opt_env = df.iloc[global_opt]["metadata"]["warehouse_metadata"][
             "map_str"]
@@ -313,12 +319,12 @@ def tile_usage_heatmap_from_qd(
             # 1418,   #low connectivity, > 0.5 environment entropy, low runtime 
             # 328,
             # 1476,
-            42,
+            # 42, obj = entropy, low suboptimality, high runtime
             index_0_max,
             index_0_min,
             index_1_max,
             index_1_min,
-            # global_opt,
+            global_opt,
         ]]
     elif mode == "extreme-3D":
         # In 3D case, we fix the third dimension and plot the "extreme" points

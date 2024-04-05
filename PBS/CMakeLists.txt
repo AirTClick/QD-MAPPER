@@ -10,6 +10,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 include_directories("inc")
 file(GLOB SOURCES "src/*.cpp")
+list(FILTER SOURCES EXCLUDE REGEX "PBS/src/WarehouseSimulation.cpp")
 add_executable(pbs ${SOURCES})
 
 # Find Boost

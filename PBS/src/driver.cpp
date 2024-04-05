@@ -56,12 +56,16 @@ int main(int argc, char** argv)
     double runtime = 0;
     pbs.solve(vm["cutoffTime"].as<double>());
     if (vm.count("output"))
-        pbs.saveResults(vm["output"].as<string>(), vm["agents"].as<string>());
+        pbs.saveResults(vm["output"].as<string>());
     if (pbs.solution_found && vm.count("outputPaths"))
         pbs.savePaths(vm["outputPaths"].as<string>());
     /*size_t pos = vm["output"].as<string>().rfind('.');      // position of the file extension
     string output_name = vm["output"].as<string>().substr(0, pos);     // get the name without extension
     cbs.saveCT(output_name); // for debug*/
+	runtime += pbs.runtime;
+
+	cout << "runtime: " << runtime << endl;
+
     pbs.clearSearchEngines();
 
 	return 0;

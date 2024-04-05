@@ -5,8 +5,9 @@ From: python:3.9.18-bullseye
 %files
     setup.py /usr/project/setup.py
     pybind11/ /usr/project/pybind11
-    EECBS/ /usr/project/EECBS
-    RHCR/ /usr/project/RHCR
+    PBS/ /usr/project/PBS
+    # EECBS/ /usr/project/EECBS
+    # RHCR/ /usr/project/RHCR
     CMakeLists.txt /usr/project/CMakeLists.txt
     # boost_1_71_0.tar.gz /usr/project/boost_1_71_0.tar.gz
     requirements.txt /usr/project/requirements.txt

@@ -447,6 +447,8 @@ class WarehouseModule:
         # Get objective based on type
         # objs = -entropy
         objs = -entropy
+
+
         # if self.config.obj_type == "throughput":
         #     objs = np.array(collected_results.get("throughput"))
         # elif self.config.obj_type == "throughput_plus_n_shelf":
@@ -1202,8 +1204,9 @@ def main(
                 repeat(results_dir, n_evals)),
         )
 
-    # n_failure = np.array(solution_cost) > 5
-    # n_success = 400 - np.sum(n_failure)
+    n_failure = np.array(solution_cost) > 5
+    n_success = 200 - np.sum(n_failure)
+    succ_rate = n_success/400
     
     avg_obj = np.mean(solution_cost)
     std_obj = np.std(solution_cost)
@@ -1212,7 +1215,8 @@ def main(
 
     n_evals = n_evals * n_sim if mode == "inc_agents" else n_evals
 
-    # print(f"Number of success simulations: {n_success}")
+    print(f"Number of success simulations: {n_success}")
+    print(f"Success rate: {succ_rate}")
     
 
     print(f"Average Runtime over {n_evals} simulations: {avg_obj}")

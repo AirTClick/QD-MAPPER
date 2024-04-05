@@ -15,7 +15,10 @@ public:
 	Instance(){}
 	Instance(const string& map_fname, const string& agent_fname, 
 		int num_of_agents = 0, int num_of_rows = 0, int num_of_cols = 0, int num_of_obstacles = 0, int warehouse_width = 0);
+    Instance(json& G_json, int num_of_agents);
 
+	vector<int> get_goal_locations() const;
+	vector<int> get_start_locations() const;
 
 	void printAgents() const;
 
@@ -77,6 +80,7 @@ private:
 	  void saveMap() const;
 
 	  bool loadAgents();
+	  bool load_map_from_jsonstr(json G_json);
 	  void saveAgents() const;
 
 	  void generateConnectedRandomGrid(int rows, int cols, int obstacles); // initialize new [rows x cols] map with random obstacles
