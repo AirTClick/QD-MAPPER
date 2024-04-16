@@ -21,6 +21,7 @@ def repair_warehouse(
     repair_seed: int,
     # w_mode: bool,
     # min_n_shelf: int,
+    min_n_obstacles: int,
     max_n_obstacles: int,
     agentNum: int,
 ):
@@ -46,6 +47,7 @@ def repair_warehouse(
             repair_seed=repair_seed,
             # w_mode=w_mode,
             # min_n_shelf=min_n_shelf,
+            min_n_obstacles = min_n_obstacles,
             max_n_obstacles=max_n_obstacles,
             agentNum=agentNum,
         )

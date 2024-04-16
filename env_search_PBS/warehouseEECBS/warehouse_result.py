@@ -49,6 +49,9 @@ class WarehouseMetadata:
     std_BC: float = None
     avg_degrees: float = None
     connectivity_graph: np.ndarray = None
+    maze_kl_div: float = None
+    room_kl_div: float = None
+    all_kl_div: float = None
 
     layout_entropy: float = None
     #FOR RHCR
@@ -68,7 +71,7 @@ class WarehouseMetadata:
     finished_len_mean: float = None
     finished_len_std: float = None
 
-    n_shelf: int = None
+    n_obstacles: int = None
     # n_endpoint: int = None
 
     all_task_len_mean: float = None # Average length of all possible

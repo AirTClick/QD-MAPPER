@@ -253,7 +253,9 @@ def tile_usage_heatmap_from_qd(
         index_1_min = df.loc[df["index_1"] ==
                              df["index_1"].min()]["objective"].idxmax()
         
-        # find out 
+        # find out
+        # print("index_1: ", df[(df["behavior_0"]<=200) & (df["behavior_1"] >= 2.5)]) 
+        # breakpoint() 
         # print("index_1: ", df[(df["behavior_1"]<0.5) & (df["behavior_0"]>0.00065) & (df["objective"] > -2.5)])
         # print("index_1: ", df[(df["behavior_1"]>0.5) & (df["behavior_0"]>0.00065) & (df["objective"] < -5.0)])
         # print("index_1: ", df[(df["behavior_1"]<0.4) & (df["behavior_0"]<0.0004) & (df["objective"] < -2.5)])
@@ -321,6 +323,12 @@ def tile_usage_heatmap_from_qd(
             # 328,
             # 1476,
             # 42, obj = entropy, low suboptimality, high runtime
+            80,
+            63,
+            158,
+            34,
+            163,
+            184,
             index_0_max,
             index_0_min,
             index_1_max,
@@ -378,6 +386,10 @@ def tile_usage_heatmap_from_qd(
                 metadata = to_plot["metadata"]["warehouse_metadata"]
                 #runtime is stored as objs in warehouse_metadata
                 print("suboptimality: ", metadata["average_suboptimality"])
+                # print("room KL_div: ", metadata["room_kl_div"])
+                # print("maze KL_div: ", metadata["maze_kl_div"])
+                print("KL_div", metadata["all_kl_div"])
+                print("number of obstacles:", metadata["n_obstacles"])
                 # print("Connectivity: ", metadata["std_connectivity"])
                 # print("avg_degrees: ",metadata["avg_degrees"])
                 runtime = np.mean(metadata["avg_run_time"])

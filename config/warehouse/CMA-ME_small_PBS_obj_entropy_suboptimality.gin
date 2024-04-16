@@ -14,7 +14,7 @@ experiment.name = 'Warehouse Generation'
 # Parameters for GridArchive:
 # ======================================================================================================================
 GridArchive.dims = [80, 80]
-GridArchive.ranges = [[0.9, 1.3], [0.0, 1.0]]
+GridArchive.ranges = [[0.0, 2.5], [0.0, 2.5]]
 
 # Parameters for downsample/GridArchive:
 # ======================================================================================================================
@@ -51,7 +51,7 @@ ImprovementEmitter.restart_rule = 'no_improvement'
 # ======================================================================================================================
 # WarehouseEECBSConfig.agentNum=5                      #number of agents
 # WarehouseEECBSConfig.measure_names = ['n_shelf_components', 'all_task_len_mean']
-WarehouseEECBSConfig.measure_names = ['average_suboptimality', 'layout_entropy']
+WarehouseEECBSConfig.measure_names = ['room_kl_div', 'maze_kl_div']
 WarehouseEECBSConfig.aggregation_type = 'mean'
 WarehouseEECBSConfig.cutoffTime=5                #cutoff time (seconds)
 WarehouseEECBSConfig.screen=1                        #screen option (0: none; 1: results; 2:all)#

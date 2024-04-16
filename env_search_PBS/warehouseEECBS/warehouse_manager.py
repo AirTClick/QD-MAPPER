@@ -91,6 +91,7 @@ class WarehouseManager:
         min_n_shelf: int = gin.REQUIRED,
         max_n_shelf: int = gin.REQUIRED,
         max_n_obstacles :int = gin.REQUIRED,
+        min_n_obstacles :int = gin.REQUIRED, 
         w_mode: bool = gin.REQUIRED,
 
         is_nca: bool = gin.REQUIRED,
@@ -127,6 +128,7 @@ class WarehouseManager:
         self.min_n_shelf = min_n_shelf
         self.max_n_shelf = max_n_shelf
         self.max_n_obstacles = max_n_obstacles
+        self.min_n_obstacles = min_n_obstacles
 
         self.w_mode = w_mode
         self.n_endpt = n_endpt
@@ -407,6 +409,7 @@ class WarehouseManager:
                 # w_mode=self.w_mode,
                 # min_n_shelf=self.min_n_shelf,
                 max_n_obstacles=self.max_n_obstacles,
+                min_n_obstacles=self.min_n_obstacles,
                 agentNum=self.agent_num,
             ) for lvl, parent_lvl, seed in zip(lvls, parent_lvls,
                                                evaluation_seeds)

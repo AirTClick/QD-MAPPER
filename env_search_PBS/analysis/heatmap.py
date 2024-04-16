@@ -36,7 +36,11 @@ MEASURE_NAMES = {
     "std_BC" : "std of Betweenness Centrality",
     "avg_degrees" : "average of degrees",
     "avg_run_time" : "average run time",
-    "layout_entropy" : "Map entropy"
+    "layout_entropy" : "Map entropy",
+    "room_kl_div":"Room KL Divergence",
+    "maze_kl_div":"Maze KL Divergence",
+    "n_obstacles":"Number of Obstacles",
+    "all_kl_div": "KL Divergence",
 }
 
 
@@ -98,6 +102,11 @@ def post_process_figure(ax, fig, kiva, heatmap_only):
             ax.set_xlabel(MEASURE_NAMES[measure_names[1]], fontsize=26)
 
             range_y, range_x = gin.query_parameter("GridArchive.ranges")
+            # print("range_y_before",range_y)
+            # # range_y[1] = 2.5
+            # print("range_y[0]",range_y[0])
+            # print("range_y",range_y)
+            # print("range_x",range_x)
             if sol_sim == 108:
                 ax.set_xticks([range_x[0], range_x[1]])
                 ax.set_yticks([range_y[0], range_y[1]])
@@ -112,14 +121,17 @@ def post_process_figure(ax, fig, kiva, heatmap_only):
                 if range_x_mid.is_integer():
                     range_x_mid = int(range_x_mid)
                 range_y_mid = np.mean(range_y)
+                # print(range_y_mid)
                 if range_y_mid.is_integer():
                     range_y_mid = int(range_y_mid)
                 ax.set_xticks([range_x[0], range_x_mid, range_x[1]])
+                # 1.0 for suboptimality
                 ax.set_yticks([range_y[0], range_y_mid, range_y[1]])
                 ax.set_xticklabels(
                     [range_x[0], range_x_mid, range_x[1]],
                     rotation=0,
                     fontsize=20)
+                # 1.0 for suboptimality
                 ax.set_yticklabels(
                     [range_y[0], range_y_mid, range_y[1]],
                     fontsize=20)
@@ -342,7 +354,7 @@ def heatmap(logdir: str,
 
     vmin = 0
     # vmax = 1 # for objective = entropy
-    vmax = 5 # for objective = runtime
+    vmax = 10 # for objective = runtime
 
     # Plotting arguments for grid_archive_heatmap.
     plot_kwargs = {
