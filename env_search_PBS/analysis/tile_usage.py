@@ -31,6 +31,55 @@ plt.rcParams.update({
 })
 
 
+def map_to_json(map,index0,index1,logdir,start,goal):
+    data = dict()
+    data["name"] = f"{index0}_{index1}"
+    data["weight"] = False
+    data["n_row"] = 32
+    data["n_col"] = 32
+    data["layout"] = map
+    data["start"] = start
+    data["goal"] = goal
+
+    tile_usage_dir = logdir.dir("generated_maps")
+
+    if not os.path.exists(tile_usage_dir):
+        os.makedirs(tile_usage_dir)
+
+    file_path = f"{tile_usage_dir}/{index0}_{index1}.json"
+
+    with open(file_path, 'w') as json_file:
+        json.dump(data, json_file, indent=4)
+    
+    print("success")
+
+def all_maps_to_json(
+        logdir:str,
+        gen:int = None
+        ):
+    logdir = load_experiment(logdir)
+    gen = load_metrics(logdir).total_itrs if gen is None else gen
+    df = pd.read_pickle(logdir.file(f"archive/archive_{gen}.pkl"))
+
+    print(df)
+
+    for i in range(0,df.shape[0]):
+        # print(df.loc[i])
+        index_0 = df.loc[i]["index_0"]
+        index_1 = df.loc[i]["index_1"]
+        metadata = df.loc[i]["metadata"]["warehouse_metadata"]
+        map = metadata["map_str"]
+        start = metadata["start_locations"].tolist()
+        # print(start)
+        goal = metadata["goal_locations"].tolist()
+        print(goal)
+        # print("index_0: ",index_0)
+        # print("index_1: ",index_1)
+        # map_to_json(map,index_0,index_1,logdir,start,goal)
+
+
+
+
 def get_tile_usage_vmax(env_h, env_w):
     if env_h * env_w == 9 * 16 or env_h * env_w == 9 * 20:
         vmax = 0.03
@@ -323,12 +372,13 @@ def tile_usage_heatmap_from_qd(
             # 328,
             # 1476,
             # 42, obj = entropy, low suboptimality, high runtime
-            80,
-            63,
-            158,
-            34,
-            163,
-            184,
+
+            # 80,
+            # 63,
+            # 158,
+            # 34,
+            # 163,
+            # 184, obstacle, KL 
             index_0_max,
             index_0_min,
             index_1_max,
@@ -388,6 +438,9 @@ def tile_usage_heatmap_from_qd(
                 print("suboptimality: ", metadata["average_suboptimality"])
                 # print("room KL_div: ", metadata["room_kl_div"])
                 # print("maze KL_div: ", metadata["maze_kl_div"])
+                print("Start_locations: ",metadata["start_locations"])
+                print("Goal_locations: ",(metadata["goal_locations"]).shape)
+                # print("map",metadata["map_str"])
                 print("KL_div", metadata["all_kl_div"])
                 print("number of obstacles:", metadata["n_obstacles"])
                 # print("Connectivity: ", metadata["std_connectivity"])
@@ -412,6 +465,9 @@ def tile_usage_heatmap_from_qd(
                 repaired_env_str = metadata["map_str"]
                 print("\n".join(repaired_env_str))
                 print()
+                # convert map to json file for two algorithm comparison purpose
+                # map_to_json(repaired_env_str,index_0,index_1,logdir)
+
                 repaired_env = eecbs_env_str2number(repaired_env_str)
                 visualize_kiva(repaired_env, ax=ax_map, dpi=300)
 
@@ -466,18 +522,24 @@ def main(
     dpi: int = 300,
     mode: str = None,
 ):
-    if logdir_type == "qd":
-        tile_usage_heatmap_from_qd(
-            logdir=logdir,
-            gen=gen,
-            index_0=index_0,
-            index_1=index_1,
-            dpi=dpi,
-            mode=mode,
+    # if logdir_type == "qd":
+    #     tile_usage_heatmap_from_qd(
+    #         logdir=logdir,
+    #         gen=gen,
+    #         index_0=index_0,
+    #         index_1=index_1,
+    #         dpi=dpi,
+    #         mode=mode,
+    #     )
+    # elif logdir_type == "sim":
+    #     tile_usage_heatmap_from_single_run(logdir, dpi=dpi)
+
+    all_maps_to_json(
+        logdir = logdir,
+        gen = gen,
         )
-    elif logdir_type == "sim":
-        tile_usage_heatmap_from_single_run(logdir, dpi=dpi)
 
 
 if __name__ == "__main__":
     fire.Fire(main)
+

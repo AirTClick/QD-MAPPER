@@ -454,6 +454,11 @@ class WarehouseModule:
         # objs = entropy
         objs = -avg_run_time
 
+        # Get start and goal locations
+        start_locations = np.array(collected_results.get("start_locations"))
+        goal_locations = np.array(collected_results.get("goal_locations"))
+        
+
 
         # if self.config.obj_type == "throughput":
         #     objs = np.array(collected_results.get("throughput"))
@@ -483,6 +488,8 @@ class WarehouseModule:
             tile_usage=tile_usage,
             tile_usage_mean=np.mean(collected_results.get("tile_usage_mean")),
             tile_usage_std=np.mean(collected_results.get("tile_usage_std")),
+            start_locations = start_locations,
+            goal_locations = goal_locations,
 
             # num_wait=collected_results.get("num_wait"),
             # num_wait_mean=np.mean(collected_results.get("num_wait_mean")),

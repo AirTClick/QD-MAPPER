@@ -76,6 +76,8 @@ std::string run(const py::kwargs& kwargs)
     result["runtime"] = runtime;
     result["finish"] = true;
 	result["solution_found"] = pbs.solution_found;
+	result["start_locations"] = instance.get_start_locations();
+	result["goal_locations"] = instance.get_goal_locations();
 
     pbs.clearSearchEngines();
 

@@ -96,6 +96,7 @@ class WarehouseEECBSConfig:
     aggregation_type: str = gin.REQUIRED,
 
     # Simulation
+    iteration: int = gin.REQUIRED,
     cutoffTime: int = gin.REQUIRED,
     screen: int = gin.REQUIRED,
     stats: bool = gin.REQUIRED,
@@ -1147,6 +1148,7 @@ def main(
         "map" : json.dumps(raw_env_json),
         # "output" : log_dir,
         "agentNum" : agent_num,
+        "iteration" : gin.query_parameter("WarehouseEECBSConfig.iteration"),
         "cutoffTime": gin.query_parameter("WarehouseEECBSConfig.cutoffTime"),
         "screen":gin.query_parameter("WarehouseEECBSConfig.screen"),
         "stats": gin.query_parameter("WarehouseEECBSConfig.stats"),
@@ -1215,14 +1217,14 @@ def main(
 
     n_evals = n_evals * n_sim if mode == "inc_agents" else n_evals
 
-    print(f"Number of success simulations: {n_success}")
-    print(f"Success rate: {succ_rate}")
+    # print(f"Number of success simulations: {n_success}")
+    # print(f"Success rate: {succ_rate}")
     
 
-    print(f"Average Runtime over {n_evals} simulations: {avg_obj}")
-    print(f"Std Runtime over {n_evals} simulations: {std_obj}")
-    print(f"Max Runtime over {n_evals} simulations: {max_obj}")
-    print(f"Min Runtime over {n_evals} simulations: {min_obj}")
+    # print(f"Average Runtime over {n_evals} simulations: {avg_obj}")
+    # print(f"Std Runtime over {n_evals} simulations: {std_obj}")
+    # print(f"Max Runtime over {n_evals} simulations: {max_obj}")
+    # print(f"Min Runtime over {n_evals} simulations: {min_obj}")
 
 
 

@@ -61,6 +61,8 @@ class WarehouseMetadata:
     # tile_usage: List[List[float]] = None # (n_eval, n_tiles) 2D array
     tile_usage_mean: float = None
     tile_usage_std: float = None
+    start_locations: np.ndarray = None
+    goal_locations: np.ndarray = None
 
     num_wait: List[List[float]] = None # (n_eval, n_timestep) 2D array
     num_wait_mean: float = None

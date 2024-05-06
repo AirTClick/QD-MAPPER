@@ -1,0 +1,138 @@
+logs/test_start_goal/generated_maps/68_4.json
+config/test/pure_simulation_EECBS_1.gin
+WDG+R+C+T+BP with AStar            : Timeout,-1,5.0005,237,586698,2446,2261,2446,
+Failed to find solutions in Run 0
+Clean Done 
+False
+logs/test_start_goal/generated_maps/68_4.json
+config/test/pure_simulation_EECBS_4.gin
+WDG+R+C+T+BP with AStar            : Timeout,-1,5.00332,224,742319,2727,2515,2727,
+Failed to find solutions in Run 0
+Clean Done 
+False
+logs/test_start_goal/generated_maps/68_4.json
+config/test/pure_simulation_EECBS_2.gin
+WDG+R+C+T+BP with AStar            : Timeout,-1,5.00091,614,1425155,2564,2366,2564,
+Failed to find solutions in Run 0
+Clean Done 
+False
+logs/test_start_goal/generated_maps/68_4.json
+config/test/pure_simulation_EECBS_0.gin
+WDG+R+C+T+BP with AStar            : Timeout,-1,5.00315,251,708900,2598,2389,2598,
+Failed to find solutions in Run 0
+Clean Done 
+False
+logs/test_start_goal/generated_maps/68_4.json
+config/test/pure_simulation_EECBS_3.gin
+WDG+R+C+T+BP with AStar            : Timeout,-1,5.00399,224,742319,2727,2515,2727,
+Failed to find solutions in Run 0
+Clean Done 
+False
+logs/test_start_goal/generated_maps/68_6.json
+config/test/pure_simulation_EECBS_1.gin
+WDG+R+C+T+BP with AStar            : Timeout,-1,5.00519,282,896578,2571,2450,2571,
+Failed to find solutions in Run 0
+Clean Done 
+logs/test_start_goal/generated_maps/68_6.json
+config/test/pure_simulation_EECBS_4.gin
+WDG+R+C+T+BP with AStar            : Timeout,-1,5.00348,301,591523,2378,2280,2378,
+Failed to find solutions in Run 0
+Clean Done 
+False
+logs/test_start_goal/generated_maps/68_6.json
+config/test/pure_simulation_EECBS_2.gin
+WDG+R+C+T+BP with AStar            : Timeout,-1,5.00164,486,928785,2494,2437,2494,
+Failed to find solutions in Run 0
+Clean Done 
+False
+logs/test_start_goal/generated_maps/68_6.json
+config/test/pure_simulation_EECBS_0.gin
+WDG+R+C+T+BP with AStar            : Timeout,-1,5.00382,486,928785,2494,2437,2494,
+Failed to find solutions in Run 0
+Clean Done 
+False
+logs/test_start_goal/generated_maps/68_6.json
+config/test/pure_simulation_EECBS_3.gin
+WDG+R+C+T+BP with AStar            : Timeout,-1,5.00068,317,741908,2312,2186,2312,
+Failed to find solutions in Run 0
+Clean Done 
+False
+logs/test_start_goal/generated_maps/22_1.json
+config/test/pure_simulation_EECBS_1.gin
+WDG+R+C+T+BP with AStar            : Succeed,2926,0.107853,14,46107,2734,2707,2734,
+Clean Done 
+False
+logs/test_start_goal/generated_maps/22_1.json
+config/test/pure_simulation_EECBS_4.gin
+WDG+R+C+T+BP with AStar            : Succeed,2944,0.057871,23,25187,2744,2734,2744,
+Clean Done 
+False
+logs/test_start_goal/generated_maps/22_1.json
+config/test/pure_simulation_EECBS_2.gin
+WDG+R+C+T+BP with AStar            : Succeed,3075,0.058997,14,16927,2886,2877,2886,
+Clean Done 
+False
+logs/test_start_goal/generated_maps/22_1.json
+config/test/pure_simulation_EECBS_0.gin
+WDG+R+C+T+BP with AStar            : Succeed,2926,0.090436,14,46107,2734,2707,2734,
+Clean Done 
+False
+logs/test_start_goal/generated_maps/22_1.json
+config/test/pure_simulation_EECBS_3.gin
+WDG+R+C+T+BP with AStar            : Succeed,2835,0.052557,10,14564,2644,2637,2644,
+Clean Done 
+False
+logs/test_start_goal/generated_maps/68_5.json
+config/test/pure_simulation_EECBS_1.gin
+WDG+R+C+T+BP with AStar            : Timeout,-1,5.00007,1393,1243434,1826,1772,1820,
+Failed to find solutions in Run 0
+Clean Done 
+False
+logs/test_start_goal/generated_maps/68_5.json
+config/test/pure_simulation_EECBS_4.gin
+WDG+R+C+T+BP with AStar            : Timeout,-1,5.00193,812,1048285,1964,1874,1953,
+Failed to find solutions in Run 0
+Clean Done 
+False
+logs/test_start_goal/generated_maps/68_5.json
+config/test/pure_simulation_EECBS_2.gin
+WDG+R+C+T+BP with AStar            : Timeout,-1,5.00008,857,996020,1801,1736,1787,
+Failed to find solutions in Run 0
+Clean Done 
+False
+logs/test_start_goal/generated_maps/68_5.json
+config/test/pure_simulation_EECBS_0.gin
+WDG+R+C+T+BP with AStar            : Timeout,-1,5.00243,1045,961743,1940,1880,1935,
+Failed to find solutions in Run 0
+Clean Done 
+False
+logs/test_start_goal/generated_maps/68_5.json
+config/test/pure_simulation_EECBS_3.gin
+WDG+R+C+T+BP with AStar            : Timeout,-1,5.00137,423,1302079,1929,1809,1897,
+Failed to find solutions in Run 0
+Clean Done 
+False
+logs/test_start_goal/generated_maps/22_2.json
+config/test/pure_simulation_EECBS_1.gin
+WDG+R+C+T+BP with AStar            : Succeed,3032,0.069696,8,24883,2785,2782,2785,
+Clean Done 
+False
+logs/test_start_goal/generated_maps/22_2.json
+config/test/pure_simulation_EECBS_4.gin
+WDG+R+C+T+BP with AStar            : Succeed,2752,0.051827,13,18295,2552,2545,2552,
+Clean Done 
+False
+logs/test_start_goal/generated_maps/22_2.json
+config/test/pure_simulation_EECBS_2.gin
+WDG+R+C+T+BP with AStar            : Succeed,2951,0.069242,9,19618,2734,2729,2734,
+Clean Done 
+logs/test_start_goal/generated_maps/22_2.json
+config/test/pure_simulation_EECBS_0.gin
+WDG+R+C+T+BP with AStar            : Succeed,3032,0.084854,8,24883,2785,2782,2785,
+Clean Done 
+False
+logs/test_start_goal/generated_maps/22_2.json
+config/test/pure_simulation_EECBS_3.gin
+WDG+R+C+T+BP with AStar            : Succeed,2752,0.0521,13,18295,2552,2545,2552,
+Clean Done 
+False

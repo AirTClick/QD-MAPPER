@@ -1,0 +1,49 @@
+# ##WarehouseEECBSConfig ##
+
+# Experiment settings
+# WarehouseEECBSConfig.cutoffTime=5                       #cutoff time (seconds)
+# WarehouseEECBSConfig.screen=1                        #screen option (0: none; 1: results; 2:all)#
+# WarehouseEECBSConfig.stats=False                     #write to files some detailed statistics
+
+# # CBS node selection strategies              
+# WarehouseEECBSConfig.highLevelSolver="EES"           #the high-level solver (A*, A*eps, EES, NEW)
+# WarehouseEECBSConfig.lowLevelSolver=True             #using suboptimal solver in the low level
+# WarehouseEECBSConfig.inadmissibleH="Global"            #inadmissible heuristics (Zero, Global, Path, Local, Conflict)
+# WarehouseEECBSConfig.suboptimality=1.2               #suboptimality bound
+
+# # CBS improvement
+# WarehouseEECBSConfig.heuristics="WDG"                #admissible heuristics for the high-level search (Zero, CG,DG, WDG)
+# WarehouseEECBSConfig.prioritizingConflicts=True      #conflict prioirtization. If true, conflictSelection is used as a tie-breaking rule.
+# WarehouseEECBSConfig.bypass=True                     #Bypass1
+# WarehouseEECBSConfig.disjointSplitting=False         #disjoint splitting
+# WarehouseEECBSConfig.rectangleReasoning=True         #rectangle reasoning
+# WarehouseEECBSConfig.corridorReasoning=True          #corridor reasoning
+# WarehouseEECBSConfig.targetReasoning=True            #target reasoning
+# WarehouseEECBSConfig.sipp=0                          #using SIPPS as the low-level solver
+# WarehouseEECBSConfig.restart=0                       #rapid random restart times
+
+WarehouseEECBSConfig.measure_names = ['std_BC', 'layout_entropy']
+WarehouseEECBSConfig.aggregation_type = 'mean'
+WarehouseEECBSConfig.cutoffTime=5                #cutoff time (seconds)
+WarehouseEECBSConfig.screen=1                        #screen option (0: none; 1: results; 2:all)#
+WarehouseEECBSConfig.stats=False                     #write to files some detailed statistics
+WarehouseEECBSConfig.iteration = 3
+
+# CBS node selection strategies              
+WarehouseEECBSConfig.highLevelSolver="EES"           #the high-level solver (A*, A*eps, EES, NEW)
+WarehouseEECBSConfig.lowLevelSolver=True             #using suboptimal solver in the low level
+WarehouseEECBSConfig.inadmissibleH="Global"            #inadmissible heuristics (Zero, Global, Path, Local, Conflict)
+WarehouseEECBSConfig.suboptimality=1.2             #suboptimality bound
+
+# CBS improvement
+WarehouseEECBSConfig.heuristics="WDG"                #admissible heuristics for the high-level search (Zero, CG,DG, WDG)
+WarehouseEECBSConfig.prioritizingConflicts=True      #conflict prioirtization. If true, conflictSelection is used as a tie-breaking rule.
+WarehouseEECBSConfig.bypass=True                     #Bypass1
+WarehouseEECBSConfig.disjointSplitting=False         #disjoint splitting
+WarehouseEECBSConfig.rectangleReasoning=True         #rectangle reasoning
+WarehouseEECBSConfig.corridorReasoning=True          #corridor reasoning
+WarehouseEECBSConfig.targetReasoning=True            #target reasoning
+WarehouseEECBSConfig.sipp=0                          #using SIPPS as the low-level solver
+WarehouseEECBSConfig.restart=0                       #rapid random restart times
+WarehouseEECBSConfig.use_warm_up = True
+WarehouseEECBSConfig.hamming_only= True

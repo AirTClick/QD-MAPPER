@@ -1,8 +1,8 @@
 # Macros:
 # ======================================================================================================================
 max_n_shelf = 20 #just for RHCR
-max_n_obstacles = 820 #80% of obstalces
-min_n_obstacles = 103 #10% of obstalces
+max_n_obstacles = 717 #70% of obstalces
+min_n_obstacles = 307 #30% of obstalces
 measure_dim = 2
 min_n_shelf = 20
 num_objects = 3
