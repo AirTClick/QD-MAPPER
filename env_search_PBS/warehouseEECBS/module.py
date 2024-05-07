@@ -236,7 +236,8 @@ class WarehouseModule:
         #and distance between start locations
         
         start_locations, goal_locations = calc_start_goal_locations(map_np_repaired, agentNum, parts = 5)
-
+        # print("Start",start_locations)
+        # print("goal",goal_locations)
         # Convert map layout to str format
         map_str_repaired = eecbs_env_number2str(map_np_repaired)
 
@@ -348,7 +349,8 @@ class WarehouseModule:
         # if planning_window is not None:
         #     kwargs["planning_window"] = planning_window
 
-        logger.info(f"Map evaluate: {map_id} \n{map_json}")
+        # logger.info(f"Map evaluate: {map_id} \n{map_json}")
+        logger.info(f"Map evaluate: {map_id}")
 
         one_sim_result_jsonstr = warehouse_sim_PBS.run(**kwargs)
 
@@ -965,7 +967,10 @@ def calc_start_goal_locations(repaired_env, num_of_agents, parts):
     
     # take inf to 0 and get indices of all index pairs with distance greater than half of the longest paths 
     dist_matrix[np.isinf(dist_matrix)] = 0
-    indices = np.where(dist_matrix > (np.max(dist_matrix)/2))
+    less_restrict_indices = np.where(dist_matrix > (np.max(dist_matrix)/8)) 
+    indices = np.where(dist_matrix > (np.max(dist_matrix)/4))
+
+    assert(len(indices[0])>num_of_agents)
 
     # try to split start and goals into "parts" lists to evenly distribute the start and goal locations
     # parts = 5
@@ -975,19 +980,32 @@ def calc_start_goal_locations(repaired_env, num_of_agents, parts):
     start_locations = []
     goal_locations = []
 
-    interval = np.arange(num_of_agents//parts,num_of_agents+num_of_agents//parts,num_of_agents//parts)
+    interval = np.arange(num_of_agents//parts,num_of_agents+(num_of_agents//parts),num_of_agents//parts)
 
     # select num_of_agents start and goal locations 
     j = 0
     k = 0
+    count = 1
     while j < num_of_agents:
-        if i <= interval[k]:
+        if j <= interval[k]:
             temp_start = result_start[k]
             temp_goal = result_goal[k]
         else:
             k += 1
             temp_start = result_start[k]
             temp_goal = result_goal[k]
+        
+        if count % 3 == 0:
+            if k < parts-1:
+                temp_start = result_start[k+1]
+                temp_goal = result_goal[k+1]
+            else:
+                temp_start = result_start[0]
+                temp_goal = result_goal[0] 
+        
+        if count > 15:
+            temp_start = less_restrict_indices[0]
+            temp_goal = less_restrict_indices[1] 
 
         random_index = np.random.randint(0,len(temp_start)-1,size = 1)
         index_0 = temp_start[random_index]
@@ -995,7 +1013,10 @@ def calc_start_goal_locations(repaired_env, num_of_agents, parts):
         if (index_0 not in start_locations) and (index_1 not in goal_locations):
             start_locations.append(int(index_0))
             goal_locations.append(int(index_1))
-            i += 1
+            j += 1
+            print(f"{j}th index made")
+        else:
+            count += 1
     
     
     return start_locations,goal_locations

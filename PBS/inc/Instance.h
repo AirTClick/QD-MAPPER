@@ -80,7 +80,7 @@ private:
 	  void saveMap() const;
 
 	  bool loadAgents();
-	  bool load_map_from_jsonstr(json G_json);
+	  bool load_map_from_jsonstr(json G_json, int num_of_agents);
 	  void saveAgents() const;
 
 	  void generateConnectedRandomGrid(int rows, int cols, int obstacles); // initialize new [rows x cols] map with random obstacles

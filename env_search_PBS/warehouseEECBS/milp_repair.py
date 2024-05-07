@@ -391,8 +391,8 @@ def repair_env(
         solution = mdl.solve()
 
         if solution is None:
-            print("No solution")
-            exit(1)
+            print("MILP: No solution")
+            return None
 
         def get_idx_from_variables(solution, node_id):
             for i, obj_var in enumerate(objs):

@@ -145,8 +145,12 @@ n_row, n_col = repaired_env.shape
 total_grid = n_row * n_col
 
 dist_matrix[np.isinf(dist_matrix)] = 0
-
+less_restrict_indices = np.where(dist_matrix > (np.max(dist_matrix)/8)) 
 indices = np.where(dist_matrix > (np.max(dist_matrix)/2))
+
+print(less_restrict_indices[0])
+print(less_restrict_indices[1])
+
 
 print(indices[0][0])
 print(indices[1][0])
@@ -181,6 +185,8 @@ start_locations = []
 goal_locations = []
 test_indices = []
 
+print("start_len",len(result_start))
+print("goal_len",len(result_goal))
 i = 0
 
 interval = np.arange(num_of_agents//parts,num_of_agents+num_of_agents//parts,num_of_agents//parts)
@@ -195,6 +201,7 @@ while i < num_of_agents:
         k += 1
         temp_start = result_start[k]
         temp_goal = result_goal[k]
+    print(k)
     random_index = np.random.randint(0,len(temp_start)-1,size = 1)
     index_0 = temp_start[random_index]
     index_1 = temp_goal[random_index]
@@ -212,8 +219,8 @@ print(start_locations)
 print(len(goal_locations))
 print(goal_locations)
 
-for i in range(0,150):
-    print(dist_matrix[start_locations[i]][goal_locations[i]])
+# for i in range(0,150):
+#     print(dist_matrix[start_locations[i]][goal_locations[i]])
 
 
 def has_duplicates(lst):

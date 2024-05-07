@@ -46,17 +46,17 @@ Instance::Instance(const string& map_fname, const string& agent_fname,
 Instance::Instance(json& G_json, int num_of_agents):  
 	num_of_agents(num_of_agents)
 {
-	bool succ = load_map_from_jsonstr(G_json);
+	bool succ = load_map_from_jsonstr(G_json, num_of_agents);
 
-	if(num_of_agents>0)
-	{
-		generateRandomAgents(0);
-	}
-	else
-	{
-		cerr << "Num of agents not positive." << endl;
-			exit(-1);	
-	}
+	// if(num_of_agents>0)
+	// {
+	// 	generateRandomAgents(0);
+	// }
+	// else
+	// {
+	// 	cerr << "Num of agents not positive." << endl;
+	// 		exit(-1);	
+	// }
 }
 
 
@@ -481,11 +481,28 @@ vector<int> Instance::get_goal_locations() const
 	return goal_locations;
 }
 
-bool Instance::load_map_from_jsonstr(json G_json) 
+bool Instance::load_map_from_jsonstr(json G_json,int num_of_agents) 
 {	
 	string line;
+	std::vector<int> start;
+	std::vector<int> goal;
+
 	this->num_of_rows = G_json["n_row"];
 	this->num_of_cols = G_json["n_col"];
+
+	for (int k = 0; k < num_of_agents; k++){
+		start.push_back(G_json["start"][k].get<int>());
+		goal.push_back(G_json["goal"][k].get<int>());	
+	}
+
+	start_locations.resize(num_of_agents);
+	goal_locations.resize(num_of_agents);
+
+	for (int j = 0; j < num_of_agents; j++){
+		start_locations[j] = start[j];
+		goal_locations[j] = goal[j];
+	}
+
 
 	this->map_size = num_of_cols * num_of_rows;
 
