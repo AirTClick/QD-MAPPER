@@ -102,6 +102,12 @@ def run_warehouse(
                       gets a different log directory.
     """
     """Grabs the warehouse module and evaluates level n_evals times."""
+    
+    if map_json is None:
+        logger.info("Evaluating failed layout. Skipping")
+        result = {"success": False}
+        return result
+
     start = time.time()
 
     logger.info("seeding global randomness")

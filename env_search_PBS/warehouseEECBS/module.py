@@ -226,6 +226,15 @@ class WarehouseModule:
                 # w_mode=w_mode,
                 # limit_n_obstacle=limit_n_obstacle,
             )
+            if map_np_repaired is None:
+                failed_unrepaired_env = format_env_str(eecbs_env_number2str(map_comp_unrepaired))
+                logger.info(f"Repair failed! The layout is:\n{failed_unrepaired_env}")
+                return None, map_np_unrepaired, map_comp_unrepaired, None
+        
+        # Create start and goal locations at this point with num of agents 
+        #and constraint on the distance between start and goal locations 
+        #and distance between start locations
+        
 
         # Convert map layout to str format
         map_str_repaired = eecbs_env_number2str(map_np_repaired)
@@ -361,14 +370,33 @@ class WarehouseModule:
             results_json (List[dict]): result json of all simulations of 1 map.
 
         """
+
+        # Deal with failed layout.
+        # For now, failure only happens during MILP repair, so it failure
+        # happens, all simulation json results would contain
+        # {"success": False}.
+        if not curr_result_json[0]["success"]:
+            logger.info(
+            f"Map ID {map_id} failed.")
+
+            metadata = WarehouseMetadata(
+                map_int_unrepaired=map_comp_unrepaired,
+                map_int_raw=map_np_unrepaired,
+            )
+            result = WarehouseResult.from_raw(
+                warehouse_metadata=metadata,
+                opts={
+                    "aggregation": self.config.aggregation_type,
+                    "measure_names": self.config.measure_names,
+                },
+            )
+            result.failed = True
+            return result
+
+
         # Collect the results
         keys = curr_result_json[0].keys()
         collected_results = {key: [] for key in keys}
-        
-        # print("Repaired shape: ",np.shape(map_np_repaired))
-        # print("Comp unrepaired shape: ", np.shape(map_comp_unrepaired))
-        # print("Unrepaired shape: ",np.shape(map_np_unrepaired))
-        # print(collected_results)
         for result_json in curr_result_json:
             for key in keys:
                 collected_results[key].append(result_json[key])
