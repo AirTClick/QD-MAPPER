@@ -235,6 +235,7 @@ class WarehouseModule:
         #and constraint on the distance between start and goal locations 
         #and distance between start locations
         
+        start_locations, goal_locations = calc_start_goal_locations(map_np_repaired, agentNum, parts = 5)
 
         # Convert map layout to str format
         map_str_repaired = eecbs_env_number2str(map_np_repaired)
@@ -260,6 +261,10 @@ class WarehouseModule:
             # self.config.simulation_time, 
             "layout":
             map_str_repaired,
+            "start":
+            start_locations,
+            "goal":
+            goal_locations,
         })
 
         # else:
@@ -889,159 +894,122 @@ def cal_avg_degrees(repaired_env):
         
     return (sum_degree/(total_grids-num_of_obstacle))
 
+def split_list(lst, parts=5):
+    length = len(lst)
+    part_size = length // parts
+    remainder = length % parts
+    result = []
+    start = 0
+    for i in range(parts):
+        end = start + part_size + (1 if i < remainder else 0)
+        result.append(lst[start:end])
+        start = end
+    return result
 
-# def get_additional_h_blocks(ADDITION_BLOCK_WIDTH, n_row, w_mode):
-#     """
-#     Generate additional blocks to horizontally stack to the map on the left and
-#     right side
-#     """
+def calc_start_goal_locations(repaired_env, num_of_agents, parts):
+    n_row, n_col = repaired_env.shape
+    total_grid = n_row * n_col
+    num_of_obstacle = 0
+    total_grids = n_row * n_col
+    distance_matrix = np.zeros((total_grid,total_grid), dtype=int) 
+    connectivity_graph = np.zeros(repaired_env.shape, dtype=int)
 
-#     if w_mode:
-#         # In 'w' mode, horizontally stack the workstations
-#         # The workstation locations are fixed as the following:
-#         # 1. Stack workstations on the border of the generated map,
-#         #    meaning that there is no columns on the left/right side of the
-#         #    left/right workstations.
-#         # 2. The first row and last row has no workstations.
-#         # 3. For the rest of the rows, starting from the second row, put
-#         # workstations for every three rows, meaning that there are at least
-#         # two empty cells between each pair of workstations.
-#         # 4. The left and right side of workstation blocks are symmetrical
-#         l_block = []
-#         r_block = []
-#         for i in range(n_row):
-#             curr_l_row = None
-#             curr_r_row = None
-#             if i == 0 or i == n_row - 1 or (i - 1) % 3 != 0:
-#                 curr_l_row = [
-#                     kiva_obj_types.index(".")
-#                     for _ in range(ADDITION_BLOCK_WIDTH)
-#                 ]
-#                 curr_r_row = copy.deepcopy(curr_l_row)
-#             elif (i - 1) % 3 == 0:
-#                 curr_l_row = [
-#                     kiva_obj_types.index("w"),
-#                     kiva_obj_types.index(".")
-#                 ]
-#                 curr_r_row = [
-#                     kiva_obj_types.index("."),
-#                     kiva_obj_types.index("w")
-#                 ]
-#             l_block.append(curr_l_row)
-#             r_block.append(curr_r_row)
-#         r_block = np.array(r_block)
-#         l_block = np.array(l_block)
+    #build the distance matrix for graphs
+    for i in range(n_row):
+        for j in range(n_col):
+            if repaired_env[i,j] == eecbs_obj_types.index("@"):
+                num_of_obstacle += 1
+            else: 
+                if i == 0 and j == 0:
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
+                elif i == n_row-1 and j == 0:
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
+                elif i == 0 and j == n_col - 1:
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+                elif i == n_row-1 and j == n_col - 1:
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+                #upper and down edge 
+                elif i == 0:
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
+                elif i == n_row -1:
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
+                #left and right edge  
+                elif j == 0:
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
+                elif j == n_col -1:
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+                #normal cases
+                else:
+                    if repaired_env[i-1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i-1)*n_col+j] = 1
+                    if repaired_env[i+1,j] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,(i+1)*n_col+j] = 1
+                    if repaired_env[i,j-1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j-1] = 1
+                    if repaired_env[i,j+1] != eecbs_obj_types.index("@"): distance_matrix[i*n_col+j,i*n_col+j+1] = 1
 
-#     else:
-        # In 'r' mode, horizontally stack the robot start locations
-        # The robot start locations are fixed as the following:
-        # 1. Stack robot location blocks on either sides of the generated map
-        # 2. On each side, the length of the block is 4
-        # 3. The top and bottom rows and the left and right columns have no
-        #    robots
-        # 4. Starting from the 2nd row, there are 2 robots in the middle column
-        # 5. There are at most 3 sequential rows of robots
-        # 6. For every 3 rows, append a row of empty space
-    #     r_block = []
-    #     n_robot_row = 0
-    #     for i in range(n_row):
-    #         curr_row = None
-    #         if i == 0 or i == n_row - 1:
-    #             curr_row = [
-    #                 kiva_obj_types.index(".")
-    #                 for _ in range(ADDITION_BLOCK_WIDTH)
-    #             ]
-    #         elif n_robot_row < 3:
-    #             curr_row = [
-    #                 kiva_obj_types.index("."),
-    #                 kiva_obj_types.index("r"),
-    #                 kiva_obj_types.index("r"),
-    #                 kiva_obj_types.index("."),
-    #             ]
-    #             n_robot_row += 1
-    #         elif n_robot_row >= 3:
-    #             curr_row = [
-    #                 kiva_obj_types.index(".")
-    #                 for _ in range(ADDITION_BLOCK_WIDTH)
-    #             ]
-    #             n_robot_row = 0
-    #         r_block.append(curr_row)
+    distance_graph = scipy.sparse.csr_matrix(distance_matrix)
+    # print("distance_graph: " ,distance_graph)
 
-    #     # Under 'r' mode, left and right blocks are the same
-    #     r_block = np.array(r_block)
-    #     l_block = copy.deepcopy(r_block)
+    # The matrix of distances between graph nodes. dist_matrix[i,j] gives the shortest distance from point i to point j along the graph.
+    dist_matrix, predecessors= scipy.sparse.csgraph.floyd_warshall(csgraph=distance_graph, directed=False, return_predecessors=True)
+    
+    # take inf to 0 and get indices of all index pairs with distance greater than half of the longest paths 
+    dist_matrix[np.isinf(dist_matrix)] = 0
+    indices = np.where(dist_matrix > (np.max(dist_matrix)/2))
 
-    # return l_block, r_block
+    # try to split start and goals into "parts" lists to evenly distribute the start and goal locations
+    # parts = 5
+    result_start = split_list(indices[0])
+    result_goal = split_list(indices[1])
+
+    start_locations = []
+    goal_locations = []
+
+    interval = np.arange(num_of_agents//parts,num_of_agents+num_of_agents//parts,num_of_agents//parts)
+
+    # select num_of_agents start and goal locations 
+    j = 0
+    k = 0
+    while j < num_of_agents:
+        if i <= interval[k]:
+            temp_start = result_start[k]
+            temp_goal = result_goal[k]
+        else:
+            k += 1
+            temp_start = result_start[k]
+            temp_goal = result_goal[k]
+
+        random_index = np.random.randint(0,len(temp_start)-1,size = 1)
+        index_0 = temp_start[random_index]
+        index_1 = temp_goal[random_index]
+        if (index_0 not in start_locations) and (index_1 not in goal_locations):
+            start_locations.append(int(index_0))
+            goal_locations.append(int(index_1))
+            i += 1
+    
+    
+    return start_locations,goal_locations
+    
+# function to check duplicates in generated start and goal locations
+def has_duplicates(lst):
+    seen = set()
+    for num in lst:
+        if num in seen:
+            return True
+        seen.add(num)
+    return False
 
 
-# def get_additional_v_blocks(ADDITION_BLOCK_HEIGHT, n_col_comp, w_mode):
-#     """
-#     Generate additional blocks to vertically stack to the map on the top and
-#     bottom
-#     """
-#     # Only applicable for r mode
-#     assert not w_mode
-#     # We only want even # of cols to make the map symmetrical
-#     assert n_col_comp % 2 == 0
-#     t_block = []
-#     b_block = []
-#     # For r mode, we need to append additional on top and bottom of the map
-#     for i in range(ADDITION_BLOCK_HEIGHT):
-#         # We add 'r' to everywhere except for:
-#         # 1) the first and block column of each row
-#         # 2) the 2 columns in the middle of each row
-#         # 2) the first row for t_block and last row for b_block
-#         cont_r_length = (n_col_comp - 4) // 2
-
-#         if i == 0 or i == ADDITION_BLOCK_HEIGHT - 1:
-#             t_block.append([
-#                 kiva_obj_types.index(".") for _ in range(n_col_comp)
-#             ])
-#         else:
-#             t_block.append([
-#                 kiva_obj_types.index("."),
-#                 *[kiva_obj_types.index("r") for _ in range(cont_r_length)],
-#                 kiva_obj_types.index("."),
-#                 kiva_obj_types.index("."),
-#                 *[kiva_obj_types.index("r") for _ in range(cont_r_length)],
-#                 kiva_obj_types.index("."),
-#             ])
-
-#     t_block = np.array(t_block)
-#     b_block = copy.deepcopy(t_block)
-#     assert t_block.shape == b_block.shape == (ADDITION_BLOCK_HEIGHT, n_col_comp)
-#     return t_block, b_block
-
-# def get_comp_map(
-#     map,
-#     seed,
-#     w_mode,
-#     n_endpt,
-#     lvl_height,
-# ):
-#     """
-#     Helper function that repair one map using hamming for EM-ME inner
-#     loop.
-#     """
-#     np.random.seed(seed // np.int32(4))
-
-#     # Put endpoints in raw maps and repair using hamming distance obj
-#     ADDITION_BLOCK_WIDTH = KIVA_WORKSTATION_BLOCK_WIDTH if w_mode \
-#                             else KIVA_ROBOT_BLOCK_WIDTH
-#     # map = put_endpoints(map, n_endpt=n_endpt)
-#     l_block, r_block = get_additional_h_blocks(ADDITION_BLOCK_WIDTH, lvl_height,
-#                                              w_mode)
-#     map_comp = np.hstack((l_block, map, r_block))
-
-#     # Same as MILP, in the surrogate model, we replace 'w' with 'r' under
-#     # w_mode to use 'r' internally.
-#     if w_mode:
-#         map_comp = flip_tiles(
-#             map_comp,
-#             'w',
-#             'r',
-#         )
-#     return map_comp
 
 def calc_layout_entropy(map_np_repaired):
     """

@@ -1,5 +1,6 @@
 import numpy as np
 import scipy
+import random
 from utils import (eecbs_obj_types, MIN_SCORE,
                               eecbs_env_number2str,
                               eecbs_env_str2number, format_env_str,
@@ -147,5 +148,88 @@ dist_matrix[np.isinf(dist_matrix)] = 0
 
 indices = np.where(dist_matrix > (np.max(dist_matrix)/2))
 
-print(len(indices[0]))
-print(indices)
+print(indices[0][0])
+print(indices[1][0])
+
+num_of_agents = 150
+
+def split_list(lst, parts=5):
+    length = len(lst)
+    part_size = length // parts
+    remainder = length % parts
+    result = []
+    start = 0
+    for i in range(parts):
+        end = start + part_size + (1 if i < remainder else 0)
+        result.append(lst[start:end])
+        start = end
+    return result
+
+parts = 5
+result_start = split_list(indices[0])
+print(result_start)
+print("len:", [(result_start[i].shape) for i in range(0,5)])
+print([result_start[i][0] for i in range(0,5)])
+
+result_goal = split_list(indices[1])
+print(result_goal)
+print("len:", [(result_goal[i].shape) for i in range(0,5)])
+print([result_goal[i][0] for i in range(0,5)]) 
+
+
+start_locations = []
+goal_locations = []
+test_indices = []
+
+i = 0
+
+interval = np.arange(num_of_agents//parts,num_of_agents+num_of_agents//parts,num_of_agents//parts)
+print(interval)
+
+k = 0
+while i < num_of_agents:
+    if i <= interval[k]:
+        temp_start = result_start[k]
+        temp_goal = result_goal[k]
+    else:
+        k += 1
+        temp_start = result_start[k]
+        temp_goal = result_goal[k]
+    random_index = np.random.randint(0,len(temp_start)-1,size = 1)
+    index_0 = temp_start[random_index]
+    index_1 = temp_goal[random_index]
+    if (index_0 not in start_locations) and (index_1 not in goal_locations):
+        start_locations.append(int(index_0))
+        goal_locations.append(int(index_1))
+        i += 1
+        
+
+
+
+print(len(start_locations))
+print(start_locations)
+
+print(len(goal_locations))
+print(goal_locations)
+
+for i in range(0,150):
+    print(dist_matrix[start_locations[i]][goal_locations[i]])
+
+
+def has_duplicates(lst):
+    seen = set()
+    for num in lst:
+        if num in seen:
+            return True
+        seen.add(num)
+    return False
+
+if has_duplicates(start_locations):
+    print("List has duplicates")
+else:
+    print("List does not have duplicates")
+
+if has_duplicates(goal_locations):
+    print("List has duplicates")
+else:
+    print("List does not have duplicates")

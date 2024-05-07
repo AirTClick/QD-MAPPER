@@ -102,7 +102,7 @@ def run_warehouse(
                       gets a different log directory.
     """
     """Grabs the warehouse module and evaluates level n_evals times."""
-    
+
     if map_json is None:
         logger.info("Evaluating failed layout. Skipping")
         result = {"success": False}
@@ -126,11 +126,12 @@ def run_warehouse(
             map_id=map_id,
             eval_id=eval_id,
         )
+        result["success"] = True
     except TimeoutError as e:
         layout = map_json["layout"]
         logger.warning(f"evaluate failed")
         logger.info(f"The map was {layout}")
-        result = {}
+        result = {"success": False}
 
     logger.info("run_warehouse done after %f sec", time.time() - start)
 
