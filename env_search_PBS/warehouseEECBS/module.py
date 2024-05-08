@@ -200,6 +200,13 @@ class WarehouseModule:
                 warm_envs_np=warm_up_sols,
                 # limit_n_obstacle=limit_n_obstacle,
             )
+            # If the repair is failed (which happens very rarely), we
+            # return None and remember the unrepaired layout.
+            if hamming_repaired_env is None:
+                failed_unrepaired_env = format_env_str(
+                eecbs_env_number2str(map_comp_unrepaired))
+                logger.info(f"Hamming repair failed! The layout is:\n{failed_unrepaired_env}")
+                return None, map_np_unrepaired, map_comp_unrepaired, None
             hamming_warm_env_str = format_env_str(
                 eecbs_env_number2str(hamming_repaired_env))
             logger.info(

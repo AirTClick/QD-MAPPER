@@ -31,7 +31,7 @@ plt.rcParams.update({
 })
 
 
-def map_to_json(map,index0,index1,logdir,start,goal):
+def map_to_json(map,index0,index1,logdir,start,goal,runtime):
     data = dict()
     data["name"] = f"{index0}_{index1}"
     data["weight"] = False
@@ -40,6 +40,7 @@ def map_to_json(map,index0,index1,logdir,start,goal):
     data["layout"] = map
     data["start"] = start
     data["goal"] = goal
+    data["runtime"] = runtime.astype(float)
 
     tile_usage_dir = logdir.dir("generated_maps")
 
@@ -51,7 +52,7 @@ def map_to_json(map,index0,index1,logdir,start,goal):
     with open(file_path, 'w') as json_file:
         json.dump(data, json_file, indent=4)
     
-    print("success")
+    # print("success")
 
 def all_maps_to_json(
         logdir:str,
@@ -61,7 +62,7 @@ def all_maps_to_json(
     gen = load_metrics(logdir).total_itrs if gen is None else gen
     df = pd.read_pickle(logdir.file(f"archive/archive_{gen}.pkl"))
 
-    print(df)
+    # print(df)
 
     for i in range(0,df.shape[0]):
         # print(df.loc[i])
@@ -69,13 +70,15 @@ def all_maps_to_json(
         index_1 = df.loc[i]["index_1"]
         metadata = df.loc[i]["metadata"]["warehouse_metadata"]
         map = metadata["map_str"]
-        start = metadata["start_locations"].tolist()
+        start = metadata["start_locations"][0].tolist()
         # print(start)
-        goal = metadata["goal_locations"].tolist()
-        print(goal)
+        goal = metadata["goal_locations"][0].tolist()
+        runtime = -df.loc[i]["objective"]
+        # print(goal)
         # print("index_0: ",index_0)
         # print("index_1: ",index_1)
-        # map_to_json(map,index_0,index_1,logdir,start,goal)
+        map_to_json(map,index_0,index_1,logdir,start,goal,runtime)
+        print(f"{i}th map complete")
 
 
 
@@ -303,7 +306,10 @@ def tile_usage_heatmap_from_qd(
                              df["index_1"].min()]["objective"].idxmax()
         
         # find out
-        # print("index_1: ", df[(df["behavior_0"]<=200) & (df["behavior_1"] >= 2.5)]) 
+        # print(df[(df["behavior_0"]>=512) & (df["objective"] > -5.0)].index)
+        indices = list(df[(df["behavior_0"]>=512) & (df["objective"] > -5.0)].index)
+        indices_slow = list(df[(df["behavior_0"]<512) & (df["objective"] < -9.0)].index) 
+        # print(indices)
         # breakpoint() 
         # print("index_1: ", df[(df["behavior_1"]<0.5) & (df["behavior_0"]>0.00065) & (df["objective"] > -2.5)])
         # print("index_1: ", df[(df["behavior_1"]>0.5) & (df["behavior_0"]>0.00065) & (df["objective"] < -5.0)])
@@ -354,37 +360,40 @@ def tile_usage_heatmap_from_qd(
         global_opt = df["objective"].idxmax()
         global_opt_env = df.iloc[global_opt]["metadata"]["warehouse_metadata"][
             "map_str"]
-        to_plots = df.iloc[[
+        # to_plots = df.iloc[[
 
-            #runtime vs suboptimality with obj = entropy, some interesting index
-            # df.loc[df["index_1"] ==76]["objective"].idxmin(), #high suboptimality, high runtime
-            # df.loc[df["index_0"] ==21]["objective"].idxmin(), #high suboptimality, high runtime
-            # df.loc[df["index_0"] ==21]["objective"].idxmax(), #high suboptimality, low runtime
-            # 69, #high suboptimality, low runtime
-            # 625 #high suboptimality, low runtime
+        #     #runtime vs suboptimality with obj = entropy, some interesting index
+        #     # df.loc[df["index_1"] ==76]["objective"].idxmin(), #high suboptimality, high runtime
+        #     # df.loc[df["index_0"] ==21]["objective"].idxmin(), #high suboptimality, high runtime
+        #     # df.loc[df["index_0"] ==21]["objective"].idxmax(), #high suboptimality, low runtime
+        #     # 69, #high suboptimality, low runtime
+        #     # 625 #high suboptimality, low runtime
 
-            #entropy vs connectivity with obj = runtime, some interesting index
-            # 809, #high connectivity, < 0.5 environment entropy, relative low runtime
-            # 1187, #high connectivity, low environment entropy, high runtime
-            # 1226, #high connectivity, low environment entropy, high runtime
-            # 1066, #low connectivity, > 0.5 environment entropy, high runtime 
-            # 1418,   #low connectivity, > 0.5 environment entropy, low runtime 
-            # 328,
-            # 1476,
-            # 42, obj = entropy, low suboptimality, high runtime
+        #     #entropy vs connectivity with obj = runtime, some interesting index
+        #     # 809, #high connectivity, < 0.5 environment entropy, relative low runtime
+        #     # 1187, #high connectivity, low environment entropy, high runtime
+        #     # 1226, #high connectivity, low environment entropy, high runtime
+        #     # 1066, #low connectivity, > 0.5 environment entropy, high runtime 
+        #     # 1418,   #low connectivity, > 0.5 environment entropy, low runtime 
+        #     # 328,
+        #     # 1476,
+        #     # 42, obj = entropy, low suboptimality, high runtime
 
-            # 80,
-            # 63,
-            # 158,
-            # 34,
-            # 163,
-            # 184, obstacle, KL 
-            index_0_max,
-            index_0_min,
-            index_1_max,
-            index_1_min,
-            global_opt,
-        ]]
+        #     # 80,
+        #     # 63,
+        #     # 158,
+        #     # 34,
+        #     # 163,
+        #     # 184, obstacle, KL 
+        #     index_0_max,
+        #     index_0_min,
+        #     index_1_max,
+        #     index_1_min,
+        #     global_opt,
+        #     indices
+            
+        # ]]
+        to_plots = df.iloc[indices_slow]
     elif mode == "extreme-3D":
         # In 3D case, we fix the third dimension and plot the "extreme" points
         # in the archive in first/second dimensions
@@ -469,6 +478,81 @@ def tile_usage_heatmap_from_qd(
                 # map_to_json(repaired_env_str,index_0,index_1,logdir)
 
                 repaired_env = eecbs_env_str2number(repaired_env_str)
+
+                # draw start and goal locations in maps shown
+                start = metadata["start_locations"][0] 
+                goal = metadata["goal_locations"][0]
+
+                h,w = repaired_env.shape
+                
+
+                # for i in range(0,len(start)):
+                #     map_r_start = start[i] // w
+                #     map_c_start = start[i] % w
+
+                #     map_r_goal = goal[i] // w
+                #     map_c_goal = goal[i] % w 
+                    
+                #     # 2 represents Start, 3 represents Goal, 4 represents both start and goal
+                #     if repaired_env[map_r_start][map_c_start] == 3:
+                #         repaired_env[map_r_start][map_c_start] = 4
+                #     else:
+                #         repaired_env[map_r_start][map_c_start] = 2
+
+                #     if repaired_env[map_r_goal][map_c_goal] == 2:
+                #         repaired_env[map_r_goal][map_c_goal] = 4
+                #     else:
+                #         repaired_env[map_r_goal][map_c_goal] = 3
+
+                count_list = np.random.randint(0,150,size = 10)
+
+
+                for i in range(0,len(count_list)):
+                    map_r_start = start[count_list[i]] // w
+                    map_c_start = start[count_list[i]] % w
+
+                    map_r_goal = goal[count_list[i]] // w
+                    map_c_goal = goal[count_list[i]] % w
+
+                    if repaired_env[map_r_start][map_c_start] < 2:
+                        if (repaired_env[map_r_goal][map_c_goal]) < 2:
+                            repaired_env[map_r_start][map_c_start] = i+2
+                            repaired_env[map_r_goal][map_c_goal] = i+2
+                            print(i+2)
+
+
+                
+                # randomly show below 10% (here 12) start and goal locations with the same color
+                # start = metadata["start_locations"][0] 
+                # goal = metadata["goal_locations"][0]
+                # h,w = repaired_env.shape 
+                # print(start)
+
+                # print(repaired_env.shape)
+
+                # count_number_for_draw = 2
+                # while count_number_for_draw < (150 * 0.1-1):
+                #     random_index = np.random.randint(0,len(start)-1,size = 1)
+
+                #     index_0 = start[random_index]
+                #     index_1 = goal[random_index]
+                #     # print(index_0,index_1)
+
+                #     map_r_start = index_0 // w
+                #     map_c_start = index_0 % w
+
+                #     map_r_goal = index_1 // w
+                #     map_c_goal = index_1 % w 
+
+                #     if repaired_env[map_r_start][0][map_c_start] < 2:
+                #         if (repaired_env[map_r_goal][0][map_c_goal]) < 2:
+                #             repaired_env[map_r_start][0][map_c_start] = j
+                #             repaired_env[map_r_goal][0][map_c_goal] = j 
+                #             count_number_for_draw += 1
+
+
+
+
                 visualize_kiva(repaired_env, ax=ax_map, dpi=300)
 
                 tile_usage = np.array(metadata["tile_usage"])
@@ -503,9 +587,9 @@ def tile_usage_heatmap_from_qd(
                         ax_tile_use_cbar,
                         logdir,
                         filenames=[
-                            f"tile_usage/{index_0}_{index_1}-{i}.pdf",
-                            f"tile_usage/{index_0}_{index_1}-{i}.svg",
-                            f"tile_usage/{index_0}_{index_1}-{i}.png",
+                            f"tile_usages/{index_0}_{index_1}-{i}.pdf",
+                            f"tile_usages/{index_0}_{index_1}-{i}.svg",
+                            f"tile_usages/{index_0}_{index_1}-{i}.png",
                         ],
                         dpi=dpi,
                     )
@@ -522,22 +606,22 @@ def main(
     dpi: int = 300,
     mode: str = None,
 ):
-    # if logdir_type == "qd":
-    #     tile_usage_heatmap_from_qd(
-    #         logdir=logdir,
-    #         gen=gen,
-    #         index_0=index_0,
-    #         index_1=index_1,
-    #         dpi=dpi,
-    #         mode=mode,
-    #     )
-    # elif logdir_type == "sim":
-    #     tile_usage_heatmap_from_single_run(logdir, dpi=dpi)
-
-    all_maps_to_json(
-        logdir = logdir,
-        gen = gen,
+    if logdir_type == "qd":
+        tile_usage_heatmap_from_qd(
+            logdir=logdir,
+            gen=gen,
+            index_0=index_0,
+            index_1=index_1,
+            dpi=dpi,
+            mode=mode,
         )
+    elif logdir_type == "sim":
+        tile_usage_heatmap_from_single_run(logdir, dpi=dpi)
+
+    # all_maps_to_json(
+    #     logdir = logdir,
+    #     gen = gen,
+    #     )
 
 
 if __name__ == "__main__":

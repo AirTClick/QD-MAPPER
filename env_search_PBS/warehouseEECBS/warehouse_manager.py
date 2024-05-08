@@ -561,7 +561,8 @@ class WarehouseManager:
         """
         failed_level_info = {
             "solution": sol,
-            "level": result.maze_metadata["level"],
+            "map_int_unrepaired":
+            result.warehouse_metadata["map_int_unrepaired"],
             "log_message": result.log_message,
         }
         return failed_level_info
