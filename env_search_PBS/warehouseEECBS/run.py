@@ -24,6 +24,7 @@ def repair_warehouse(
     min_n_obstacles: int,
     max_n_obstacles: int,
     agentNum: int,
+    n_evals: int,
 ):
     start = time.time()
 
@@ -50,6 +51,7 @@ def repair_warehouse(
             min_n_obstacles = min_n_obstacles,
             max_n_obstacles=max_n_obstacles,
             agentNum=agentNum,
+            n_evals = n_evals,
         )
     except TimeoutError as e:
         logger.warning(f"repair failed")

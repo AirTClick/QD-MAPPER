@@ -411,6 +411,7 @@ class WarehouseManager:
                 max_n_obstacles=self.max_n_obstacles,
                 min_n_obstacles=self.min_n_obstacles,
                 agentNum=self.agent_num,
+                n_evals = self.n_evals,
             ) for lvl, parent_lvl, seed in zip(lvls, parent_lvls,
                                                evaluation_seeds)
         ]

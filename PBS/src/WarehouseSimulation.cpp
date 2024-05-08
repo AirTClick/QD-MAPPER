@@ -54,7 +54,7 @@ std::string run(const py::kwargs& kwargs)
 	// 	kwargs["agentNum"].cast<int>());
 
 	json G_json = json::parse(kwargs["map"].cast<string>());
-	Instance instance(G_json, kwargs["agentNum"].cast<int>());
+	Instance instance(G_json, kwargs["agentNum"].cast<int>(), kwargs["eval_id"].cast<int>());
 
 	srand(0);
     PBS pbs(instance, kwargs["sipp"].cast<bool>(), kwargs["screen"].cast<int>());

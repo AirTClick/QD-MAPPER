@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/cheng/warehouse_env_gen_public/build_pbs/pybind11/cmake_install.cmake")
+  include("/home/cheng/warehouse_env_gen_public/build_PBS/pybind11/cmake_install.cmake")
 
 endif()
 
@@ -51,5 +51,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/cheng/warehouse_env_gen_public/build_pbs/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/cheng/warehouse_env_gen_public/build_PBS/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

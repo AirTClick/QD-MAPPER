@@ -43,10 +43,10 @@ Instance::Instance(const string& map_fname, const string& agent_fname,
 
 }
 
-Instance::Instance(json& G_json, int num_of_agents):  
+Instance::Instance(json& G_json, int num_of_agents, int eval_id):  
 	num_of_agents(num_of_agents)
 {
-	bool succ = load_map_from_jsonstr(G_json, num_of_agents);
+	bool succ = load_map_from_jsonstr(G_json, num_of_agents, eval_id);
 
 	// if(num_of_agents>0)
 	// {
@@ -481,7 +481,7 @@ vector<int> Instance::get_goal_locations() const
 	return goal_locations;
 }
 
-bool Instance::load_map_from_jsonstr(json G_json,int num_of_agents) 
+bool Instance::load_map_from_jsonstr(json G_json,int num_of_agents, int eval_id) 
 {	
 	string line;
 	std::vector<int> start;
@@ -491,8 +491,8 @@ bool Instance::load_map_from_jsonstr(json G_json,int num_of_agents)
 	this->num_of_cols = G_json["n_col"];
 
 	for (int k = 0; k < num_of_agents; k++){
-		start.push_back(G_json["start"][k].get<int>());
-		goal.push_back(G_json["goal"][k].get<int>());	
+		start.push_back(G_json["start"][eval_id][k].get<int>());
+		goal.push_back(G_json["goal"][eval_id][k].get<int>());	
 	}
 
 	start_locations.resize(num_of_agents);

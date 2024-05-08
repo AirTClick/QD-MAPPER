@@ -125,6 +125,7 @@ class WarehouseModule:
         min_n_obstacles: int,
         max_n_obstacles: int,
         agentNum: int,
+        n_evals: int,
     ):
         map_np_unrepaired = copy.deepcopy(map)
 
@@ -238,13 +239,16 @@ class WarehouseModule:
                 logger.info(f"Repair failed! The layout is:\n{failed_unrepaired_env}")
                 return None, map_np_unrepaired, map_comp_unrepaired, None
         
+
         # Create start and goal locations at this point with num of agents 
         #and constraint on the distance between start and goal locations 
         #and distance between start locations
-        
-        start_locations, goal_locations = calc_start_goal_locations(map_np_repaired, agentNum, parts = 5)
-        # print("Start",start_locations)
-        # print("goal",goal_locations)
+        start_locations, goal_locations = [] ,[]
+        for i in range(0, n_evals):
+            start, goal = calc_start_goal_locations(map_np_repaired, agentNum, parts = 5)
+            start_locations.append(start)
+            goal_locations.append(goal)
+    
         # Convert map layout to str format
         map_str_repaired = eecbs_env_number2str(map_np_repaired)
 
@@ -347,6 +351,7 @@ class WarehouseModule:
             "sipp": self.config.sipp,
             # "restart":self.config.restart,
             "force_new_logdir": True,
+            "eval_id": eval_id,
             
         }
 
@@ -1102,6 +1107,9 @@ def single_simulation(seed, agent_num, kwargs, results_dir):
     # for i in kwargs:
     #     print(i)
     print(kwargs["stats"])
+    
+    #for eval_id
+    kwargs["eval_id"] = 0
     
     result_jsonstr = warehouse_sim_PBS.run(**kwargs)
     

@@ -3,7 +3,7 @@
 
 # Relative path conversion top directories.
 set(CMAKE_RELATIVE_PATH_TOP_SOURCE "/home/cheng/warehouse_env_gen_public")
-set(CMAKE_RELATIVE_PATH_TOP_BINARY "/home/cheng/warehouse_env_gen_public/build_pbs")
+set(CMAKE_RELATIVE_PATH_TOP_BINARY "/home/cheng/warehouse_env_gen_public/build_PBS")
 
 # Force unix paths in dependencies.
 set(CMAKE_FORCE_UNIX_PATHS 1)
