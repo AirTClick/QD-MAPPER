@@ -123,7 +123,7 @@ std::string run(const py::kwargs& kwargs) {
     //     json map_json;
     //     i >> map_json;
 	
-	Instance instance(G_json, kwargs["agentNum"].cast<int>(),kwargs["iteration"].cast<int>());
+	Instance instance(G_json, kwargs["agentNum"].cast<int>(),kwargs["eval_id"].cast<int>());
 
 	srand(0);
 	int runs = 1 + kwargs["restart"].cast<int>();

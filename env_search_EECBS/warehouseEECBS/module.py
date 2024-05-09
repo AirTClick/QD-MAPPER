@@ -14,7 +14,7 @@ import fire
 import logging
 import pathlib
 import warnings
-import warehouse_sim_EECBS  # type: ignore # ignore pylance warning
+# import warehouse_sim_EECBS  # type: ignore # ignore pylance warning
 import numpy as np
 import multiprocessing
 import scipy
@@ -28,6 +28,7 @@ from typing import Collection, Optional
 from queue import Queue
 from typing import Collection
 from env_search_EECBS import LOG_DIR
+from env_search_EECBS.build import warehouse_sim_EECBS
 from env_search_EECBS.utils.logging import setup_logging
 from env_search_EECBS.warehouseEECBS.milp_repair import repair_env
 from env_search_EECBS.warehouseEECBS.warehouse_result import (WarehouseResult,
@@ -1042,8 +1043,9 @@ def calc_layout_entropy(map_np_repaired):
 
 def single_simulation(seed, agent_num, kwargs, results_dir):
     kwargs["seed"] = int(seed)
-    output_dir = os.path.join(results_dir,
-        f"sim-agent_num={agent_num}-seed={seed}")
+    # output_dir = os.path.join(results_dir,
+    #     f"sim-agent_num={agent_num}-seed={seed}")
+    output_dir = results_dir
     # kwargs["output"] = output_dir
     kwargs["agentNum"] = agent_num
 
@@ -1055,6 +1057,11 @@ def single_simulation(seed, agent_num, kwargs, results_dir):
     result_jsonstr = warehouse_sim_EECBS.run(**kwargs)
     
     result_json = json.loads(result_jsonstr)
+
+    # name the map 
+    map_data = json.loads(kwargs["map"])
+    map_name = map_data.get("name")
+    iteration = kwargs["iteration"]
 
     solution_cost = result_json["runtime"]
 
@@ -1070,12 +1077,12 @@ def single_simulation(seed, agent_num, kwargs, results_dir):
     # Load and then dump to format the json
     if not os.path.isdir(output_dir):
         os.mkdir(output_dir)
-    with open(os.path.join(output_dir, f"result.json"), "w") as f:
+    with open(os.path.join(output_dir, f"{map_name}_{iteration}.json"), "w") as f:
         f.write(json.dumps(result_json, indent=4))
 
     # Write kwargs to logdir
-    with open(os.path.join(output_dir, "config.json"), "w") as f:
-        f.write(json.dumps(kwargs, indent=4))
+    # with open(os.path.join(output_dir, "config.json"), "w") as f:
+    #     f.write(json.dumps(kwargs, indent=4))
 
     # # Increment number of agents if necessary
     # if mode == "inc_agents":
@@ -1130,13 +1137,15 @@ def main(
         raw_env_json = json.load(f)
 
     # Create log dir
-    map_name = raw_env_json["name"]
-    time_str = time.strftime("%Y-%m-%d_%H-%M-%S")
-    base_log_dir = time_str + "_" + map_name
-    log_dir = os.path.join(LOG_DIR, base_log_dir)
+    # map_name = raw_env_json["name"]
+    # time_str = time.strftime("%Y-%m-%d_%H-%M-%S")
+    # base_log_dir = time_str + "_" + map_name
+    # log_dir = os.path.join(LOG_DIR, base_log_dir)
+    base_log_dir = "EECBS_test_folder"
+    log_dir = os.path.join(LOG_DIR, base_log_dir) 
     results_dir = os.path.join(log_dir, "results")
-    os.mkdir(log_dir)
-    os.mkdir(results_dir)
+    # os.mkdir(log_dir)
+    # os.mkdir(results_dir)
 
     # Write map file to logdir
     with open(os.path.join(log_dir, "map.json"), "w") as f:
@@ -1217,14 +1226,14 @@ def main(
 
     n_evals = n_evals * n_sim if mode == "inc_agents" else n_evals
 
-    print(f"Number of success simulations: {n_success}")
-    print(f"Success rate: {succ_rate}")
+    # print(f"Number of success simulations: {n_success}")
+    # print(f"Success rate: {succ_rate}")
     
 
-    print(f"Average Runtime over {n_evals} simulations: {avg_obj}")
-    print(f"Std Runtime over {n_evals} simulations: {std_obj}")
-    print(f"Max Runtime over {n_evals} simulations: {max_obj}")
-    print(f"Min Runtime over {n_evals} simulations: {min_obj}")
+    # print(f"Average Runtime over {n_evals} simulations: {avg_obj}")
+    # print(f"Std Runtime over {n_evals} simulations: {std_obj}")
+    # print(f"Max Runtime over {n_evals} simulations: {max_obj}")
+    # print(f"Min Runtime over {n_evals} simulations: {min_obj}")
 
 
 

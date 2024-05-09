@@ -24,7 +24,7 @@
 
 WarehouseEECBSConfig.measure_names = ['std_BC', 'layout_entropy']
 WarehouseEECBSConfig.aggregation_type = 'mean'
-WarehouseEECBSConfig.cutoffTime=5                #cutoff time (seconds)
+WarehouseEECBSConfig.cutoffTime=20                #cutoff time (seconds)
 WarehouseEECBSConfig.screen=1                        #screen option (0: none; 1: results; 2:all)#
 WarehouseEECBSConfig.stats=False                     #write to files some detailed statistics
 WarehouseEECBSConfig.iteration = 4

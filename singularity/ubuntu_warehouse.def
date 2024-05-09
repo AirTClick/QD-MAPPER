@@ -6,7 +6,7 @@ From: python:3.9.18-bullseye
     setup.py /usr/project/setup.py
     pybind11/ /usr/project/pybind11
     PBS/ /usr/project/PBS
-    # EECBS/ /usr/project/EECBS
+    EECBS/ /usr/project/EECBS
     # RHCR/ /usr/project/RHCR
     CMakeLists.txt /usr/project/CMakeLists.txt
     # boost_1_71_0.tar.gz /usr/project/boost_1_71_0.tar.gz
@@ -99,3 +99,7 @@ From: python:3.9.18-bullseye
     cd $PROJECT_ROOT
     cmake .
     make
+    cd env_search_EECBS
+    cmake .
+    make 
+    mv "warehouse_sim_EECBS.cpython-38-x86_64-linux-gnu.so" ..
