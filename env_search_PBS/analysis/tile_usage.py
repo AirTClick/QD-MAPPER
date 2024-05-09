@@ -1,5 +1,6 @@
 from operator import index
 import os
+import copy
 from typing import List
 import gin
 import json
@@ -41,6 +42,8 @@ def map_to_json(map,index0,index1,logdir,start,goal,runtime):
     data["start"] = start
     data["goal"] = goal
     data["runtime"] = runtime.astype(float)
+    data["num_of_obstacles"] = num_of_obstacles
+    data["kl_div"] = kl_div
 
     tile_usage_dir = logdir.dir("generated_maps")
 
@@ -70,10 +73,12 @@ def all_maps_to_json(
         index_1 = df.loc[i]["index_1"]
         metadata = df.loc[i]["metadata"]["warehouse_metadata"]
         map = metadata["map_str"]
-        start = metadata["start_locations"][0].tolist()
+        start = metadata["start_locations"].tolist()
         # print(start)
-        goal = metadata["goal_locations"][0].tolist()
+        goal = metadata["goal_locations"].tolist()
         runtime = -df.loc[i]["objective"]
+        num_of_obstacles = metadata["n_obstacles"] 
+        kl_div = metadata["all_kl_div"] 
         # print(goal)
         # print("index_0: ",index_0)
         # print("index_1: ",index_1)
@@ -81,7 +86,30 @@ def all_maps_to_json(
         print(f"{i}th map complete")
 
 
+def sample_start_goal(metadata,repaired_env,j):
+    start = metadata["start_locations"][j] 
+    goal = metadata["goal_locations"][j]
 
+    h,w = repaired_env.shape
+    
+    count_list = np.random.randint(0,150,size = 10)
+
+    repaired_map = copy.deepcopy(repaired_env)
+
+
+    for i in range(0,len(count_list)):
+        map_r_start = start[count_list[i]] // w
+        map_c_start = start[count_list[i]] % w
+
+        map_r_goal = goal[count_list[i]] // w
+        map_c_goal = goal[count_list[i]] % w
+
+        if repaired_map[map_r_start][map_c_start] < 2:
+            if (repaired_map[map_r_goal][map_c_goal]) < 2:
+                repaired_map[map_r_start][map_c_start] = i+2
+                repaired_map[map_r_goal][map_c_goal] = i+2
+    
+    return repaired_map
 
 def get_tile_usage_vmax(env_h, env_w):
     if env_h * env_w == 9 * 16 or env_h * env_w == 9 * 20:
@@ -480,10 +508,10 @@ def tile_usage_heatmap_from_qd(
                 repaired_env = eecbs_env_str2number(repaired_env_str)
 
                 # draw start and goal locations in maps shown
-                start = metadata["start_locations"][0] 
-                goal = metadata["goal_locations"][0]
+                # start = metadata["start_locations"][0] 
+                # goal = metadata["goal_locations"][0]
 
-                h,w = repaired_env.shape
+                # h,w = repaired_env.shape
                 
 
                 # for i in range(0,len(start)):
@@ -504,21 +532,21 @@ def tile_usage_heatmap_from_qd(
                 #     else:
                 #         repaired_env[map_r_goal][map_c_goal] = 3
 
-                count_list = np.random.randint(0,150,size = 10)
+                # count_list = np.random.randint(0,150,size = 10)
 
 
-                for i in range(0,len(count_list)):
-                    map_r_start = start[count_list[i]] // w
-                    map_c_start = start[count_list[i]] % w
+                # for i in range(0,len(count_list)):
+                #     map_r_start = start[count_list[i]] // w
+                #     map_c_start = start[count_list[i]] % w
 
-                    map_r_goal = goal[count_list[i]] // w
-                    map_c_goal = goal[count_list[i]] % w
+                #     map_r_goal = goal[count_list[i]] // w
+                #     map_c_goal = goal[count_list[i]] % w
 
-                    if repaired_env[map_r_start][map_c_start] < 2:
-                        if (repaired_env[map_r_goal][map_c_goal]) < 2:
-                            repaired_env[map_r_start][map_c_start] = i+2
-                            repaired_env[map_r_goal][map_c_goal] = i+2
-                            print(i+2)
+                #     if repaired_env[map_r_start][map_c_start] < 2:
+                #         if (repaired_env[map_r_goal][map_c_goal]) < 2:
+                #             repaired_env[map_r_start][map_c_start] = i+2
+                #             repaired_env[map_r_goal][map_c_goal] = i+2
+                #             print(i+2)
 
 
                 
@@ -553,7 +581,7 @@ def tile_usage_heatmap_from_qd(
 
 
 
-                visualize_kiva(repaired_env, ax=ax_map, dpi=300)
+                # visualize_kiva(repaired_env, ax=ax_map, dpi=300)
 
                 tile_usage = np.array(metadata["tile_usage"])
                 
@@ -578,6 +606,8 @@ def tile_usage_heatmap_from_qd(
                 print(tile_usage.shape)
                 for i in range(tile_usage.shape[0]):
                     curr_tile_usage = tile_usage[i]
+                    repaired_map = sample_start_goal(metadata, repaired_env, i)
+                    visualize_kiva(repaired_map, ax=ax_map, dpi=300) 
                     plot_tile_usage(
                         curr_tile_usage,
                         env_h,
@@ -587,9 +617,9 @@ def tile_usage_heatmap_from_qd(
                         ax_tile_use_cbar,
                         logdir,
                         filenames=[
-                            f"tile_usages/{index_0}_{index_1}-{i}.pdf",
-                            f"tile_usages/{index_0}_{index_1}-{i}.svg",
-                            f"tile_usages/{index_0}_{index_1}-{i}.png",
+                            f"tile_usage_below50_slow/{index_0}_{index_1}-{i}.pdf",
+                            f"tile_usage_below50_slow/{index_0}_{index_1}-{i}.svg",
+                            f"tile_usage_below50_slow/{index_0}_{index_1}-{i}.png",
                         ],
                         dpi=dpi,
                     )

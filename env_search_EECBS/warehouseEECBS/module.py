@@ -1208,7 +1208,7 @@ def main(
 
     n_failure = np.array(solution_cost) > 5
     n_success = 200 - np.sum(n_failure)
-    succ_rate = n_success/400
+    succ_rate = n_success/200
     
     avg_obj = np.mean(solution_cost)
     std_obj = np.std(solution_cost)
@@ -1217,14 +1217,14 @@ def main(
 
     n_evals = n_evals * n_sim if mode == "inc_agents" else n_evals
 
-    # print(f"Number of success simulations: {n_success}")
-    # print(f"Success rate: {succ_rate}")
+    print(f"Number of success simulations: {n_success}")
+    print(f"Success rate: {succ_rate}")
     
 
-    # print(f"Average Runtime over {n_evals} simulations: {avg_obj}")
-    # print(f"Std Runtime over {n_evals} simulations: {std_obj}")
-    # print(f"Max Runtime over {n_evals} simulations: {max_obj}")
-    # print(f"Min Runtime over {n_evals} simulations: {min_obj}")
+    print(f"Average Runtime over {n_evals} simulations: {avg_obj}")
+    print(f"Std Runtime over {n_evals} simulations: {std_obj}")
+    print(f"Max Runtime over {n_evals} simulations: {max_obj}")
+    print(f"Min Runtime over {n_evals} simulations: {min_obj}")
 
 
 
