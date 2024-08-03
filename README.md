@@ -91,6 +91,10 @@ bash scripts/run_local_EECBS.sh config/warehouse/CMA-ME_small_EECBS.gin 42 4
 `CONFIG` is the [gin](https://github.com/google/gin-config) experiment config
 for `env_search_EECBS/main.py`.
 
+To run one specific map on some algorithm several (200) times 
+```bash
+bash scripts/run_single_sim_PBS.sh config/warehouse/pure_simulation_PBS.gin logs/PBS_python_start_goal/generated_maps/27_25.json 150 200 constant 1
+```
 <!-- ### Running on Slurm
 
 Use the following command to run an experiment on an HPC with Slurm (and

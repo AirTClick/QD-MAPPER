@@ -43,20 +43,21 @@ Instance::Instance(const string& map_fname, const string& agent_fname,
 
 }
 
-Instance::Instance(json& G_json, int num_of_agents):  
+Instance::Instance(json& G_json, int num_of_agents, int iteration):  
 	num_of_agents(num_of_agents)
 {
-	bool succ = load_map_from_jsonstr(G_json);
+	bool succ = load_map_from_jsonstr(G_json,iteration);
 
-	if(num_of_agents>0)
-	{
-		generateRandomAgents(0);
-	}
-	else
-	{
-		cerr << "Num of agents not positive." << endl;
-			exit(-1);	
-	}
+	
+	// if(num_of_agents>0)
+	// {
+	// 	generateRandomAgents(0);
+	// }
+	// else
+	// {
+	// 	cerr << "Num of agents not positive." << endl;
+	// 		exit(-1);	
+	// }
 }
 
 int Instance::randomWalk(int curr, int steps) const
@@ -314,11 +315,30 @@ bool Instance::loadMap()
 }
 
 
-bool Instance::load_map_from_jsonstr(json G_json) 
+bool Instance::load_map_from_jsonstr(json G_json, int i) 
 {	
 	string line;
+	std::vector<int> start;
+	std::vector<int> goal;
+
 	this->num_of_rows = G_json["n_row"];
 	this->num_of_cols = G_json["n_col"];
+
+	for (int k = 0; k < num_of_agents; k++){
+		start.push_back(G_json["start"][i][k].get<int>());
+		goal.push_back(G_json["goal"][i][k].get<int>());	
+	}
+
+	// std::vector<int> start_loc(start.begin(), start.end());
+	// std::vector<int> goal_loc(goal.begin(), goal.end());
+
+	start_locations.resize(num_of_agents);
+	goal_locations.resize(num_of_agents);	
+
+	for (int j = 0; j < num_of_agents; j++){
+		start_locations[j] = start[j];
+		goal_locations[j] = goal[j];
+	}
 
 	this->map_size = num_of_cols * num_of_rows;
 
@@ -331,6 +351,8 @@ bool Instance::load_map_from_jsonstr(json G_json)
 			this->my_map[linearizeCoordinate(i, j)] = (line[j] != '.');
 		}
 	}
+
+
 
 	return true;
 

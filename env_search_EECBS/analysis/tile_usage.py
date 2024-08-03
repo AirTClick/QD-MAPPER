@@ -30,6 +30,51 @@ plt.rcParams.update({
     "ps.fonttype": 42,
 })
 
+def map_to_json(map,index0,index1,logdir,start,goal):
+    data = dict()
+    data["name"] = f"{index0}_{index1}"
+    data["weight"] = False
+    data["n_row"] = 32
+    data["n_col"] = 32
+    data["layout"] = map
+    data["start"] = start
+    data["goal"] = goal
+
+    tile_usage_dir = logdir.dir("generated_maps")
+
+    if not os.path.exists(tile_usage_dir):
+        os.makedirs(tile_usage_dir)
+
+    file_path = f"{tile_usage_dir}/{index0}_{index1}.json"
+
+    with open(file_path, 'w') as json_file:
+        json.dump(data, json_file, indent=4)
+    
+    print("success")
+
+def all_maps_to_json(
+        logdir:str,
+        gen:int = None
+        ):
+    logdir = load_experiment(logdir)
+    gen = load_metrics(logdir).total_itrs if gen is None else gen
+    df = pd.read_pickle(logdir.file(f"archive/archive_{gen}.pkl"))
+
+    # print(df)
+
+    for i in range(0,df.shape[0]):
+        # print(df.loc[i])
+        index_0 = df.loc[i]["index_0"]
+        index_1 = df.loc[i]["index_1"]
+        metadata = df.loc[i]["metadata"]["warehouse_metadata"]
+        map = metadata["map_str"]
+        start = metadata["start_locations"].tolist()
+        # print(start)
+        goal = metadata["goal_locations"].tolist()
+        print(goal)
+        # print("index_0: ",index_0)
+        # print("index_1: ",index_1)
+        # map_to_json(map,index_0,index_1,logdir,start,goal)
 
 def get_tile_usage_vmax(env_h, env_w):
     if env_h * env_w == 9 * 16 or env_h * env_w == 9 * 20:
@@ -254,7 +299,6 @@ def tile_usage_heatmap_from_qd(
                              df["index_1"].min()]["objective"].idxmax()
         
         # find out 
-        # print("index_0: ", df[df["behavior_0"]>0.0007])
         # print("index_1: ", df[(df["behavior_1"]<0.5) & (df["behavior_0"]>0.00065) & (df["objective"] > -2.5)])
         # print("index_1: ", df[(df["behavior_1"]>0.5) & (df["behavior_0"]>0.00065) & (df["objective"] < -5.0)])
         # print("index_1: ", df[(df["behavior_1"]<0.4) & (df["behavior_0"]<0.0004) & (df["objective"] < -2.5)])
@@ -262,6 +306,44 @@ def tile_usage_heatmap_from_qd(
         # print(df.loc[69]["objective"])
         # print(df.loc[df["index_1"] ==76]["objective"].idxmin())
         # Add global optimal env
+        # print("index_1: ", df[(df["behavior_1"]>2.5) & (df["behavior_0"]>1.13)]) 
+
+        #purely draw the std of BC for a specific graph
+        # print(df[(df["index_1"]==79) & (df["index_0"]==79)])
+        # breakpoint()
+        k = df.iloc[111]["metadata"]["warehouse_metadata"]["connectivity_graph"]
+
+        grid_kws = {"height_ratios": (0.475, 0.475, 0.05)}
+
+        fig, (ax_map, ax_tile_use, ax_tile_use_cbar) = plt.subplots(
+                    3,
+                    1,
+                    # figsize=get_figsize_qd(w_mode),
+                    figsize = (8,16),
+                    gridspec_kw=grid_kws,
+                )
+        
+        sns.heatmap(
+        k,
+        square=True,
+        cmap="Reds",
+        ax=ax_tile_use,
+        cbar_ax=ax_tile_use_cbar,
+        cbar=True,
+        rasterized=False,
+        annot_kws={"size": 30},
+        linewidths=1,
+        linecolor="black",
+        xticklabels=False,
+        yticklabels=False,
+        vmin=0,
+        vmax=1500,
+        )
+
+        fig.savefig(logdir.file("low_runtime_low_BC"), dpi=dpi)
+        breakpoint()
+
+
         global_opt = df["objective"].idxmax()
         global_opt_env = df.iloc[global_opt]["metadata"]["warehouse_metadata"][
             "map_str"]
@@ -282,11 +364,12 @@ def tile_usage_heatmap_from_qd(
             # 1418,   #low connectivity, > 0.5 environment entropy, low runtime 
             # 328,
             # 1476,
+            # 42, obj = entropy, low suboptimality, high runtime
             index_0_max,
             index_0_min,
             index_1_max,
             index_1_min,
-            # global_opt,
+            global_opt,
         ]]
     elif mode == "extreme-3D":
         # In 3D case, we fix the third dimension and plot the "extreme" points
@@ -344,7 +427,7 @@ def tile_usage_heatmap_from_qd(
                 runtime = np.mean(metadata["avg_run_time"])
                 entropy = metadata["layout_entropy"]
                 print(
-                    f"Index ({index_0}, {index_1}): objective = {obj}, entropy = {entropy}"
+                    f"Index ({index_0}, {index_1}): objective = {obj}, runtime = {runtime}"
                 )
                 # w_mode = gin.query_parameter("WarehouseManager.w_mode")
 
@@ -415,18 +498,21 @@ def main(
     dpi: int = 300,
     mode: str = None,
 ):
-    if logdir_type == "qd":
-        tile_usage_heatmap_from_qd(
-            logdir=logdir,
-            gen=gen,
-            index_0=index_0,
-            index_1=index_1,
-            dpi=dpi,
-            mode=mode,
+    # if logdir_type == "qd":
+    #     tile_usage_heatmap_from_qd(
+    #         logdir=logdir,
+    #         gen=gen,
+    #         index_0=index_0,
+    #         index_1=index_1,
+    #         dpi=dpi,
+    #         mode=mode,
+    #     )
+    # elif logdir_type == "sim":
+    #     tile_usage_heatmap_from_single_run(logdir, dpi=dpi)
+    all_maps_to_json(
+        logdir = logdir,
+        gen = gen,
         )
-    elif logdir_type == "sim":
-        tile_usage_heatmap_from_single_run(logdir, dpi=dpi)
-
 
 if __name__ == "__main__":
     fire.Fire(main)

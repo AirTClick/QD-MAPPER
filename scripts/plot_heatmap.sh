@@ -19,7 +19,7 @@ fi
 
 SINGULARITY_OPTS="--cleanenv --env MALLOC_TRIM_THRESHOLD_=0"
 singularity exec ${SINGULARITY_OPTS} singularity/ubuntu_warehouse.sif \
-    python env_search_EECBS/analysis/heatmap.py \
+    python env_search_PBS/analysis/heatmap.py \
         --logdir "$LOGDIR" \
         --mode "$MODE" \
         --kiva \

@@ -145,7 +145,7 @@ int main(int argc, char** argv)
         json map_json;
         i >> map_json;
 	
-	Instance instance(map_json, vm["agentNum"].as<int>());
+	Instance instance(map_json, vm["agentNum"].as<int>(),vm["iteration"].as<int>());
 
 	srand(0);
 	int runs = 1 + vm["restart"].as<int>();

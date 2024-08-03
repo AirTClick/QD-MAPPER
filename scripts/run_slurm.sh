@@ -8,7 +8,6 @@
 # - HPC_SLURM_NUM_NODES (number of slurm nodes to run)
 # - HPC_SLURM_CPUS_PER_NODE (number of CPUs per node; note we always run one
 #   task per node)
-# - HPC_SLURM_MEM_PER_CPU (memory per CPU)
 # - HPC_MASTER_WORKERS (number of additional workers to allocate on the master
 #   node, so that the main script can start immediately without having to wait
 #   for additional worker nodes to join - note that the master node already
@@ -22,7 +21,6 @@
 #   HPC_SLURM_TIME=20:00:00
 #   HPC_SLURM_NUM_NODES=10
 #   HPC_SLURM_CPUS_PER_NODE=12
-#   HPC_SLURM_MEM_PER_CPU=2GB
 #   HPC_MASTER_WORKERS=2
 #   HPC_MASTER_GPU=true
 #
@@ -102,14 +100,13 @@ done
 #
 
 # Defines HPC_SLURM_ACCOUNT, HPC_SLURM_TIME, HPC_SLURM_NUM_NODES,
-# HPC_SLURM_CPUS_PER_NODE, HPC_SLURM_MEM_PER_CPU, and maybe HPC_MASTER_GPU.
+# HPC_SLURM_CPUS_PER_NODE, and maybe HPC_MASTER_GPU.
 source "$HPC_CONFIG"
 
 if [ -z "$HPC_SLURM_ACCOUNT" ] ||
    [ -z "$HPC_SLURM_TIME" ] ||
    [ -z "$HPC_SLURM_NUM_NODES" ] ||
    [ -z "$HPC_SLURM_CPUS_PER_NODE" ] ||
-   [ -z "$HPC_SLURM_MEM_PER_CPU" ] ||
    [ -z "$HPC_MASTER_WORKERS" ]
 then
 echo "\
@@ -125,6 +122,13 @@ fi
 if [ -z "$HPC_MASTER_GPU" ]; then
   HPC_MASTER_GPU=""  # Make sure HPC_MASTER_GPU is initialized.
 fi
+
+if [ -z "$LOGDIR_ROOT_ARG" ]; then
+  LOGDIR_ROOT_ARG=""  # Make sure LOGDIR_ROOT_ARG is initialized.
+else
+  LOGDIR_ROOT_ARG="--logdir_root $LOGDIR_ROOT_ARG"
+fi
+
 
 set -u  # Uninitialized vars are error.
 
@@ -169,22 +173,23 @@ echo "Starting scheduler from: ${SCHEDULER_SCRIPT}"
 
 echo "\
 #!/bin/bash
-#SBATCH --job-name=${DATE}_scheduler
+#SBATCH --job-name=scheduler_${DATE}
 #SBATCH --nodes=1
-#SBATCH --tasks-per-node=1
-#SBATCH --cpus-per-task=$SCHEDULER_CPUS
-#SBATCH --mem-per-cpu=4GB
+#SBATCH --ntasks-per-node=$SCHEDULER_CPUS
 #SBATCH --time=$HPC_SLURM_TIME
 #SBATCH --account=$HPC_SLURM_ACCOUNT
 #SBATCH --output $SCHEDULER_OUTPUT
 #SBATCH --error $SCHEDULER_OUTPUT
-$(if [ -n "$HPC_MASTER_GPU" ]; then echo -e "#SBATCH --partition=gpu\n#SBATCH --gres=gpu:1"; fi)
+$(if [ -n "$HPC_MASTER_GPU" ]; then echo -e "#SBATCH --partition=GPU-shared\n#SBATCH --gres=gpu:v100-16:1"; else
+echo -e "#SBATCH --partition=RM-shared\n"
+fi)
 
 echo
 echo \"========== Start ==========\"
 date
 
-$(if [ -n "$HPC_MASTER_GPU" ]; then echo "module load cuda/10.2.89"; fi)
+$(if [ -n "$HPC_MASTER_GPU" ]; then echo "module load gcc/11.3.0"; fi)
+$(if [ -n "$HPC_MASTER_GPU" ]; then echo "module load cuda/11.7.1"; fi)
 
 # Start the scheduler.
 singularity exec ${SINGULARITY_OPTS} singularity/ubuntu_warehouse.sif \\
@@ -192,7 +197,7 @@ singularity exec ${SINGULARITY_OPTS} singularity/ubuntu_warehouse.sif \\
     --port $SCHEDULER_PORT \\
     --scheduler-file $SCHEDULER_FILE &
 
-sleep 10  # Wait for scheduler to start.
+sleep 30  # Wait for scheduler to start.
 
 # Parse address from scheduler file.
 address=\$(singularity exec ${SINGULARITY_OPTS} singularity/ubuntu_warehouse.sif python -c \"\\
@@ -201,24 +206,24 @@ with open('$SCHEDULER_FILE', 'r') as file:
   print(json.load(file)['address'])
 \")
 
-# Start main experiment in the background.
-singularity exec ${SINGULARITY_OPTS} $(if [ -n "$HPC_MASTER_GPU" ]; then echo "--nv"; fi) \\
-  singularity/ubuntu_warehouse.sif \\
-  python env_search/main.py \\
-    --config $CONFIG $RELOAD_ARG \\
-    --address \$address \\
-    --slurm-logdir $LOGDIR \\
-    --seed $SEED &
-
 # Start some workers so that the scheduler always has a few workers with it and
 # does not block.
-# Important to not run in background, as the worker must block so that the slurm
-# job does not terminate.
+# Important to run in background, so we can run the main experiment in
+# foreground.
 singularity exec ${SINGULARITY_OPTS} singularity/ubuntu_warehouse.sif \\
   dask-worker \\
     --scheduler-file $SCHEDULER_FILE \\
     --nprocs $HPC_MASTER_WORKERS \\
-    --nthreads 1
+    --nthreads 1 &
+
+# Start main experiment in the foreground.
+singularity exec ${SINGULARITY_OPTS} $(if [ -n "$HPC_MASTER_GPU" ]; then echo "--nv"; fi) \\
+  singularity/ubuntu_warehouse.sif \\
+  python env_search_PBS/main.py \\
+    --config $CONFIG $RELOAD_ARG $LOGDIR_ROOT_ARG \\
+    --address \$address \\
+    --slurm-logdir $LOGDIR \\
+    --seed $SEED
 
 echo
 echo \"========== Done ==========\"
@@ -239,15 +244,14 @@ do
   # workers. When the schedulers die, the workers eventually die too ;)
   echo "\
 #!/bin/bash
-#SBATCH --job-name=${DATE}_worker-${worker_id}
+#SBATCH --job-name=worker-${worker_id}_${DATE}
 #SBATCH --nodes=1
-#SBATCH --tasks-per-node=1
-#SBATCH --cpus-per-task=$HPC_SLURM_CPUS_PER_NODE
-#SBATCH --mem-per-cpu=$HPC_SLURM_MEM_PER_CPU
+#SBATCH --ntasks-per-node=$HPC_SLURM_CPUS_PER_NODE
 #SBATCH --time=$HPC_SLURM_TIME
 #SBATCH --account=$HPC_SLURM_ACCOUNT
 #SBATCH --output $WORKER_OUTPUT
 #SBATCH --error $WORKER_OUTPUT
+#SBATCH --partition=RM-shared
 
 echo
 echo \"========== Start ==========\"
@@ -302,14 +306,26 @@ To cancel this job, run:
   bash scripts/slurm_cancel.sh $LOGDIR
 "
 
-#
-# Print Dask dashboard instructions.
-#
+# #
+# # Print Dask dashboard instructions.
+# #
 
-print_header "Dask Dashboard"
-echo "Waiting for scheduler to start..."
+# print_header "Dask Dashboard"
+# echo "Waiting for scheduler to start..."
 
-# Wait for scheduler to start.
-while [ ! -e $SCHEDULER_FILE ]; do
-  sleep 1
-done
+# # Wait for scheduler to start.
+# while [ ! -e $SCHEDULER_FILE ]; do
+#   sleep 1
+# done
+
+# #
+# # Print postprocessing instructions.
+# #
+
+# print_header "Postprocessing"
+# echo "\
+# Once this script has terminated, move these Slurm outputs to the experiment's
+# logging directory using:
+
+#   bash scripts/slurm_postprocess.sh $LOGDIR
+# "

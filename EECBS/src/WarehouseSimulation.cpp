@@ -123,7 +123,7 @@ std::string run(const py::kwargs& kwargs) {
     //     json map_json;
     //     i >> map_json;
 	
-	Instance instance(G_json, kwargs["agentNum"].cast<int>());
+	Instance instance(G_json, kwargs["agentNum"].cast<int>(),kwargs["eval_id"].cast<int>());
 
 	srand(0);
 	int runs = 1 + kwargs["restart"].cast<int>();
@@ -186,6 +186,9 @@ std::string run(const py::kwargs& kwargs) {
         result["finish"] = true;
         result["solution_cost"] = ecbs.solution_cost;
         result["solution_found"] = ecbs.solution_found;
+        result["start_locations"] = instance.get_start_locations();
+        result["goal_locations"] = instance.get_goal_locations();
+
 
         // cout << "For finish: " << result["finish"] << endl;
 
@@ -245,6 +248,8 @@ std::string run(const py::kwargs& kwargs) {
         result["solution_cost"] = cbs.solution_cost;
         result["finish"] = true;
         result["solution_found"] = cbs.solution_found;
+        result["start_locations"] = instance.get_start_locations();
+        result["goal_locations"] = instance.get_goal_locations();
 
         cout << "For finish: " << result["finish"] << endl;
 

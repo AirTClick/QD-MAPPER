@@ -27,6 +27,7 @@ WarehouseEECBSConfig.aggregation_type = 'mean'
 WarehouseEECBSConfig.cutoffTime=5                #cutoff time (seconds)
 WarehouseEECBSConfig.screen=1                        #screen option (0: none; 1: results; 2:all)#
 WarehouseEECBSConfig.stats=False                     #write to files some detailed statistics
+WarehouseEECBSConfig.iteration = 0
 
 # CBS node selection strategies              
 WarehouseEECBSConfig.highLevelSolver="EES"           #the high-level solver (A*, A*eps, EES, NEW)
