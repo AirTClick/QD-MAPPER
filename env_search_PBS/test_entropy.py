@@ -132,11 +132,11 @@ def calc_layout_entropy_test(map_layout):
 
     return np_pattern_dist
 
-compute_signal = True
+compute_signal = False
 
 if compute_signal:
     map_filenames = []
-    dir = "maps_json"
+    dir = "room_maps_json"
 
     for filename in os.listdir(dir):
         if os.path.isfile(os.path.join(dir,filename)):
@@ -169,23 +169,45 @@ if compute_signal:
 
     print(norm_pattern_dist)
 
-norm_pattern_dist_list = norm_pattern_dist.tolist() 
-print(norm_pattern_dist_list)
-print(len(norm_pattern_dist_list))
+    norm_pattern_dist_list = norm_pattern_dist.tolist() 
+    print("what i need:", norm_pattern_dist_list)
+    print(len(norm_pattern_dist_list))
+
+with open("maze512-1-0.map.json", "r") as f:
+    data = json.load(f)
+
+map_layout = data['layout']
+
+epsilon=1e-12
+
+distribution = calc_layout_entropy_test(map_layout)
+sum_pattern = np.sum(distribution)
+norm_pattern_dist = distribution/sum_pattern
+norm_pattern_dist += epsilon
+print(norm_pattern_dist.tolist() )
+
 
 # map_layout = data['layout']
-# map_layout_2 = data_2['layout']
-# map_layout_random = data_random['layout']
-# map_layout_random_2 = data_random_2['layout']
-# # print(map_layout)
+
+# # map_layout_2 = data_2['layout']
+# # map_layout_random = data_random['layout']
+# # map_layout_random_2 = data_random_2['layout']
+# # # print(map_layout)
 
 # dist_room = calc_layout_entropy_test(map_layout)
 # # print(dist_1)
-# dist_maze = calc_layout_entropy_test(map_layout_2)
-# # print(dist_2)
-# dist_random = calc_layout_entropy_test(map_layout_random) 
-# # dist_ref = dist_1
-# dist_random_2 = calc_layout_entropy_test(map_layout_random_2) 
+
+# with open("maze_maps_json/maze512-2-0.map.json", "r") as f:
+#     data2 = json.load(f)
+# map_layout2 = data2['layout']
+# dist_maze = calc_layout_entropy_test(map_layout2)
+# # print(dis_maze)
+# # print("Diff in tile_distribution: ", dist_maze - dist_room)
+# # dist_maze = calc_layout_entropy_test(map_layout_2)
+# # # print(dist_2)
+# # dist_random = calc_layout_entropy_test(map_layout_random) 
+# # # dist_ref = dist_1
+# # dist_random_2 = calc_layout_entropy_test(map_layout_random_2) 
 
 # epsilon=1e-12
 
@@ -198,21 +220,22 @@ print(len(norm_pattern_dist_list))
 # sum_pattern_maze = np.sum(dist_maze)
 # norm_pattern_dist_maze = dist_maze/sum_pattern_maze
 # norm_pattern_dist_maze += epsilon
+# # print("Diff after norm: ", norm_pattern_dist_maze - norm_pattern_dist_room)
+# # #random_1
+# # sum_pattern_random = np.sum(dist_random)
+# # norm_pattern_dist_random = dist_random/sum_pattern_random
+# # norm_pattern_dist_random += epsilon
 
-# #random_1
-# sum_pattern_random = np.sum(dist_random)
-# norm_pattern_dist_random = dist_random/sum_pattern_random
-# norm_pattern_dist_random += epsilon
+# # #random_2
+# # sum_pattern_random_2= np.sum(dist_random_2)
+# # norm_pattern_dist_random_2 = dist_random_2/sum_pattern_random_2
+# # norm_pattern_dist_random_2 += epsilon
 
-# #random_2
-# sum_pattern_random_2= np.sum(dist_random_2)
-# norm_pattern_dist_random_2 = dist_random_2/sum_pattern_random_2
-# norm_pattern_dist_random_2 += epsilon
+# # # print(norm_pattern_dist_maze)
 
-# # print(norm_pattern_dist_maze)
-
-# #kl_div_room
+# # #kl_div_room
 # kl_room_maze = entropy(norm_pattern_dist_room,norm_pattern_dist_maze , base = 512)
+# print(kl_room_maze)
 # kl_room_random = entropy(norm_pattern_dist_room,norm_pattern_dist_random , base = 512)
 # kl_room_random_2= entropy(norm_pattern_dist_room,norm_pattern_dist_random_2, base = 512)
 

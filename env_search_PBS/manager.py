@@ -113,6 +113,9 @@ class Manager:  # pylint: disable = too-many-instance-attributes
         save_surrogate_archive: bool = True,
         reload_save_freq: int = 5,
         plot_metrics_freq: int = 5,
+        ## Hyperparameter flags ##
+        hyper_flag: bool = gin.REQUIRED,
+
     ):  # pylint: disable = too-many-arguments, too-many-branches
 
         # Main.
@@ -137,6 +140,9 @@ class Manager:  # pylint: disable = too-many-instance-attributes
         self.save_surrogate_archive = save_surrogate_archive
         self.reload_save_freq = reload_save_freq
         self.plot_metrics_freq = plot_metrics_freq
+
+        # Hyperparameter Flag
+        self.hyper_flag = hyper_flag
 
         # Set up the environment manager.
         self.env_manager = env_manager_class(self.client, self.logdir)
@@ -421,6 +427,11 @@ class Manager:  # pylint: disable = too-many-instance-attributes
         """Builds pyribs components with the config params and given archive."""
         # Makes sense to initialize at zero since these are latent vectors.
         initial_solution = np.zeros(self.sol_size)
+
+        # add here a flag for adding hyperparameters (last element change)
+        if self.hyper_flag:
+            initial_solution[-1] = 1.5
+        
 
         emitters = []
         for emitter_class, n_emitters in self.emitter_types:

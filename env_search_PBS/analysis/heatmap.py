@@ -5,6 +5,7 @@ Usage:
 """
 import os
 import shutil
+import pandas as pd
 
 import fire
 import gin
@@ -41,6 +42,9 @@ MEASURE_NAMES = {
     "maze_kl_div":"Maze KL Divergence",
     "n_obstacles":"Number of Obstacles",
     "all_kl_div": "KL Divergence",
+    "abs_diff_hash": "Node Hashing Difference",
+    "lambda2": "lambda2",
+    'maze_all_kl_div': "Maze KL Div",
 }
 
 
@@ -55,9 +59,25 @@ def plot_generation_on_axis(
 ):
     # pylint: disable = unused-argument
     archive = load_archive_gen(logdir, gen)
-    print(archive.as_pandas())
+    # df = pd.read_pickle(logdir.file(f"archive/archive_{gen}.pkl"))
+    # for _, to_plot in df.iterrows():
+    #     print(to_plot["metadata"]["warehouse_metadata"]["lower_runtime_alg"])
+    #     breakpoint()
+    # for d in df:
+    #     print(d)
+    #     breakpoint()
+    df = pd.read_pickle(logdir.file(f"archive/archive_{gen}.pkl"))
+    alg_list = []
+    for _, to_plot in df.iterrows():
+        alg_list.append(to_plot["metadata"]["warehouse_metadata"]["lower_runtime_alg"])
+    
+    # print(archive.as_pandas())
+    # for elite in archive:
+    #     print(elite)
+    #     breakpoint()
     grid_archive_heatmap(
         archive,
+        alg_list,
         ax,
         transpose_bcs=True,
         cbar_ticklabel_fontsize=20,
@@ -352,9 +372,9 @@ def heatmap(logdir: str,
         # if not w_mode:
         #     vmax += 1.5
 
-    vmin = 0
+    vmin = -5
     # vmax = 1 # for objective = entropy
-    vmax = 10 # for objective = runtime
+    vmax = 5 # for objective = runtime
 
     # Plotting arguments for grid_archive_heatmap.
     plot_kwargs = {

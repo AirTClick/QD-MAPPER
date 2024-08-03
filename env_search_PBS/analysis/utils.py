@@ -4,6 +4,7 @@ Note that most of these functions require that you first call `load_experiment`
 so that gin configurations are loaded properly.
 """
 import os
+import pandas as pd
 import pickle as pkl
 from pathlib import Path
 import matplotlib as mpl
@@ -71,17 +72,31 @@ def load_archive_from_history(logdir: LogDir, individual=False) -> GridArchive:
     archive.initialize(0)  # No solutions.
 
     with logdir.pfile("archive_history.pkl").open("rb") as file:
+    # with logdir.pfile("archive_100.pkl").open("rb") as file:
         archive_history = pkl.load(file)
 
+
     yield archive  # Start with empty archive.
-    for gen_history in archive_history:
+
+    for i in range(0,len(archive_history)):
         archive.new_history_gen()
-        for obj, bcs in gen_history:
+        for obj, bcs in archive_history[i]:
             archive.add([], obj, bcs, None)  # No solutions, no metadata.
             if individual:
                 yield archive
         if not individual:
             yield archive
+
+    
+
+    # for gen_history in archive_history:
+    #     archive.new_history_gen()
+    #     for obj, bcs in gen_history:
+    #         archive.add([], obj, bcs, None)  # No solutions, no metadata.
+    #         if individual:
+    #             yield archive
+    #     if not individual:
+    #         yield archive
 
 
 def load_surrogate_archive(
@@ -158,6 +173,7 @@ def load_archive_gen(logdir: LogDir, gen: int) -> GridArchive:
     itr = iter(load_archive_from_history(logdir))
     for _ in range(gen + 1):
         archive = next(itr)
+
     return archive
 
 
@@ -190,6 +206,7 @@ def get_color(map_from, algo_name, n_agents_opt=None):
 
 
 def grid_archive_heatmap(archive,
+                         alg_list,
                          ax=None,
                          transpose_bcs=False,
                          cmap="magma",
@@ -270,8 +287,23 @@ def grid_archive_heatmap(archive,
 
     # Color for each cell in the heatmap.
     colors = np.full((y_dim, x_dim), np.nan)
+    i = 0
     for elite in archive:
-        colors[elite.idx[1], elite.idx[0]] = -elite.obj
+        # show on archive for the difference
+        if alg_list[i] == "EECBS":
+            # change here for maximizing the runtime gap between two algorihtms
+            colors[elite.idx[1], elite.idx[0]] = elite.obj
+        elif alg_list[i] == "PBS":
+            colors[elite.idx[1], elite.idx[0]] = -elite.obj
+        
+        i+=1
+
+        # normal case
+        # colors[elite.idx[1], elite.idx[0]] = elite.obj 
+        
+
+    # print(colors)
+    # breakpoint()
 
     if transpose_bcs:
         # Since the archive is 2D, transpose by swapping the x and y boundaries
@@ -308,3 +340,4 @@ def grid_archive_heatmap(archive,
         cbar.set_ticks([vmin, np.mean([vmin, vmax]), vmax])
         cbar.set_ticklabels([vmin, np.mean([vmin, vmax]), vmax])
         cbar.ax.tick_params(labelsize=cbar_ticklabel_fontsize)
+

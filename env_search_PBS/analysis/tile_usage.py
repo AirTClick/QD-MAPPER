@@ -32,18 +32,36 @@ plt.rcParams.update({
 })
 
 
-def map_to_json(map,index0,index1,logdir,start,goal,runtime):
+def map_to_json(
+        map,
+        index0,
+        index1,
+        logdir,
+        start,
+        goal,
+        objective,
+        runtime_EECBS,
+        runtime_PBS,
+        num_of_obstacles,
+        kl_div,
+        lower_runtime_alg,
+        suboptimal_EECBS,
+        suboptimal_PBS,
+    ):
     data = dict()
     data["name"] = f"{index0}_{index1}"
     data["weight"] = False
     data["n_row"] = 32
     data["n_col"] = 32
     data["layout"] = map
+    data["lower_runtime_alg"] = lower_runtime_alg
+    data["objective"] = objective.astype(float)
+    data["num_of_obstacles"] = num_of_obstacles.astype(float)
+    data["kl_div"] = kl_div.astype(float)
+    data["runtime_EECBS"] = runtime_EECBS.astype(float)
+    data["runtime_PBS"] = runtime_PBS.astype(float)
     data["start"] = start
     data["goal"] = goal
-    data["runtime"] = runtime.astype(float)
-    data["num_of_obstacles"] = num_of_obstacles
-    data["kl_div"] = kl_div
 
     tile_usage_dir = logdir.dir("generated_maps")
 
@@ -76,13 +94,20 @@ def all_maps_to_json(
         start = metadata["start_locations"].tolist()
         # print(start)
         goal = metadata["goal_locations"].tolist()
-        runtime = -df.loc[i]["objective"]
+        objective = df.loc[i]["objective"]
+        runtime_EECBS = metadata["avg_run_time_EECBS"]
+        runtime_PBS = metadata["avg_run_time_PBS"]
         num_of_obstacles = metadata["n_obstacles"] 
-        kl_div = metadata["all_kl_div"] 
+        kl_div = metadata["all_kl_div"]
+        lower_runtime_alg = metadata["lower_runtime_alg"]
+        suboptimal_EECBS = metadata["average_suboptimality_EECBS"]
+        suboptimal_PBS = metadata["average_suboptimality_PBS"]
+        # print("suboptimality_EECBS: ", metadata["average_suboptimality_EECBS"])
+        # print("suboptimality_PBS: ", metadata["average_suboptimality_PBS"]) 
         # print(goal)
         # print("index_0: ",index_0)
         # print("index_1: ",index_1)
-        map_to_json(map,index_0,index_1,logdir,start,goal,runtime)
+        map_to_json(map,index_0,index_1,logdir,start,goal,objective,runtime_EECBS,runtime_PBS,num_of_obstacles,kl_div,lower_runtime_alg,suboptimal_EECBS,suboptimal_PBS)
         print(f"{i}th map complete")
 
 
@@ -335,8 +360,8 @@ def tile_usage_heatmap_from_qd(
         
         # find out
         # print(df[(df["behavior_0"]>=512) & (df["objective"] > -5.0)].index)
-        indices = list(df[(df["behavior_0"]>=512) & (df["objective"] > -5.0)].index)
-        indices_slow = list(df[(df["behavior_0"]<512) & (df["objective"] < -9.0)].index) 
+        indices = list(df[(df["behavior_1"] >= 717)].index)
+        indices_slow = list(df[(df["behavior_0"]<461.5) & (df["objective"] < -5.0)].index) 
         # print(indices)
         # breakpoint() 
         # print("index_1: ", df[(df["behavior_1"]<0.5) & (df["behavior_0"]>0.00065) & (df["objective"] > -2.5)])
@@ -469,23 +494,29 @@ def tile_usage_heatmap_from_qd(
             for _, to_plot in to_plots.iterrows():
                 index_0 = to_plot["index_0"]
                 index_1 = to_plot["index_1"]
-                obj = -to_plot["objective"]
+                obj = to_plot["objective"]
                 metadata = to_plot["metadata"]["warehouse_metadata"]
                 #runtime is stored as objs in warehouse_metadata
-                print("suboptimality: ", metadata["average_suboptimality"])
+                # print("suboptimality_EECBS: ", metadata["average_suboptimality_EECBS"])
+                # print("suboptimality_PBS: ", metadata["average_suboptimality_PBS"])
                 # print("room KL_div: ", metadata["room_kl_div"])
                 # print("maze KL_div: ", metadata["maze_kl_div"])
-                print("Start_locations: ",metadata["start_locations"])
-                print("Goal_locations: ",(metadata["goal_locations"]).shape)
+                # print("Start_locations: ",metadata["start_locations"])
+                # print("Goal_locations: ",(metadata["goal_locations"]).shape)
                 # print("map",metadata["map_str"])
-                print("KL_div", metadata["all_kl_div"])
+                # print("KL_div", metadata["all_kl_div"])
                 print("number of obstacles:", metadata["n_obstacles"])
+                # print("Lower runtime algorithm: ", metadata["lower_runtime_alg"])
                 # print("Connectivity: ", metadata["std_connectivity"])
                 # print("avg_degrees: ",metadata["avg_degrees"])
-                runtime = np.mean(metadata["avg_run_time"])
+                # runtime_EECBS = np.mean(metadata["avg_run_time_EECBS"])
+                # runtime_PBS = np.mean(metadata["avg_run_time_PBS"])
                 entropy = metadata["layout_entropy"]
+                # print(
+                #     f"Index ({index_0}, {index_1}): objective = {obj}, EECBS_runtime = {runtime_EECBS}, PBS_runtime = {runtime_PBS}"
+                # )
                 print(
-                    f"Index ({index_0}, {index_1}): objective = {obj}, runtime = {runtime}"
+                    f"Index ({index_0}, {index_1}): objective = {obj}"
                 )
                 # w_mode = gin.query_parameter("WarehouseManager.w_mode")
 
@@ -583,13 +614,13 @@ def tile_usage_heatmap_from_qd(
 
                 # visualize_kiva(repaired_env, ax=ax_map, dpi=300)
 
-                tile_usage = np.array(metadata["tile_usage"])
-                
+                # tile_usage_EECBS = np.array(metadata["tile_usage_EECBS"])
+                # tile_usage_PBS = np.array(metadata["tile_usage_PBS"])
                 # print("Std_tile_usage: ", metadata["tile_usage_mean"])
                 # print("Mean_tile_usage: ", metadata["tile_usage_std"])
                 run_time_Test = metadata["objs"]
-                print("Runtime:",metadata["objs"])
-                print("Std_runtime: ", np.std(run_time_Test))
+                # print("Runtime:",metadata["objs"])
+                # print("Std_runtime: ", np.std(run_time_Test))
 
                 env_h = gin.query_parameter("WarehouseManager.lvl_height")
                 env_w = gin.query_parameter("WarehouseManager.lvl_width")
@@ -598,18 +629,22 @@ def tile_usage_heatmap_from_qd(
                 # ADDITION_BLOCK_HEIGHT = 0 if w_mode else KIVA_ROBOT_BLOCK_HEIGHT
                 # env_w += 2 * ADDITION_BLOCK_WIDTH
                 # env_h += 2 * ADDITION_BLOCK_HEIGHT
-                if len(tile_usage.shape) == 2:
-                    tile_usage = tile_usage[np.newaxis, ...]
+                
+                # if len(tile_usage_EECBS.shape) == 2:
+                #     tile_usage_EECBS = tile_usage_EECBS[np.newaxis, ...]
+                # if len(tile_usage_PBS.shape) == 2:
+                #     tile_usage_PBS = tile_usage_PBS[np.newaxis, ...]
 
                 # mkdir for tileusage
                 tile_usage_dir = logdir.dir("tile_usages")
-                print(tile_usage.shape)
-                for i in range(tile_usage.shape[0]):
-                    curr_tile_usage = tile_usage[i]
+                # print(tile_usage.shape)
+                for i in range(tile_usage_EECBS.shape[0]):
+                    curr_tile_usage_EECBS = tile_usage_EECBS[i]
+                    curr_tile_usage_PBS = tile_usage_PBS[i]
                     repaired_map = sample_start_goal(metadata, repaired_env, i)
                     visualize_kiva(repaired_map, ax=ax_map, dpi=300) 
                     plot_tile_usage(
-                        curr_tile_usage,
+                        curr_tile_usage_EECBS,
                         env_h,
                         env_w,
                         fig,
@@ -617,9 +652,9 @@ def tile_usage_heatmap_from_qd(
                         ax_tile_use_cbar,
                         logdir,
                         filenames=[
-                            f"tile_usage_below50_slow/{index_0}_{index_1}-{i}.pdf",
-                            f"tile_usage_below50_slow/{index_0}_{index_1}-{i}.svg",
-                            f"tile_usage_below50_slow/{index_0}_{index_1}-{i}.png",
+                            f"tile_usage_eecbs/{index_0}_{index_1}-{i}.pdf",
+                            f"tile_usage_eecbs/{index_0}_{index_1}-{i}.svg",
+                            f"tile_usage_eecbs/{index_0}_{index_1}-{i}.png",
                         ],
                         dpi=dpi,
                     )

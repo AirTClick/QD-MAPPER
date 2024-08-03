@@ -99,7 +99,7 @@ From: python:3.9.18-bullseye
     cd $PROJECT_ROOT
     cmake .
     make
-    cd env_search_EECBS
+    cd EECBS
     cmake .
     make 
-    mv "warehouse_sim_EECBS.cpython-38-x86_64-linux-gnu.so" ..
+    mv "warehouse_sim_EECBS.cpython-39-x86_64-linux-gnu.so" ..

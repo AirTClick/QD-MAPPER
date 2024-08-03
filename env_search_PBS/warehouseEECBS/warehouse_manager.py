@@ -29,7 +29,7 @@ from env_search_PBS.warehouseEECBS.emulation_model.networks import (
 from env_search_PBS.warehouseEECBS.module import (WarehouseModule, WarehouseEECBSConfig)
                                         #  ,get_comp_map, get_additional_h_blocks,
                                         #  get_additional_v_blocks)
-from env_search_PBS.warehouseEECBS.run import (run_warehouse, repair_warehouse,
+from env_search_PBS.warehouseEECBS.run import (run_warehouse_EECBS, run_warehouse_PBS, repair_warehouse,
                                       process_warehouse_eval_result)
 from env_search_PBS.utils.worker_state import init_warehouse_module
 from env_search_PBS.warehouseEECBS.generator.nca_generator import WarehouseNCA
@@ -392,6 +392,16 @@ class WarehouseManager:
                                              size=len(sols),
                                              endpoint=True)
 
+
+        # pick out all hyperparameters stored in the sols part: 
+        sols_hyper = []
+        for i in range(len(sols)):
+            for j in range(self.n_evals): 
+                suboptimal_bound = sols[i][-1]
+                if suboptimal_bound < 1.0:
+                    suboptimal_bound = 1.0
+                sols_hyper.append(suboptimal_bound)
+          
         # Split repair and evaluate.
         # Since evaluation might take a lot longer than repair, and each
         # evaluation might includes several simulations, we want to distribute
@@ -451,14 +461,49 @@ class WarehouseManager:
                 maps_eval_seed_sim.append(eval_seed + j)
                 eval_id_sim.append(j)
 
+
+        # print(len(map_jsons_sim))
+        # print(len(maps_eval_seed_sim))
+        # print(len(maps_id_sim))
+        # print(len(eval_id_sim))
+        # print(len(sols_hyper))
+        # breakpoint()
+
         # Then, evaluate the maps
         if batch_idx is None:
             batch_idx = self.eval_batch_idx
         eval_logdir = self.logdir.pdir(f"evaluations/eval_batch_{batch_idx}")
         self.eval_batch_idx += 1
-        sim_futures = [
+    
+        # changes for two algorithm experiment
+        sim_futures_EECBS = [
             self.client.submit(
-                run_warehouse,
+                run_warehouse_EECBS,
+                map_json=map_json,
+                eval_logdir=eval_logdir,
+                sim_seed=sim_seed,
+                agentNum=self.agent_num,
+                map_id=map_id,
+                eval_id=eval_id,
+                suboptimality_bound = suboptimality_bound,
+            ) for (
+                map_json,
+                sim_seed,
+                map_id,
+                eval_id,
+                suboptimality_bound,
+            ) in zip(
+                map_jsons_sim,
+                maps_eval_seed_sim,
+                maps_id_sim,
+                eval_id_sim,
+                sols_hyper,
+            )
+        ]
+
+        sim_futures_PBS = [
+            self.client.submit(
+                run_warehouse_PBS,
                 map_json=map_json,
                 eval_logdir=eval_logdir,
                 sim_seed=sim_seed,
@@ -477,24 +522,31 @@ class WarehouseManager:
                 eval_id_sim,
             )
         ]
+
         logger.info("Collecting evaluations")
-        results_json = self.client.gather(sim_futures)
+        results_json_EECBS = self.client.gather(sim_futures_EECBS)
+        results_json_PBS = self.client.gather(sim_futures_PBS)
 
         logger.info("Finished Collection") 
 
-        results_json_sorted = []
+        results_json_sorted_EECBS = []
+        results_json_sorted_PBS = []
         for i in range(len(sols)):
-            curr_eval_results = []
+            curr_eval_results_EECBS = []
+            curr_eval_results_PBS = [] 
             for j in range(self.n_evals):
-                curr_eval_results.append(results_json[i * self.n_evals + j])
-            results_json_sorted.append(curr_eval_results)
+                curr_eval_results_EECBS.append(results_json_EECBS[i * self.n_evals + j])
+                curr_eval_results_PBS.append(results_json_PBS[i * self.n_evals + j])
+            results_json_sorted_EECBS.append(curr_eval_results_EECBS)
+            results_json_sorted_PBS.append(curr_eval_results_PBS)
 
         logger.info("Processing eval results")
 
         process_futures = [
             self.client.submit(
                 process_warehouse_eval_result,
-                curr_result_json=curr_result_json,
+                curr_result_json_EECBS=curr_result_json_EECBS,
+                curr_result_json_PBS = curr_result_json_PBS,
                 n_evals=self.n_evals,
                 map_np_unrepaired=map_np_unrepaired_sim[map_id * self.n_evals],
                 map_comp_unrepaired=map_comp_unrepaired_sim[map_id *
@@ -504,14 +556,18 @@ class WarehouseManager:
                 max_n_shelf=self.max_n_shelf,
                 map_id=map_id,
             ) for (
-                curr_result_json,
+                curr_result_json_EECBS,
+                curr_result_json_PBS,
                 map_id,
             ) in zip(
-                results_json_sorted,
+                results_json_sorted_EECBS,
+                results_json_sorted_PBS,
                 map_ids,
             )
         ]
+
         results = self.client.gather(process_futures)
+
         return results
 
     def add_experience(self, sol, result):

@@ -23,7 +23,8 @@ cfg.set({'distributed.scheduler.worker-ttl': None})
 
 def setup_logdir(seed: int,
                  slurm_logdir: Union[str, Path],
-                 reload_dir: Optional[str] = None):
+                 reload_dir: Optional[str] = None,
+                 logdir_root: str = None):
     """Creates the logging directory with a LogDir object.
 
     Args:
@@ -41,7 +42,7 @@ def setup_logdir(seed: int,
         logdir = LogDir(name, custom_dir=reload_dir)
     else:
         # Create new logdir.
-        logdir = LogDir(name, rootdir="./logs", uuid=True)
+        logdir = LogDir(name, rootdir=logdir_root, uuid=8)
 
     # Save configuration options.
     with logdir.pfile("config.gin").open("w") as file:
@@ -107,12 +108,14 @@ def main(
     address: str = "127.0.0.1:8786",
     reload: str = None,
     slurm_logdir=None,
+    logdir_root: str = "./logs",
 ):
     gin.parse_config_file(config)
     check_env()
 
     # Set up logdir
-    logdir = setup_logdir(seed, slurm_logdir, reload)
+    # logdir = setup_logdir(seed, slurm_logdir, reload)
+    logdir = setup_logdir(seed, slurm_logdir, reload, logdir_root)
 
     # Set up dask
     # client = setup_dask(logdir=logdir)

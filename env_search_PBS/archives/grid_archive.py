@@ -58,3 +58,4 @@ class GridArchive(ribs.archives.GridArchive):
             self._history[-1].append([objective_value, behavior_values])
 
         return status, val
+    

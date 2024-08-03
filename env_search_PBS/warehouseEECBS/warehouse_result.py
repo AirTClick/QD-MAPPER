@@ -41,28 +41,45 @@ class WarehouseMetadata:
     # objs: np.ndarray = None  # Objectives
     objs: float = None
     
+    # FOR two algorithm comparision (here EECBS & PBS)
+    lower_runtime_alg : str = None
 
-    #FOR EECBS
-    avg_run_time : float = None
-    solution_cost : List[float] = None
-    average_suboptimality: float = None
+    avg_run_time_EECBS: float = None
+    avg_run_time_PBS: float = None
+
+    solution_cost_EECBS : List[float] = None
+    solution_cost_PBS : List[float] = None
+
+    average_suboptimality_EECBS: float = None
+    average_suboptimality_PBS: float = None
+
+    tile_usage_EECBS: np.ndarray = None # (n_eval, n_row, n_col) 3D np array
+    # tile_usage: List[List[float]] = None # (n_eval, n_tiles) 2D array
+    tile_usage_mean_EECBS: float = None
+    tile_usage_std_EECBS: float = None
+
+    tile_usage_PBS: np.ndarray = None
+    tile_usage_mean_PBS: float = None
+    tile_usage_std_PBS: float = None
+
+    # Attributes of the map 
     std_BC: float = None
     avg_degrees: float = None
     connectivity_graph: np.ndarray = None
     maze_kl_div: float = None
     room_kl_div: float = None
     all_kl_div: float = None
-
+    room_all_kl_div: float = None
+    maze_all_kl_div: float = None
     layout_entropy: float = None
-    #FOR RHCR
-    throughput : List[float] = None # throughput of the simulation
-
-    tile_usage: np.ndarray = None # (n_eval, n_row, n_col) 3D np array
-    # tile_usage: List[List[float]] = None # (n_eval, n_tiles) 2D array
-    tile_usage_mean: float = None
-    tile_usage_std: float = None
     start_locations: np.ndarray = None
     goal_locations: np.ndarray = None
+    n_obstacles: int = None
+    abs_diff_hash: float = None
+    lambda2: float = None
+
+    #FOR RHCR
+    throughput : List[float] = None # throughput of the simulation
 
     num_wait: List[List[float]] = None # (n_eval, n_timestep) 2D array
     num_wait_mean: float = None
@@ -73,7 +90,6 @@ class WarehouseMetadata:
     finished_len_mean: float = None
     finished_len_std: float = None
 
-    n_obstacles: int = None
     # n_endpoint: int = None
 
     all_task_len_mean: float = None # Average length of all possible
