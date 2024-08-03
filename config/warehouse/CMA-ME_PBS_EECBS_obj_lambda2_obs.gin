@@ -41,7 +41,7 @@ Manager.hyper_flag = True # add one hyperparameter for optimizing the suboptimal
 # Need more exploration 
 # Parameters for ImprovementEmitter:
 # ======================================================================================================================
-ImprovementEmitter.batch_size = 20
+ImprovementEmitter.batch_size = 10
 ImprovementEmitter.sigma0 = 0.2
 ImprovementEmitter.selection_rule = "filter"
 ImprovementEmitter.weight_rule = "truncation"
