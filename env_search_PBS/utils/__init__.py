@@ -115,7 +115,7 @@ def eecbs_env_str2number(env_str):
     """
     env_np = []
     for row_str in env_str:
-        print(row_str)
+        # print(row_str)
         row_np = [eecbs_obj_types.index(tile) for tile in row_str]
         env_np.append(row_np)
     return np.array(env_np, dtype=int)

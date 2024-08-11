@@ -9,10 +9,13 @@ import json
 import os
 import numpy as np
 import os
+import matplotlib.pyplot as plt
 
 
 #Convert All available single agent 512 * 512 maps (.map file) to .json file
 convert_on = False
+
+
 
 def turnMaptoJson(file):
     with open(file, 'r') as map_file:
@@ -34,7 +37,7 @@ def turnMaptoJson(file):
     file_new = file[index_new+1:]
     print(file_new)
 
-    file_path = "maps_json/"+file_new+'.json'
+    file_path = "MAPF_JSON/"+file_new+'.json'
 
     with open(file_path, 'w') as json_file:
         json.dump(data, json_file, indent=4)
@@ -44,22 +47,29 @@ if convert_on:
     dir_random = "random_maps"
     dir_room = "room_maps"
 
+    dir_MAPF = "MAPF_MAPS"
+
     map_filenames = []
 
-    for filename in os.listdir(dir_maze):
-        if os.path.isfile(os.path.join(dir_maze,filename)):
-            map_filenames.append(os.path.join(dir_maze,filename))
+    for filename in os.listdir(dir_MAPF):
+        if os.path.isfile(os.path.join(dir_MAPF,filename)):
+            map_filenames.append(os.path.join(dir_MAPF,filename))
 
-    for filename in os.listdir(dir_random):
-        if os.path.isfile(os.path.join(dir_random,filename)):
-            map_filenames.append(os.path.join(dir_random,filename))
+    # for filename in os.listdir(dir_maze):
+    #     if os.path.isfile(os.path.join(dir_maze,filename)):
+    #         map_filenames.append(os.path.join(dir_maze,filename))
 
-    for filename in os.listdir(dir_room):
-        if os.path.isfile(os.path.join(dir_room,filename)):
-            map_filenames.append(os.path.join(dir_room,filename))
+    # for filename in os.listdir(dir_random):
+    #     if os.path.isfile(os.path.join(dir_random,filename)):
+    #         map_filenames.append(os.path.join(dir_random,filename))
+
+    # for filename in os.listdir(dir_room):
+    #     if os.path.isfile(os.path.join(dir_room,filename)):
+    #         map_filenames.append(os.path.join(dir_room,filename))
     
     for filename in map_filenames:
         turnMaptoJson(filename)
+
 
 
 
@@ -119,7 +129,12 @@ def calc_layout_entropy_test(map_layout):
     # print(pattern_dist)
 
     np_pattern_dist = np.array(pattern_dist,dtype = int)
-    
+
+    sum_pattern = np.sum(np_pattern_dist)
+    norm_pattern_dist = np_pattern_dist/sum_pattern
+
+    epsilon = 1e-12
+    norm_pattern_dist += epsilon 
     # sum_pattern = np.sum(pattern_dist)
     # norm_pattern_dist = pattern_dist/sum_pattern
     
@@ -130,7 +145,7 @@ def calc_layout_entropy_test(map_layout):
     # return entropy(pattern_dist, base=len(pattern_dist))
     # print(entropy(pattern_dist, base=len(pattern_dist)))
 
-    return np_pattern_dist
+    return norm_pattern_dist
 
 compute_signal = False
 
@@ -180,11 +195,11 @@ map_layout = data['layout']
 
 epsilon=1e-12
 
-distribution = calc_layout_entropy_test(map_layout)
-sum_pattern = np.sum(distribution)
-norm_pattern_dist = distribution/sum_pattern
-norm_pattern_dist += epsilon
-print(norm_pattern_dist.tolist() )
+# distribution = calc_layout_entropy_test(map_layout)
+# sum_pattern = np.sum(distribution)
+# norm_pattern_dist = distribution/sum_pattern
+# norm_pattern_dist += epsilon
+# print(norm_pattern_dist.tolist() )
 
 
 # map_layout = data['layout']
@@ -272,3 +287,108 @@ print(norm_pattern_dist.tolist() )
 # print("kl_random_2_random:",kl_random_2_random)
 
 
+def calc_layout_entropy(map_np_repaired):
+    """
+    Calculate entropy of the storage area of the layout.
+
+    We first formulate the layout as a tile pattern distribution by following
+    Lucas, Simon M. M. and Vanessa Volz. “Tile pattern KL-divergence for
+    analysing and evolving game levels.” Proceedings of the Genetic and
+    Evolutionary Computation Conference (2019).
+
+    Then we calculate the entropy.
+    """
+    # Separate the storage area
+    h, w = map_np_repaired.shape
+    storage_area = map_np_repaired
+    # if w_mode:
+    #     storage_area = map_np_repaired[:,
+    #         KIVA_WORKSTATION_BLOCK_WIDTH:w-KIVA_WORKSTATION_BLOCK_WIDTH]
+    # else:
+    #     storage_area = map_np_repaired[
+    #         KIVA_ROBOT_BLOCK_WIDTH:h-KIVA_ROBOT_BLOCK_WIDTH,
+    #         KIVA_ROBOT_BLOCK_WIDTH:w-KIVA_ROBOT_BLOCK_WIDTH]
+
+    # Generate list of patterns (we use 2 x 2)
+    storage_obj_types = eecbs_obj_types[:2]
+    tile_patterns = {
+        # for 2 * 2 window
+        # "".join(x): 0 for x in product(storage_obj_types, repeat=4) 
+        "".join(x): 0 for x in product(storage_obj_types, repeat=9)
+    }
+
+    s_h, s_w = storage_area.shape
+    # Iterate over 2x2 blocks
+    for i in range(s_h - 2):
+        for j in range(s_w - 2):
+            # take the constant as a parameter to test different window sizes
+            curr_block = storage_area[i:i+3,j:j+3]
+            curr_pattern = "".join(eecbs_env_number2str(curr_block))
+            tile_patterns[curr_pattern] += 1
+    pattern_dist = list(tile_patterns.values())
+
+    np_pattern_dist = np.array(pattern_dist,dtype = int)
+
+    sum_pattern = np.sum(np_pattern_dist)
+    norm_pattern_dist = np_pattern_dist/sum_pattern
+
+    epsilon = 1e-12
+    norm_pattern_dist += epsilon
+
+    # Use number of patterns as the base to bound the entropy to [0, 1]
+    return norm_pattern_dist,entropy(pattern_dist, base=len(pattern_dist))
+
+map_filenames = []
+obstacles = []
+KL_div = []
+dir = "MAPF_JSON"
+
+for filename in os.listdir(dir):
+    if os.path.isfile(os.path.join(dir,filename)):
+        map_filenames.append(os.path.join(dir,filename))
+
+# print(map_filenames)
+maze_ref_dist = [0.20222222222322223, 0.018888888889888888, 0.004444444445444445, 0.014444444445444444, 0.011111111112111112, 1e-12, 0.011111111112111112, 0.09722222222322223, 0.004444444445444445, 0.014444444445444444, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.004444444445444445, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.004444444445444445, 1e-12, 0.010000000001, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.005555555556555556, 1e-12, 1e-12, 1e-12, 0.005555555556555556, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.007777777778777778, 1e-12, 0.0033333333343333335, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.08111111111211111, 0.004444444445444445, 0.001111111112111111, 1e-12, 0.010555555556555556, 1e-12, 1e-12, 1e-12, 0.009444444445444445, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.007777777778777778, 0.05388888888988889, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.014444444445444444, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.011111111112111112, 0.0033333333343333335, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.0016666666676666668, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.0033333333343333335, 1e-12, 0.03222222222322222, 0.007222222223222222, 1e-12, 1e-12, 0.010555555556555556, 0.0038888888898888888, 0.004444444445444445, 1e-12, 0.002777777778777778, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.007777777778777778, 1e-12, 0.002777777778777778, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.0033333333343333335, 1e-12, 0.0005555555565555556, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.007777777778777778, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.011666666667666668, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.011666666667666668, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.010000000001, 1e-12, 1e-12, 1e-12, 0.07055555555655556, 1e-12, 1e-12, 0.012222222223222223, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.0066666666676666675, 1e-12, 1e-12, 1e-12, 0.005555555556555556, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.012777777778777779, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.006111111112111112, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.11611111111211112, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.010000000001, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.0038888888898888888, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 0.017777777778777776, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12, 1e-12]
+
+for file in map_filenames:
+    obstacle = 0
+    with open(file, 'r') as json_file:
+        # Read the contents of the .map file
+        data = json.load(json_file)
+            
+    map_layout = data['layout']
+
+    width = len(map_layout)
+    height = len(map_layout[0])
+    # print(file,width,height)
+    all_grid = width * height
+    # print(all_grid)
+    print(file)
+    norm_pattern_dist = calc_layout_entropy_test(map_layout)
+    maze_kl_div = entropy(norm_pattern_dist, np.array(maze_ref_dist), base = len(maze_ref_dist))
+    KL_div.append(maze_kl_div)
+
+    for i in range(width):
+        for j in range(height):
+            if map_layout[i][j] == "@":
+                obstacle += 1
+    
+    obstacles.append(obstacle/all_grid)
+
+print(obstacles)
+print(KL_div)
+
+plt.scatter(KL_div, obstacles)
+
+plt.xlim(0, 5)  # Optional padding of 1 unit
+plt.ylim(0, 1)  # Optional padding of 1 unit
+# Label the axes
+plt.grid(True)
+plt.xlabel('KL_div')
+plt.ylabel('Proportion of obstalces')
+
+# Add a title
+plt.title('Archive')
+
+# Show the plot
+plt.savefig('plot_grid.png')
