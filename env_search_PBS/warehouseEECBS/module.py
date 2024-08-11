@@ -700,7 +700,7 @@ class WarehouseModule:
         # Create WarehouseResult object using the mean of n_eval simulations
         # For tile_usage, num_wait, and finished_task_len, the mean is not taken
         metadata = WarehouseMetadata(
-            objs=abs_objs,
+            objs=-avg_run_time_EECBS,
             # objs = objs,  # for extracting maps where one algorithm works well on
             # throughput=collected_results.get("throughput"),
 
@@ -717,7 +717,7 @@ class WarehouseModule:
             tile_usage_std_EECBS=np.mean(collected_results_EECBS.get("tile_usage_std")),
             average_suboptimality_EECBS = average_suboptimality_EECBS,
 
-            tile_usage_PBS=tile_usage_EECBS,
+            tile_usage_PBS=tile_usage_PBS,
             tile_usage_mean_PBS=np.mean(collected_results_PBS.get("tile_usage_mean")),
             tile_usage_std_PBS=np.mean(collected_results_PBS.get("tile_usage_std")),
             average_suboptimality_PBS= average_suboptimality_PBS, 
@@ -751,7 +751,7 @@ class WarehouseModule:
             room_kl_div = room_kl_div,
             maze_all_kl_div = maze_all_kl_div, 
             room_all_kl_div = room_all_kl_div, 
-            all_kl_div = all_kl_div, 
+            all_kl_div = maze_all_kl_div, 
             lambda2 = lambda2, 
         )
         result = WarehouseResult.from_raw(
