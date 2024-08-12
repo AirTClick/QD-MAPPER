@@ -197,6 +197,7 @@ def process_warehouse_eval_result(
     # w_mode: bool,
     max_n_shelf: int,
     map_id: int,
+    obj: str,
 ):
     start = time.time()
 
@@ -212,6 +213,7 @@ def process_warehouse_eval_result(
         # w_mode=w_mode,
         max_n_shelf=max_n_shelf,
         map_id=map_id,
+        obj=obj,
     )
     logger.info("process_warehouse_eval_result done after %f sec",
                 time.time() - start)

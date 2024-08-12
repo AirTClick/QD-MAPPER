@@ -287,19 +287,19 @@ def grid_archive_heatmap(archive,
 
     # Color for each cell in the heatmap.
     colors = np.full((y_dim, x_dim), np.nan)
-    i = 0
+    # i = 0
     for elite in archive:
-        # show on archive for the difference
-        if alg_list[i] == "EECBS":
-            # change here for maximizing the runtime gap between two algorihtms
-            colors[elite.idx[1], elite.idx[0]] = elite.obj
-        elif alg_list[i] == "PBS":
-            colors[elite.idx[1], elite.idx[0]] = -elite.obj
+    #     # show on archive for the difference
+    #     if alg_list[i] == "EECBS":
+    #         # change here for maximizing the runtime gap between two algorihtms
+    #         colors[elite.idx[1], elite.idx[0]] = elite.obj
+    #     elif alg_list[i] == "PBS":
+    #         colors[elite.idx[1], elite.idx[0]] = -elite.obj
         
-        i+=1
+    #     i+=1
 
         # normal case
-        # colors[elite.idx[1], elite.idx[0]] = elite.obj 
+        colors[elite.idx[1], elite.idx[0]] = -elite.obj 
         
 
     # print(colors)

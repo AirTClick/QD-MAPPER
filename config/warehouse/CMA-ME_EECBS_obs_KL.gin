@@ -7,6 +7,7 @@ measure_dim = 2
 min_n_shelf = 20
 num_objects = 3
 sigma0 = 0.2
+obj = 'EECBS'
 
 # Parameters for experiment:
 # ======================================================================================================================
@@ -15,7 +16,7 @@ experiment.name = 'Warehouse Generation'
 # Parameters for GridArchive:
 # ======================================================================================================================
 GridArchive.dims = [80, 80]
-GridArchive.ranges = [[307, 717], [0.0, 1.0]]
+GridArchive.ranges = [[307, 717], [0.0, 1.5]]
 
 # Parameters for downsample/GridArchive:
 # ======================================================================================================================
@@ -34,7 +35,7 @@ Manager.is_em = False
 Manager.max_evals = 100
 Manager.plot_metrics_freq = 1
 Manager.reload_save_freq = 1
-Manager.sol_size = 1730
+Manager.sol_size = 1731
 Manager.hyper_flag = True # add one hyperparameter for optimizing the suboptimality of EECBS
 
 # Need more exploration 
@@ -99,7 +100,7 @@ WarehouseEmulationModel.train_sample_size = 20000
 
 # Parameters for WarehouseManager:
 # ======================================================================================================================
-WWarehouseManager.agent_num = 150
+WarehouseManager.agent_num = 150
 WarehouseManager.lvl_height = 32
 WarehouseManager.lvl_width = 32
 WarehouseManager.max_n_shelf = %max_n_shelf
@@ -110,6 +111,7 @@ WarehouseManager.n_endpt = 2
 WarehouseManager.n_evals = 5
 WarehouseManager.num_objects = %num_objects
 WarehouseManager.w_mode = True
+WarehouseManager.obj = %obj
 
 WarehouseManager.is_nca = True
 WarehouseManager.nca_iter = 50 
