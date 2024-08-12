@@ -100,6 +100,7 @@ class WarehouseManager:
 
         n_endpt: bool = gin.REQUIRED,
         agent_num: int = gin.REQUIRED,
+        obj: str = gin.REQUIRED,
     ):
         self.client = client
         self.rng = rng or np.random.default_rng()
@@ -133,6 +134,7 @@ class WarehouseManager:
         self.w_mode = w_mode
         self.n_endpt = n_endpt
         self.agent_num = agent_num
+        self.obj = obj
 
         # Set up a module locally and on workers. During evaluations,
         # repair_and_run_warehouse retrieves this module and uses it to
@@ -476,69 +478,148 @@ class WarehouseManager:
         self.eval_batch_idx += 1
     
         # changes for two algorithm experiment
-        sim_futures_EECBS = [
-            self.client.submit(
-                run_warehouse_EECBS,
-                map_json=map_json,
-                eval_logdir=eval_logdir,
-                sim_seed=sim_seed,
-                agentNum=self.agent_num,
-                map_id=map_id,
-                eval_id=eval_id,
-                suboptimality_bound = suboptimality_bound,
-            ) for (
-                map_json,
-                sim_seed,
-                map_id,
-                eval_id,
-                suboptimality_bound,
-            ) in zip(
-                map_jsons_sim,
-                maps_eval_seed_sim,
-                maps_id_sim,
-                eval_id_sim,
-                sols_hyper,
-            )
-        ]
+        if self.obj == "EECBS":
+            sim_futures_EECBS = [
+                self.client.submit(
+                    run_warehouse_EECBS,
+                    map_json=map_json,
+                    eval_logdir=eval_logdir,
+                    sim_seed=sim_seed,
+                    agentNum=self.agent_num,
+                    map_id=map_id,
+                    eval_id=eval_id,
+                    suboptimality_bound = suboptimality_bound,
+                ) for (
+                    map_json,
+                    sim_seed,
+                    map_id,
+                    eval_id,
+                    suboptimality_bound,
+                ) in zip(
+                    map_jsons_sim,
+                    maps_eval_seed_sim,
+                    maps_id_sim,
+                    eval_id_sim,
+                    sols_hyper,
+                )
+            ]
+            logger.info("Collecting evaluations")
+            results_json_EECBS = self.client.gather(sim_futures_EECBS)
 
-        sim_futures_PBS = [
-            self.client.submit(
-                run_warehouse_PBS,
-                map_json=map_json,
-                eval_logdir=eval_logdir,
-                sim_seed=sim_seed,
-                agentNum=self.agent_num,
-                map_id=map_id,
-                eval_id=eval_id,
-            ) for (
-                map_json,
-                sim_seed,
-                map_id,
-                eval_id,
-            ) in zip(
-                map_jsons_sim,
-                maps_eval_seed_sim,
-                maps_id_sim,
-                eval_id_sim,
-            )
-        ]
+            logger.info("Finished Collection") 
 
-        logger.info("Collecting evaluations")
-        results_json_EECBS = self.client.gather(sim_futures_EECBS)
-        results_json_PBS = self.client.gather(sim_futures_PBS)
+            results_json_sorted_EECBS = []
+            results_json_sorted_PBS = []
+            for i in range(len(sols)):
+                curr_eval_results_EECBS = []
+                for j in range(self.n_evals):
+                    curr_eval_results_EECBS.append(results_json_EECBS[i * self.n_evals + j])
+                results_json_sorted_EECBS.append(curr_eval_results_EECBS)
+                results_json_sorted_PBS.append(curr_eval_results_EECBS)
 
-        logger.info("Finished Collection") 
 
-        results_json_sorted_EECBS = []
-        results_json_sorted_PBS = []
-        for i in range(len(sols)):
-            curr_eval_results_EECBS = []
-            curr_eval_results_PBS = [] 
-            for j in range(self.n_evals):
-                curr_eval_results_EECBS.append(results_json_EECBS[i * self.n_evals + j])
-                curr_eval_results_PBS.append(results_json_PBS[i * self.n_evals + j])
-            results_json_sorted_EECBS.append(curr_eval_results_EECBS)
-            results_json_sorted_PBS.append(curr_eval_results_PBS)
+        
+        if self.obj == "PBS":
+            sim_futures_PBS = [
+                self.client.submit(
+                    run_warehouse_PBS,
+                    map_json=map_json,
+                    eval_logdir=eval_logdir,
+                    sim_seed=sim_seed,
+                    agentNum=self.agent_num,
+                    map_id=map_id,
+                    eval_id=eval_id,
+                ) for (
+                    map_json,
+                    sim_seed,
+                    map_id,
+                    eval_id,
+                ) in zip(
+                    map_jsons_sim,
+                    maps_eval_seed_sim,
+                    maps_id_sim,
+                    eval_id_sim,
+                )
+            ]
+            logger.info("Collecting evaluations")
+            results_json_PBS = self.client.gather(sim_futures_PBS)
+
+            logger.info("Finished Collection") 
+
+            results_json_sorted_EECBS = []
+            results_json_sorted_PBS = []
+            for i in range(len(sols)):
+                curr_eval_results_PBS = [] 
+                for j in range(self.n_evals):
+                    curr_eval_results_PBS.append(results_json_PBS[i * self.n_evals + j])
+                results_json_sorted_PBS.append(curr_eval_results_PBS)
+                results_json_sorted_EECBS.append(curr_eval_results_PBS)
+        
+        if self.obj == "PBS_EECBS":
+            sim_futures_EECBS = [
+                self.client.submit(
+                    run_warehouse_EECBS,
+                    map_json=map_json,
+                    eval_logdir=eval_logdir,
+                    sim_seed=sim_seed,
+                    agentNum=self.agent_num,
+                    map_id=map_id,
+                    eval_id=eval_id,
+                    suboptimality_bound = suboptimality_bound,
+                ) for (
+                    map_json,
+                    sim_seed,
+                    map_id,
+                    eval_id,
+                    suboptimality_bound,
+                ) in zip(
+                    map_jsons_sim,
+                    maps_eval_seed_sim,
+                    maps_id_sim,
+                    eval_id_sim,
+                    sols_hyper,
+                )
+            ]
+            sim_futures_PBS = [
+                self.client.submit(
+                    run_warehouse_PBS,
+                    map_json=map_json,
+                    eval_logdir=eval_logdir,
+                    sim_seed=sim_seed,
+                    agentNum=self.agent_num,
+                    map_id=map_id,
+                    eval_id=eval_id,
+                ) for (
+                    map_json,
+                    sim_seed,
+                    map_id,
+                    eval_id,
+                ) in zip(
+                    map_jsons_sim,
+                    maps_eval_seed_sim,
+                    maps_id_sim,
+                    eval_id_sim,
+                )
+            ] 
+
+            logger.info("Collecting evaluations")
+            results_json_EECBS = self.client.gather(sim_futures_EECBS)
+            results_json_PBS = self.client.gather(sim_futures_PBS) 
+        
+
+
+            logger.info("Finished Collection") 
+
+            results_json_sorted_EECBS = []
+            results_json_sorted_PBS = []
+            for i in range(len(sols)):
+                curr_eval_results_EECBS = []
+                curr_eval_results_PBS = [] 
+                for j in range(self.n_evals):
+                    curr_eval_results_EECBS.append(results_json_EECBS[i * self.n_evals + j])
+                    curr_eval_results_PBS.append(results_json_PBS[i * self.n_evals + j])
+                results_json_sorted_EECBS.append(curr_eval_results_EECBS)
+                results_json_sorted_PBS.append(curr_eval_results_PBS)
 
         logger.info("Processing eval results")
 
@@ -555,6 +636,7 @@ class WarehouseManager:
                 # w_mode=self.w_mode,
                 max_n_shelf=self.max_n_shelf,
                 map_id=map_id,
+                obj = self.obj,
             ) for (
                 curr_result_json_EECBS,
                 curr_result_json_PBS,

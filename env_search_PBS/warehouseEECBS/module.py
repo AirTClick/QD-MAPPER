@@ -120,6 +120,7 @@ class WarehouseEECBSConfig:
     obj_type : str = gin.REQUIRED,
     use_warm_up : bool = gin.REQUIRED,
     hamming_only : bool = gin.REQUIRED,
+    obj: str = gin.REQUIRED,
 
     # tile_usage_room: np.ndarray = gin.REQUIRED, 
     # obj_name : str = gin.REQUIRED,
@@ -478,6 +479,7 @@ class WarehouseModule:
         # w_mode: bool,
         max_n_shelf: int,
         map_id: int,
+        obj: str,
     ):
         """
         Process the evaluation result
@@ -491,39 +493,260 @@ class WarehouseModule:
         # For now, failure only happens during MILP repair, so it failure
         # happens, all simulation json results would contain
         # {"success": False}.
-        if not curr_result_json_EECBS[0]["success"]:
-            logger.info(
-            f"Map ID {map_id} failed.")
+        if obj == "EECBS":
+            if not curr_result_json_EECBS[0]["success"]:
+                logger.info(
+                f"Map ID {map_id} failed.")
 
-            metadata = WarehouseMetadata(
-                map_int_unrepaired=map_comp_unrepaired,
-                map_int_raw=map_np_unrepaired,
-            )
-            result = WarehouseResult.from_raw(
-                warehouse_metadata=metadata,
-                opts={
-                    "aggregation": self.config.aggregation_type,
-                    "measure_names": self.config.measure_names,
-                },
-            )
-            result.failed = True
-            return result
+                metadata = WarehouseMetadata(
+                    map_int_unrepaired=map_comp_unrepaired,
+                    map_int_raw=map_np_unrepaired,
+                )
+                result = WarehouseResult.from_raw(
+                    warehouse_metadata=metadata,
+                    opts={
+                        "aggregation": self.config.aggregation_type,
+                        "measure_names": self.config.measure_names,
+                    },
+                )
+                result.failed = True
+                return result
+
+            keys_EECBS = curr_result_json_EECBS[0].keys()
+
+            collected_results_EECBS = {key: [] for key in keys_EECBS}
+
+            for result_json_EECBS in curr_result_json_EECBS:
+                for key in keys_EECBS:
+                    collected_results_EECBS[key].append(result_json_EECBS[key])
+            
+            # Get start and goal locations
+            start_locations = np.array(collected_results_EECBS.get("start_locations"))
+            goal_locations = np.array(collected_results_EECBS.get("goal_locations"))
+
+            # ----------------------------NEED specific for each algorithm (EECBS here)-------------------------------------
+            # Post process result if necessary
+            tile_usage_EECBS = np.array(collected_results_EECBS.get("tile_usage"))
+
+            # print("Tile_usage shape: ", tile_usage.shape)
+            tile_usage_EECBS = tile_usage_EECBS.reshape(n_evals, *map_np_repaired.shape)
+            tile_usage_mean_EECBS=np.mean(collected_results_EECBS.get("tile_usage_mean"))
+            tile_usage_std_EECBS=np.mean(collected_results_EECBS.get("tile_usage_std"))
+            # tasks_finished_timestep = [np.array(x) for x in collected_results.get("tasks_finished_timestep")]
+
+            # print("run_time in json: ",collected_results.get("runtime"))
+            run_time_EECBS = np.array(collected_results_EECBS.get("runtime"))
+            avg_run_time_EECBS = np.mean(run_time_EECBS)
+            # print("shape of run_time: ", run_time.shape)
+
+            # print("solution_cost in json: ", collected_results.get("solution_cost"))
+            solution_cost_EECBS = np.array(collected_results_EECBS.get("solution_cost")) 
+
+            Suboptimality_EECBS = np.array(collected_results_EECBS.get("suboptimality"))
+
+            # print("suboptimality_list: ", Suboptimality)
+
+            average_suboptimality_EECBS = np.mean(Suboptimality_EECBS)
+            # Get objective based on type
+            # objs = entropy
+            objs_EECBS = avg_run_time_EECBS
+
+            actual_obj = -objs_EECBS
+
+            #set for fit purpose
+            lower_runtime_alg = "EECBS"
+            solution_cost_PBS=[0]
+            avg_run_time_PBS = 0.0
+            tile_usage_PBS=np.zeros(100)
+            tile_usage_mean_PBS=0.0
+            tile_usage_std_PBS=0.0
+            average_suboptimality_PBS= 0.0
 
 
-        # Collect the results
-        keys_EECBS = curr_result_json_EECBS[0].keys()
-        keys_PBS = curr_result_json_PBS[0].keys()
 
-        collected_results_EECBS = {key: [] for key in keys_EECBS}
-        collected_results_PBS = {key: [] for key in keys_PBS} 
+            # --------------------------------------------------------------------------------------------------
 
-        for result_json_EECBS in curr_result_json_EECBS:
-            for key in keys_EECBS:
-                collected_results_EECBS[key].append(result_json_EECBS[key])
 
-        for result_json_PBS in curr_result_json_PBS:
-            for key in keys_PBS:
-                collected_results_PBS[key].append(result_json_PBS[key])
+        if obj == "PBS":
+            if not curr_result_json_PBS[0]["success"]:
+                logger.info(
+                f"Map ID {map_id} failed.")
+
+                metadata = WarehouseMetadata(
+                    map_int_unrepaired=map_comp_unrepaired,
+                    map_int_raw=map_np_unrepaired,
+                )
+                result = WarehouseResult.from_raw(
+                    warehouse_metadata=metadata,
+                    opts={
+                        "aggregation": self.config.aggregation_type,
+                        "measure_names": self.config.measure_names,
+                    },
+                )
+                result.failed = True
+                return result 
+           
+            keys_PBS = curr_result_json_PBS[0].keys()
+
+            collected_results_PBS = {key: [] for key in keys_PBS} 
+
+            for result_json_PBS in curr_result_json_PBS:
+                for key in keys_PBS:
+                    collected_results_PBS[key].append(result_json_PBS[key])
+            # Get start and goal locations
+            start_locations = np.array(collected_results_PBS.get("start_locations"))
+            goal_locations = np.array(collected_results_PBS.get("goal_locations"))
+
+
+            # ----------------------------NEED specific for each algorithm (PBS here)-------------------------------------
+            # Post process result if necessary
+            tile_usage_PBS = np.array(collected_results_PBS.get("tile_usage"))
+
+            # print("Tile_usage shape: ", tile_usage.shape)
+            tile_usage_PBS = tile_usage_PBS.reshape(n_evals, *map_np_repaired.shape)
+            tile_usage_mean_PBS=np.mean(collected_results_PBS.get("tile_usage_mean"))
+            tile_usage_std_PBS=np.mean(collected_results_PBS.get("tile_usage_std"))
+            # tasks_finished_timestep = [np.array(x) for x in collected_results.get("tasks_finished_timestep")]
+
+            # print("run_time in json: ",collected_results.get("runtime"))
+            run_time_PBS = np.array(collected_results_PBS.get("runtime"))
+            avg_run_time_PBS = np.mean(run_time_PBS)
+            # print("shape of run_time: ", run_time.shape)
+
+            # print("solution_cost in json: ", collected_results.get("solution_cost"))
+            solution_cost_PBS = np.array(collected_results_PBS.get("solution_cost")) 
+
+            Suboptimality_PBS = np.array(collected_results_PBS.get("suboptimality"))
+
+            # print("suboptimality_list: ", Suboptimality)
+
+            average_suboptimality_PBS = np.mean(Suboptimality_PBS)
+
+            # Get objective based on type
+            # objs = entropy
+            objs_PBS = avg_run_time_PBS
+
+            actual_obj = -objs_PBS
+
+            #set for fit purpose
+            lower_runtime_alg = "PBS"
+            solution_cost_EECBS=[]
+            avg_run_time_EECBS = 0.0
+            tile_usage_EECBS=np.zeros(100)
+            tile_usage_mean_EECBS=0.0
+            tile_usage_std_EECBS=0.0
+            average_suboptimality_EECBS= 0.0
+
+        if obj == "PBS_EECBS":
+            if not curr_result_json_EECBS[0]["success"]:
+                logger.info(
+                f"Map ID {map_id} failed.")
+
+                metadata = WarehouseMetadata(
+                    map_int_unrepaired=map_comp_unrepaired,
+                    map_int_raw=map_np_unrepaired,
+                )
+                result = WarehouseResult.from_raw(
+                    warehouse_metadata=metadata,
+                    opts={
+                        "aggregation": self.config.aggregation_type,
+                        "measure_names": self.config.measure_names,
+                    },
+                )
+                result.failed = True
+                return result
+            # Collect the results
+            keys_EECBS = curr_result_json_EECBS[0].keys()
+            keys_PBS = curr_result_json_PBS[0].keys()
+
+            collected_results_EECBS = {key: [] for key in keys_EECBS}
+            collected_results_PBS = {key: [] for key in keys_PBS} 
+
+            for result_json_EECBS in curr_result_json_EECBS:
+                for key in keys_EECBS:
+                    collected_results_EECBS[key].append(result_json_EECBS[key])
+
+            for result_json_PBS in curr_result_json_PBS:
+                for key in keys_PBS:
+                    collected_results_PBS[key].append(result_json_PBS[key])
+            
+            # Get start and goal locations
+            start_locations = np.array(collected_results_EECBS.get("start_locations"))
+            goal_locations = np.array(collected_results_EECBS.get("goal_locations"))
+
+            # ----------------------------NEED specific for each algorithm (EECBS here)-------------------------------------
+            # Post process result if necessary
+            tile_usage_EECBS = np.array(collected_results_EECBS.get("tile_usage"))
+
+            # print("Tile_usage shape: ", tile_usage.shape)
+            tile_usage_EECBS = tile_usage_EECBS.reshape(n_evals, *map_np_repaired.shape)
+            tile_usage_mean_EECBS=np.mean(collected_results_EECBS.get("tile_usage_mean"))
+            tile_usage_std_EECBS=np.mean(collected_results_EECBS.get("tile_usage_std"))
+            # tasks_finished_timestep = [np.array(x) for x in collected_results.get("tasks_finished_timestep")]
+
+            # print("run_time in json: ",collected_results.get("runtime"))
+            run_time_EECBS = np.array(collected_results_EECBS.get("runtime"))
+            avg_run_time_EECBS = np.mean(run_time_EECBS)
+            # print("shape of run_time: ", run_time.shape)
+
+            # print("solution_cost in json: ", collected_results.get("solution_cost"))
+            solution_cost_EECBS = np.array(collected_results_EECBS.get("solution_cost")) 
+
+            Suboptimality_EECBS = np.array(collected_results_EECBS.get("suboptimality"))
+
+            # print("suboptimality_list: ", Suboptimality)
+
+            average_suboptimality_EECBS = np.mean(Suboptimality_EECBS)
+            # Get objective based on type
+            # objs = entropy
+            objs_EECBS = avg_run_time_EECBS
+
+            # --------------------------------------------------------------------------------------------------
+
+            # ----------------------------NEED specific for each algorithm (PBS here)-------------------------------------
+            # Post process result if necessary
+            tile_usage_PBS = np.array(collected_results_PBS.get("tile_usage"))
+
+            # print("Tile_usage shape: ", tile_usage.shape)
+            tile_usage_PBS = tile_usage_PBS.reshape(n_evals, *map_np_repaired.shape)
+            tile_usage_mean_PBS=np.mean(collected_results_PBS.get("tile_usage_mean"))
+            tile_usage_std_PBS=np.mean(collected_results_PBS.get("tile_usage_std"))
+            # tasks_finished_timestep = [np.array(x) for x in collected_results.get("tasks_finished_timestep")]
+
+            # print("run_time in json: ",collected_results.get("runtime"))
+            run_time_PBS = np.array(collected_results_PBS.get("runtime"))
+            avg_run_time_PBS = np.mean(run_time_PBS)
+            # print("shape of run_time: ", run_time.shape)
+
+            # print("solution_cost in json: ", collected_results.get("solution_cost"))
+            solution_cost_PBS = np.array(collected_results_PBS.get("solution_cost")) 
+
+            Suboptimality_PBS = np.array(collected_results_PBS.get("suboptimality"))
+
+            # print("suboptimality_list: ", Suboptimality)
+
+            average_suboptimality_PBS = np.mean(Suboptimality_PBS)
+
+            # Get objective based on type
+            # objs = entropy
+            objs_PBS = avg_run_time_PBS
+
+            # --------------------------------------------------------------------------------------------------
+
+            # For two algorithms experiment, the objective is set to the absolute value of the difference between runtime of two algorithms
+
+            objs = avg_run_time_PBS - avg_run_time_EECBS
+
+            # Add an attribute to show which one got low runtime
+
+            if objs >= 0:
+                lower_runtime_alg = "EECBS"
+            else:
+                lower_runtime_alg = "PBS"
+            
+            abs_objs = abs(objs)
+
+            actual_obj = abs_objs
         
         # print(collected_results)
         # Calculate n_shelf and n_endpoint
@@ -597,10 +820,6 @@ class WarehouseModule:
         
 
 
-        # Get start and goal locations
-        start_locations = np.array(collected_results_EECBS.get("start_locations"))
-        goal_locations = np.array(collected_results_EECBS.get("goal_locations"))
-
         logger.info(f"Map ID {map_id}: Layout entropy: {entropy}, maze_KL_div: {maze_kl_div}, room_kl_div: {room_kl_div}")
         logger.info("cal_entropy done after %f sec", time.time() - start_entropy)
 
@@ -619,73 +838,6 @@ class WarehouseModule:
         avg_degrees = cal_avg_degrees(map_np_repaired)
         logger.info("cal_degree done after %f sec", time.time() - start_degree) 
 
-        # ----------------------------NEED specific for each algorithm (EECBS here)-------------------------------------
-        # Post process result if necessary
-        tile_usage_EECBS = np.array(collected_results_EECBS.get("tile_usage"))
-
-        # print("Tile_usage shape: ", tile_usage.shape)
-        tile_usage_EECBS = tile_usage_EECBS.reshape(n_evals, *map_np_repaired.shape)
-        # tasks_finished_timestep = [np.array(x) for x in collected_results.get("tasks_finished_timestep")]
-
-        # print("run_time in json: ",collected_results.get("runtime"))
-        run_time_EECBS = np.array(collected_results_EECBS.get("runtime"))
-        avg_run_time_EECBS = np.mean(run_time_EECBS)
-        # print("shape of run_time: ", run_time.shape)
-
-        # print("solution_cost in json: ", collected_results.get("solution_cost"))
-        solution_cost_EECBS = np.array(collected_results_EECBS.get("solution_cost")) 
-
-        Suboptimality_EECBS = np.array(collected_results_EECBS.get("suboptimality"))
-
-        # print("suboptimality_list: ", Suboptimality)
-
-        average_suboptimality_EECBS = np.mean(Suboptimality_EECBS)
-        # Get objective based on type
-        # objs = entropy
-        objs_EECBS = avg_run_time_EECBS
-
-        # --------------------------------------------------------------------------------------------------
-
-        # ----------------------------NEED specific for each algorithm (PBS here)-------------------------------------
-        # Post process result if necessary
-        tile_usage_PBS = np.array(collected_results_PBS.get("tile_usage"))
-
-        # print("Tile_usage shape: ", tile_usage.shape)
-        tile_usage_PBS = tile_usage_PBS.reshape(n_evals, *map_np_repaired.shape)
-        # tasks_finished_timestep = [np.array(x) for x in collected_results.get("tasks_finished_timestep")]
-
-        # print("run_time in json: ",collected_results.get("runtime"))
-        run_time_PBS = np.array(collected_results_PBS.get("runtime"))
-        avg_run_time_PBS = np.mean(run_time_PBS)
-        # print("shape of run_time: ", run_time.shape)
-
-        # print("solution_cost in json: ", collected_results.get("solution_cost"))
-        solution_cost_PBS = np.array(collected_results_PBS.get("solution_cost")) 
-
-        Suboptimality_PBS = np.array(collected_results_PBS.get("suboptimality"))
-
-        # print("suboptimality_list: ", Suboptimality)
-
-        average_suboptimality_PBS = np.mean(Suboptimality_PBS)
-        # Get objective based on type
-        # objs = entropy
-        objs_PBS = avg_run_time_PBS
-
-        # --------------------------------------------------------------------------------------------------
-
-        # For two algorithms experiment, the objective is set to the absolute value of the difference between runtime of two algorithms
-
-        objs = avg_run_time_PBS - avg_run_time_EECBS
-
-        # Add an attribute to show which one got low runtime
-
-        if objs >= 0:
-            lower_runtime_alg = "EECBS"
-        else:
-            lower_runtime_alg = "PBS"
-        
-        abs_objs = abs(objs)
-
         # if self.config.obj_type == "throughput":
         #     objs = np.array(collected_results.get("throughput"))
         # elif self.config.obj_type == "throughput_plus_n_shelf":
@@ -695,12 +847,12 @@ class WarehouseModule:
         #     return ValueError(
         #         f"Object type {self.config.obj_type} not supported")
         
-
+        logger.info("actual_obj %f", actual_obj)
 
         # Create WarehouseResult object using the mean of n_eval simulations
         # For tile_usage, num_wait, and finished_task_len, the mean is not taken
         metadata = WarehouseMetadata(
-            objs=-avg_run_time_EECBS,
+            objs=actual_obj,
             # objs = objs,  # for extracting maps where one algorithm works well on
             # throughput=collected_results.get("throughput"),
 
@@ -713,13 +865,13 @@ class WarehouseModule:
             avg_run_time_PBS = avg_run_time_PBS,
 
             tile_usage_EECBS=tile_usage_EECBS,
-            tile_usage_mean_EECBS=np.mean(collected_results_EECBS.get("tile_usage_mean")),
-            tile_usage_std_EECBS=np.mean(collected_results_EECBS.get("tile_usage_std")),
+            tile_usage_mean_EECBS=tile_usage_mean_EECBS,
+            tile_usage_std_EECBS=tile_usage_std_EECBS,
             average_suboptimality_EECBS = average_suboptimality_EECBS,
 
             tile_usage_PBS=tile_usage_PBS,
-            tile_usage_mean_PBS=np.mean(collected_results_PBS.get("tile_usage_mean")),
-            tile_usage_std_PBS=np.mean(collected_results_PBS.get("tile_usage_std")),
+            tile_usage_mean_PBS=tile_usage_mean_PBS,
+            tile_usage_std_PBS=tile_usage_std_PBS,
             average_suboptimality_PBS= average_suboptimality_PBS, 
 
             # attributes shared by maps 

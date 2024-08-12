@@ -603,13 +603,13 @@ class Manager:  # pylint: disable = too-many-instance-attributes
 
         for sol, r in zip(sols, results):
             if not r.failed:
-                obj = r.agg_obj
-                objs.append(obj)  # Always insert objs.
+                obj_ = r.agg_obj
+                objs.append(obj_)  # Always insert objs.
                 meas = r.agg_measures
                 meta = self.extract_metadata(r)
 
                 if self.is_em:
-                    self.archive.add(sol, obj, meas, meta)
+                    self.archive.add(sol, obj_, meas, meta)
                     self.env_manager.add_experience(sol, r)
                 else:
                     measures.append(meas)
@@ -636,9 +636,9 @@ class Manager:  # pylint: disable = too-many-instance-attributes
                 metadata.append(None)
                 success_mask.append(False)
 
-            # print("Objs_shape: ", len(objs))
+            print("Objs_shape: ", len(objs))
             # print("Objs: ", objs)
-            # print("Measures_shape: ", len(measures))
+            print("Measures_shape: ", len(measures))
             # print("Measures: ", measures)
             # print("Dim, ", self.archive.behavior_dim)
 
