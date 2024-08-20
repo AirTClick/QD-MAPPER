@@ -29,7 +29,7 @@ from env_search_PBS.warehouseEECBS.emulation_model.networks import (
 from env_search_PBS.warehouseEECBS.module import (WarehouseModule, WarehouseEECBSConfig)
                                         #  ,get_comp_map, get_additional_h_blocks,
                                         #  get_additional_v_blocks)
-from env_search_PBS.warehouseEECBS.run import (run_warehouse_EECBS, run_warehouse_PBS, repair_warehouse,
+from env_search_PBS.warehouseEECBS.run import (run_warehouse_EECBS, run_warehouse_PBS,run_warehouse_PIBT,run_warehouse_LTF,repair_warehouse,
                                       process_warehouse_eval_result)
 from env_search_PBS.utils.worker_state import init_warehouse_module
 from env_search_PBS.warehouseEECBS.generator.nca_generator import WarehouseNCA
@@ -478,6 +478,86 @@ class WarehouseManager:
         self.eval_batch_idx += 1
     
         # changes for two algorithm experiment
+        if self.obj == "PIBT":
+            sim_futures_PIBT = [
+                self.client.submit(
+                    run_warehouse_PIBT,
+                    map_json=map_json,
+                    eval_logdir=eval_logdir,
+                    sim_seed=sim_seed,
+                    agentNum=self.agent_num,
+                    map_id=map_id,
+                    eval_id=eval_id,
+                ) for (
+                    map_json,
+                    sim_seed,
+                    map_id,
+                    eval_id,
+                ) in zip(
+                    map_jsons_sim,
+                    maps_eval_seed_sim,
+                    maps_id_sim,
+                    eval_id_sim,
+                )
+            ]
+            logger.info("Collecting evaluations")
+            results_json_PIBT = self.client.gather(sim_futures_PIBT)
+
+            logger.info("Finished Collection") 
+
+            results_json_sorted_EECBS = []
+            results_json_sorted_PBS = []
+            results_json_sorted_PIBT = []
+            results_json_sorted_LTF = []
+            for i in range(len(sols)):
+                curr_eval_results_PIBT = []
+                for j in range(self.n_evals):
+                    curr_eval_results_PIBT.append(results_json_PIBT[i * self.n_evals + j])
+                results_json_sorted_PIBT.append(curr_eval_results_PIBT)
+                results_json_sorted_EECBS.append(curr_eval_results_PIBT)
+                results_json_sorted_PBS.append(curr_eval_results_PIBT)
+                results_json_sorted_LTF.append(curr_eval_results_PIBT)
+
+        if self.obj == "LTF":
+            sim_futures_LTF = [
+                self.client.submit(
+                    run_warehouse_LTF,
+                    map_json=map_json,
+                    eval_logdir=eval_logdir,
+                    sim_seed=sim_seed,
+                    agentNum=self.agent_num,
+                    map_id=map_id,
+                    eval_id=eval_id,
+                ) for (
+                    map_json,
+                    sim_seed,
+                    map_id,
+                    eval_id,
+                ) in zip(
+                    map_jsons_sim,
+                    maps_eval_seed_sim,
+                    maps_id_sim,
+                    eval_id_sim,
+                )
+            ]
+            logger.info("Collecting evaluations")
+            results_json_LTF = self.client.gather(sim_futures_LTF)
+
+            logger.info("Finished Collection") 
+
+            results_json_sorted_EECBS = []
+            results_json_sorted_PBS = []
+            results_json_sorted_PIBT = []
+            results_json_sorted_LTF=[]
+            for i in range(len(sols)):
+                curr_eval_results_LTF = []
+                for j in range(self.n_evals):
+                    curr_eval_results_LTF.append(results_json_LTF[i * self.n_evals + j])
+                results_json_sorted_PIBT.append(curr_eval_results_LTF)
+                results_json_sorted_EECBS.append(curr_eval_results_LTF)
+                results_json_sorted_PBS.append(curr_eval_results_LTF)
+                results_json_sorted_LTF.append(curr_eval_results_LTF)
+        
         if self.obj == "EECBS":
             sim_futures_EECBS = [
                 self.client.submit(
@@ -510,12 +590,16 @@ class WarehouseManager:
 
             results_json_sorted_EECBS = []
             results_json_sorted_PBS = []
+            results_json_sorted_PIBT = []
+            results_json_sorted_LTF=[]
             for i in range(len(sols)):
                 curr_eval_results_EECBS = []
                 for j in range(self.n_evals):
                     curr_eval_results_EECBS.append(results_json_EECBS[i * self.n_evals + j])
                 results_json_sorted_EECBS.append(curr_eval_results_EECBS)
                 results_json_sorted_PBS.append(curr_eval_results_EECBS)
+                results_json_sorted_PIBT.append(curr_eval_results_EECBS)
+                results_json_sorted_LTF.append(curr_eval_results_EECBS)
 
 
         
@@ -548,12 +632,16 @@ class WarehouseManager:
 
             results_json_sorted_EECBS = []
             results_json_sorted_PBS = []
+            results_json_sorted_PIBT = []
+            results_json_sorted_LTF=[]
             for i in range(len(sols)):
                 curr_eval_results_PBS = [] 
                 for j in range(self.n_evals):
                     curr_eval_results_PBS.append(results_json_PBS[i * self.n_evals + j])
                 results_json_sorted_PBS.append(curr_eval_results_PBS)
                 results_json_sorted_EECBS.append(curr_eval_results_PBS)
+                results_json_sorted_PIBT.append(curr_eval_results_PBS)
+                results_json_sorted_LTF.append(curr_eval_results_PBS)
         
         if self.obj == "PBS_EECBS":
             sim_futures_EECBS = [
@@ -612,6 +700,8 @@ class WarehouseManager:
 
             results_json_sorted_EECBS = []
             results_json_sorted_PBS = []
+            results_json_sorted_PIBT = []
+            results_json_sorted_LTF=[]
             for i in range(len(sols)):
                 curr_eval_results_EECBS = []
                 curr_eval_results_PBS = [] 
@@ -620,6 +710,76 @@ class WarehouseManager:
                     curr_eval_results_PBS.append(results_json_PBS[i * self.n_evals + j])
                 results_json_sorted_EECBS.append(curr_eval_results_EECBS)
                 results_json_sorted_PBS.append(curr_eval_results_PBS)
+                results_json_sorted_PIBT.append(curr_eval_results_EECBS)
+                results_json_sorted_LTF.append(curr_eval_results_EECBS)
+
+        if self.obj == "PIBT_LTF":
+            sim_futures_PIBT = [
+                self.client.submit(
+                    run_warehouse_PIBT,
+                    map_json=map_json,
+                    eval_logdir=eval_logdir,
+                    sim_seed=sim_seed,
+                    agentNum=self.agent_num,
+                    map_id=map_id,
+                    eval_id=eval_id,
+                ) for (
+                    map_json,
+                    sim_seed,
+                    map_id,
+                    eval_id,
+                ) in zip(
+                    map_jsons_sim,
+                    maps_eval_seed_sim,
+                    maps_id_sim,
+                    eval_id_sim,
+                )
+            ]
+            sim_futures_LTF = [
+                self.client.submit(
+                    run_warehouse_LTF,
+                    map_json=map_json,
+                    eval_logdir=eval_logdir,
+                    sim_seed=sim_seed,
+                    agentNum=self.agent_num,
+                    map_id=map_id,
+                    eval_id=eval_id,
+                ) for (
+                    map_json,
+                    sim_seed,
+                    map_id,
+                    eval_id,
+                ) in zip(
+                    map_jsons_sim,
+                    maps_eval_seed_sim,
+                    maps_id_sim,
+                    eval_id_sim,
+                )
+            ]
+
+            logger.info("Collecting evaluations")
+            results_json_PIBT = self.client.gather(sim_futures_PIBT)
+            results_json_LTF = self.client.gather(sim_futures_LTF) 
+        
+
+
+            logger.info("Finished Collection") 
+
+            results_json_sorted_EECBS = []
+            results_json_sorted_PBS = []
+            results_json_sorted_PIBT = []
+            results_json_sorted_LTF=[]
+            for i in range(len(sols)):
+                curr_eval_results_PIBT = []
+                curr_eval_results_LTF = [] 
+                for j in range(self.n_evals):
+                    curr_eval_results_PIBT.append(results_json_PIBT[i * self.n_evals + j])
+                    curr_eval_results_LTF.append(results_json_LTF[i * self.n_evals + j])
+                results_json_sorted_EECBS.append(curr_eval_results_PIBT)
+                results_json_sorted_PBS.append(curr_eval_results_LTF)
+                results_json_sorted_PIBT.append(curr_eval_results_PIBT)
+                results_json_sorted_LTF.append(curr_eval_results_PIBT)
+
 
         logger.info("Processing eval results")
 
@@ -628,6 +788,8 @@ class WarehouseManager:
                 process_warehouse_eval_result,
                 curr_result_json_EECBS=curr_result_json_EECBS,
                 curr_result_json_PBS = curr_result_json_PBS,
+                curr_result_json_PIBT = curr_result_json_PIBT,
+                curr_result_json_LTF = curr_result_json_LTF,
                 n_evals=self.n_evals,
                 map_np_unrepaired=map_np_unrepaired_sim[map_id * self.n_evals],
                 map_comp_unrepaired=map_comp_unrepaired_sim[map_id *
@@ -640,10 +802,14 @@ class WarehouseManager:
             ) for (
                 curr_result_json_EECBS,
                 curr_result_json_PBS,
+                curr_result_json_PIBT,
+                curr_result_json_LTF,
                 map_id,
             ) in zip(
                 results_json_sorted_EECBS,
                 results_json_sorted_PBS,
+                results_json_sorted_PIBT,
+                results_json_sorted_LTF,
                 map_ids,
             )
         ]

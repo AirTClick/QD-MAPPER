@@ -37,6 +37,10 @@ def visualize_kiva(
     bounds = [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5]
     norm = colors.BoundaryNorm(bounds, cmap.N)
 
+    # cmap = colors.ListedColormap(['white', 'black'])
+    # bounds = [-0.5, 0.5]
+    # norm = colors.BoundaryNorm(bounds, cmap.N)
+
     # heatmap = plt.pcolor(np.array(data), cmap=cmap, norm=norm)
     # plt.colorbar(heatmap, ticks=[0, 1, 2, 3])
     sns.heatmap(

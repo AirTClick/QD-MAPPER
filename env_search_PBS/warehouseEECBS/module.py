@@ -16,6 +16,7 @@ import pathlib
 import warnings
 import warehouse_sim_PBS  # type: ignore # ignore pylance warning
 import warehouse_sim_EECBS  # type: ignore # ignore pylance warning
+# import warehouse_sim_PIBT  # type: ignore # ignore pylance warning
 import numpy as np
 import multiprocessing
 import scipy
@@ -40,6 +41,7 @@ from env_search_PBS.utils import (eecbs_obj_types, MIN_SCORE,
                               kiva_env_str2number, format_env_str,
                               read_in_kiva_map, flip_tiles)
 from env_search_PBS.node_hashing import maze_hashing
+# from env_search_PBS.LTF.example import run_follower
 # from env_search_PBS.test_entropy import maze_dist
 
 logger = logging.getLogger(__name__)
@@ -324,7 +326,7 @@ class WarehouseModule:
             "highLevelSolver":self.config.highLevelSolver,
             "lowLevelSolver":self.config.lowLevelSolver,
             "inadmissibleH": self.config.inadmissibleH,
-            "suboptimality": suboptimality_bound,
+            "suboptimality": self.config.suboptimality,
             "heuristics": self.config.heuristics,
             "prioritizingConflicts":self.config.prioritizingConflicts,
             "bypass": self.config.bypass,
@@ -381,6 +383,55 @@ class WarehouseModule:
         
         return result_json 
 
+    def evaluate_PIBT(
+        self,
+        map_json: str,
+        eval_logdir: pathlib.Path,
+        sim_seed: int,
+        agentNum: int,
+        map_id: int,
+        eval_id: int, 
+    ):
+        output = str(eval_logdir / f"id_{map_id}-sim_{eval_id}-seed={sim_seed}")
+
+        kwargs = {
+            "map" : map_json,
+            "agentNum" : agentNum,
+            "eval_id": eval_id,
+        }
+
+        logger.info(f"PBS Map evaluate: {map_id}")
+
+        one_sim_result_jsonstr = warehouse_sim_PBS.run(**kwargs)
+
+        result_json = json.loads(one_sim_result_jsonstr)
+        
+        return result_json 
+    
+    def evaluate_LTF(
+        self,
+        map_json: str,
+        eval_logdir: pathlib.Path,
+        sim_seed: int,
+        agentNum: int,
+        map_id: int,
+        eval_id: int, 
+    ):
+        output = str(eval_logdir / f"id_{map_id}-sim_{eval_id}-seed={sim_seed}")
+
+        kwargs = {
+            "map" : map_json,
+            "agentNum" : agentNum,
+            "eval_id": eval_id,
+        }
+
+        logger.info(f"ltf Map evaluate: {map_id}")
+
+        one_sim_result_jsonstr = run_follower(**kwargs)
+
+        result_json = json.loads(one_sim_result_jsonstr)
+        
+        return result_json 
 
     def evaluate(
         self,
@@ -472,6 +523,8 @@ class WarehouseModule:
         self,
         curr_result_json_EECBS: List[dict],
         curr_result_json_PBS: List[dict],
+        curr_result_json_PIBT: List[dict],
+        curr_result_json_LTF: List[dict],
         n_evals: int,
         map_np_unrepaired: np.ndarray,
         map_comp_unrepaired: np.ndarray,
@@ -493,6 +546,126 @@ class WarehouseModule:
         # For now, failure only happens during MILP repair, so it failure
         # happens, all simulation json results would contain
         # {"success": False}.
+        if obj == "PIBT":
+            if not curr_result_json_PIBT[0]["success"]:
+                logger.info(
+                f"Map ID {map_id} failed.")
+
+                metadata = WarehouseMetadata(
+                    map_int_unrepaired=map_comp_unrepaired,
+                    map_int_raw=map_np_unrepaired,
+                )
+                result = WarehouseResult.from_raw(
+                    warehouse_metadata=metadata,
+                    opts={
+                        "aggregation": self.config.aggregation_type,
+                        "measure_names": self.config.measure_names,
+                    },
+                )
+                result.failed = True
+                return result
+
+            keys_PIBT = curr_result_json_PIBT[0].keys()
+
+            collected_results_PIBT = {key: [] for key in keys_PIBT}
+
+            for result_json_PIBT in curr_result_json_PIBT:
+                for key in keys_PIBT:
+                    collected_results_PIBT[key].append(result_json_PIBT[key])
+
+            success_rate_PIBT = np.array(collected_results_PIBT.get("success_rate"))
+            avg_success_rate_PIBT = np.mean(success_rate_PIBT)
+
+            sum_of_cost_PIBT = np.array(collected_results_PIBT.get("sum_of_cost"))
+            avg_sum_of_cost_PIBT = np.mean(sum_of_cost_PIBT)
+
+            make_span_PIBT = np.array(collected_results_PIBT.get("make_span_PIBT"))
+            avg_make_span_PIBT = np.mean(make_span_PIBT)
+
+            actual_obj = -((avg_success_rate_PIBT * (avg_make_span_PIBT * 150 * 150)) - avg_sum_of_cost_PIBT)
+
+
+            lower_runtime_alg = "PIBT"
+
+            avg_success_rate_LTF=0.0
+            avg_sum_of_cost_LTF = 0.0 
+            avg_make_span_LTF = 0.0 
+
+            solution_cost_PBS=[0]
+            avg_run_time_PBS = 0.0
+            tile_usage_PBS=np.zeros(100)
+            tile_usage_mean_PBS=0.0
+            tile_usage_std_PBS=0.0
+            average_suboptimality_PBS= 0.0
+
+            solution_cost_EECBS=[]
+            avg_run_time_EECBS = 0.0
+            tile_usage_EECBS=np.zeros(100)
+            tile_usage_mean_EECBS=0.0
+            tile_usage_std_EECBS=0.0
+            average_suboptimality_EECBS= 0.0
+
+        if obj == "LTF":
+            if not curr_result_json_LTF[0]["success"]:
+                logger.info(
+                f"Map ID {map_id} failed.")
+
+                metadata = WarehouseMetadata(
+                    map_int_unrepaired=map_comp_unrepaired,
+                    map_int_raw=map_np_unrepaired,
+                )
+                result = WarehouseResult.from_raw(
+                    warehouse_metadata=metadata,
+                    opts={
+                        "aggregation": self.config.aggregation_type,
+                        "measure_names": self.config.measure_names,
+                    },
+                )
+                result.failed = True
+                return result
+
+            keys_LTF = curr_result_json_LTF[0].keys()
+
+            collected_results_LTF = {key: [] for key in keys_LTF}
+
+            for result_json_LTF in curr_result_json_LTF:
+                for key in keys_LTF:
+                    collected_results_LTF[key].append(result_json_LTF[key])
+
+            success_rate_LTF = np.array(collected_results_LTF.get("success_rate"))
+            avg_success_rate_LTF = np.mean(success_rate_LTF)
+
+            sum_of_cost_LTF = np.array(collected_results_LTF.get("sum_of_cost"))
+            avg_sum_of_cost_LTF = np.mean(sum_of_cost_LTF)
+
+            make_span_LTF = np.array(collected_results_LTF.get("make_span_LTF"))
+            avg_make_span_LTF = np.mean(make_span_LTF)
+
+            actual_obj = -((avg_success_rate_LTF * (avg_make_span_LTF * 150 * 150)) - avg_sum_of_cost_LTF)
+
+
+            lower_runtime_alg = "LTF"
+
+            avg_success_rate_PIBT = 0.0
+            avg_sum_of_cost_PIBT = 0.0 
+            avg_make_span_PIBT = 0.0 
+
+
+            solution_cost_PBS=[0]
+            avg_run_time_PBS = 0.0
+            tile_usage_PBS=np.zeros(100)
+            tile_usage_mean_PBS=0.0
+            tile_usage_std_PBS=0.0
+            average_suboptimality_PBS= 0.0
+
+            solution_cost_EECBS=[]
+            avg_run_time_EECBS = 0.0
+            tile_usage_EECBS=np.zeros(100)
+            tile_usage_mean_EECBS=0.0
+            tile_usage_std_EECBS=0.0
+            average_suboptimality_EECBS= 0.0
+        
+            
         if obj == "EECBS":
             if not curr_result_json_EECBS[0]["success"]:
                 logger.info(
@@ -562,6 +735,13 @@ class WarehouseModule:
             tile_usage_std_PBS=0.0
             average_suboptimality_PBS= 0.0
 
+            avg_success_rate_PIBT = 0.0
+            avg_sum_of_cost_PIBT = 0.0
+            avg_make_span_PIBT = 0.0
+
+            avg_success_rate_LTF=0.0
+            avg_sum_of_cost_LTF = 0.0 
+            avg_make_span_LTF = 0.0 
 
 
             # --------------------------------------------------------------------------------------------------
@@ -636,6 +816,14 @@ class WarehouseModule:
             tile_usage_mean_EECBS=0.0
             tile_usage_std_EECBS=0.0
             average_suboptimality_EECBS= 0.0
+
+            avg_success_rate_LTF=0.0
+            avg_sum_of_cost_LTF = 0.0 
+            avg_make_span_LTF = 0.0 
+
+            avg_success_rate_PIBT = 0.0
+            avg_sum_of_cost_PIBT = 0.0
+            avg_make_span_PIBT = 0.0
 
         if obj == "PBS_EECBS":
             if not curr_result_json_EECBS[0]["success"]:
@@ -747,6 +935,100 @@ class WarehouseModule:
             abs_objs = abs(objs)
 
             actual_obj = abs_objs
+
+            avg_success_rate_LTF=0.0
+            avg_sum_of_cost_LTF = 0.0 
+            avg_make_span_LTF = 0.0 
+
+            avg_success_rate_PIBT = 0.0
+            avg_sum_of_cost_PIBT = 0.0
+            avg_make_span_PIBT = 0.0
+        
+        if obj == "PIBT_LTF":
+            if not curr_result_json_PIBT[0]["success"]:
+                logger.info(
+                f"Map ID {map_id} failed.")
+
+                metadata = WarehouseMetadata(
+                    map_int_unrepaired=map_comp_unrepaired,
+                    map_int_raw=map_np_unrepaired,
+                )
+                result = WarehouseResult.from_raw(
+                    warehouse_metadata=metadata,
+                    opts={
+                        "aggregation": self.config.aggregation_type,
+                        "measure_names": self.config.measure_names,
+                    },
+                )
+                result.failed = True
+                return result
+
+            #PIBT
+            keys_PIBT = curr_result_json_PIBT[0].keys()
+
+            collected_results_PIBT = {key: [] for key in keys_PIBT}
+
+            for result_json_PIBT in curr_result_json_PIBT:
+                for key in keys_PIBT:
+                    collected_results_PIBT[key].append(result_json_PIBT[key])
+
+            success_rate_PIBT = np.array(collected_results_PIBT.get("success_rate"))
+            avg_success_rate_PIBT = np.mean(success_rate_PIBT)
+
+            sum_of_cost_PIBT = np.array(collected_results_PIBT.get("sum_of_cost"))
+            avg_sum_of_cost_PIBT = np.mean(sum_of_cost_PIBT)
+
+            make_span_PIBT = np.array(collected_results_PIBT.get("make_span_PIBT"))
+            avg_make_span_PIBT = np.mean(make_span_PIBT)
+
+            actual_obj_PIBT = -((avg_success_rate_PIBT * (avg_make_span_PIBT * 150 * 150)) - avg_sum_of_cost_PIBT)
+
+            #LTF
+            keys_LTF = curr_result_json_LTF[0].keys()
+
+            collected_results_LTF = {key: [] for key in keys_LTF}
+
+            for result_json_LTF in curr_result_json_LTF:
+                for key in keys_LTF:
+                    collected_results_LTF[key].append(result_json_LTF[key])
+
+            success_rate_LTF = np.array(collected_results_LTF.get("success_rate"))
+            avg_success_rate_LTF = np.mean(success_rate_LTF)
+
+            sum_of_cost_LTF = np.array(collected_results_LTF.get("sum_of_cost"))
+            avg_sum_of_cost_LTF = np.mean(sum_of_cost_LTF)
+
+            make_span_LTF = np.array(collected_results_LTF.get("make_span_LTF"))
+            avg_make_span_LTF = np.mean(make_span_LTF)
+
+            actual_obj_LTF = -((avg_success_rate_LTF * (avg_make_span_LTF * 150 * 150)) - avg_sum_of_cost_LTF)
+
+            objs = actual_obj_LTF - actual_obj_PIBT
+
+            if objs >= 0:
+                lower_runtime_alg = "PIBT"
+            else:
+                lower_runtime_alg = "LTF"
+
+            actual_obj = abs(objs)
+
+            avg_success_rate_LTF=0.0
+            avg_sum_of_cost_LTF = 0.0 
+            avg_make_span_LTF = 0.0 
+
+            solution_cost_PBS=[0]
+            avg_run_time_PBS = 0.0
+            tile_usage_PBS=np.zeros(100)
+            tile_usage_mean_PBS=0.0
+            tile_usage_std_PBS=0.0
+            average_suboptimality_PBS= 0.0
+
+            solution_cost_EECBS=[]
+            avg_run_time_EECBS = 0.0
+            tile_usage_EECBS=np.zeros(100)
+            tile_usage_mean_EECBS=0.0
+            tile_usage_std_EECBS=0.0
+            average_suboptimality_EECBS= 0.0
         
         # print(collected_results)
         # Calculate n_shelf and n_endpoint
@@ -905,6 +1187,17 @@ class WarehouseModule:
             room_all_kl_div = room_all_kl_div, 
             all_kl_div = maze_all_kl_div, 
             lambda2 = lambda2, 
+
+            avg_success_rate_PIBT = avg_success_rate_PIBT,
+            avg_sum_of_cost_PIBT = avg_sum_of_cost_PIBT,
+            avg_make_span_PIBT = avg_make_span_PIBT,
+
+            avg_success_rate_LTF=avg_success_rate_LTF,
+            avg_sum_of_cost_LTF = avg_sum_of_cost_LTF,
+            avg_make_span_LTF = avg_make_span_LTF,
+
+
+
         )
         result = WarehouseResult.from_raw(
             warehouse_metadata=metadata,
@@ -1736,7 +2029,7 @@ def single_simulation(seed, agent_num, kwargs, results_dir):
     print(kwargs["stats"])
     
     #for eval_id
-    kwargs["eval_id"] = 0
+    kwargs["eval_id"] = 3
     
     result_jsonstr = warehouse_sim_PBS.run(**kwargs)
     
@@ -1893,7 +2186,7 @@ def main(
                 repeat(results_dir, n_evals)),
         )
 
-    n_failure = np.array(solution_cost) >= 10
+    n_failure = np.array(solution_cost) >= 20
     n_success = 200 - np.sum(n_failure)
     succ_rate = n_success/200
     

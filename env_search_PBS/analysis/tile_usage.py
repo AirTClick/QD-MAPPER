@@ -47,6 +47,10 @@ def map_to_json(
         lower_runtime_alg,
         suboptimal_EECBS,
         suboptimal_PBS,
+        lambda2,
+        abs_diff_hash,
+        std_bc,
+        entropy,
     ):
     data = dict()
     data["name"] = f"{index0}_{index1}"
@@ -58,10 +62,14 @@ def map_to_json(
     data["objective"] = objective.astype(float)
     data["num_of_obstacles"] = num_of_obstacles.astype(float)
     data["kl_div"] = kl_div.astype(float)
-    data["runtime_EECBS"] = runtime_EECBS.astype(float)
+    data["lambda2"] = lambda2.astype(float)
+    data['abs_diff_hash'] = abs_diff_hash.astype(float)
+    # data["runtime_EECBS"] = runtime_EECBS.astype(float)
     data["runtime_PBS"] = runtime_PBS.astype(float)
+    data["entropy"] = entropy.astype(float)
     data["start"] = start
     data["goal"] = goal
+    data["std_bc"] = std_bc.astype(float)
 
     tile_usage_dir = logdir.dir("generated_maps")
 
@@ -102,12 +110,16 @@ def all_maps_to_json(
         lower_runtime_alg = metadata["lower_runtime_alg"]
         suboptimal_EECBS = metadata["average_suboptimality_EECBS"]
         suboptimal_PBS = metadata["average_suboptimality_PBS"]
+        lambda2 = metadata["lambda2"]
+        abs_diff_hash= metadata["abs_diff_hash"]
+        std_bc = metadata['std_BC']
+        entropy = metadata['layout_entropy']
         # print("suboptimality_EECBS: ", metadata["average_suboptimality_EECBS"])
         # print("suboptimality_PBS: ", metadata["average_suboptimality_PBS"]) 
         # print(goal)
         # print("index_0: ",index_0)
         # print("index_1: ",index_1)
-        map_to_json(map,index_0,index_1,logdir,start,goal,objective,runtime_EECBS,runtime_PBS,num_of_obstacles,kl_div,lower_runtime_alg,suboptimal_EECBS,suboptimal_PBS)
+        map_to_json(map,index_0,index_1,logdir,start,goal,objective,runtime_EECBS,runtime_PBS,num_of_obstacles,kl_div,lower_runtime_alg,suboptimal_EECBS,suboptimal_PBS,lambda2,abs_diff_hash,std_bc,entropy)
         print(f"{i}th map complete")
 
 
@@ -361,7 +373,7 @@ def tile_usage_heatmap_from_qd(
         # find out
         # print(df[(df["behavior_0"]>=512) & (df["objective"] > -5.0)].index)
         indices = list(df[(df["behavior_1"] >= 717)].index)
-        indices_slow = list(df[(df["behavior_0"]<461.5) & (df["objective"] < -5.0)].index) 
+        indices_slow = list(df[(df["behavior_1"]<0.5) & (df["behavior_0"]<0.5) & (df["objective"] > -5.0)].index) 
         # print(indices)
         # breakpoint() 
         # print("index_1: ", df[(df["behavior_1"]<0.5) & (df["behavior_0"]>0.00065) & (df["objective"] > -2.5)])
@@ -614,8 +626,8 @@ def tile_usage_heatmap_from_qd(
 
                 # visualize_kiva(repaired_env, ax=ax_map, dpi=300)
 
-                # tile_usage_EECBS = np.array(metadata["tile_usage_EECBS"])
-                # tile_usage_PBS = np.array(metadata["tile_usage_PBS"])
+                tile_usage_EECBS = np.array(metadata["tile_usage_EECBS"])
+                tile_usage_PBS = np.array(metadata["tile_usage_PBS"])
                 # print("Std_tile_usage: ", metadata["tile_usage_mean"])
                 # print("Mean_tile_usage: ", metadata["tile_usage_std"])
                 run_time_Test = metadata["objs"]
@@ -638,27 +650,46 @@ def tile_usage_heatmap_from_qd(
                 # mkdir for tileusage
                 tile_usage_dir = logdir.dir("tile_usages")
                 # print(tile_usage.shape)
-                for i in range(tile_usage_EECBS.shape[0]):
-                    curr_tile_usage_EECBS = tile_usage_EECBS[i]
-                    curr_tile_usage_PBS = tile_usage_PBS[i]
-                    repaired_map = sample_start_goal(metadata, repaired_env, i)
-                    visualize_kiva(repaired_map, ax=ax_map, dpi=300) 
-                    plot_tile_usage(
-                        curr_tile_usage_EECBS,
-                        env_h,
-                        env_w,
-                        fig,
-                        ax_tile_use,
-                        ax_tile_use_cbar,
-                        logdir,
-                        filenames=[
-                            f"tile_usage_eecbs/{index_0}_{index_1}-{i}.pdf",
-                            f"tile_usage_eecbs/{index_0}_{index_1}-{i}.svg",
-                            f"tile_usage_eecbs/{index_0}_{index_1}-{i}.png",
-                        ],
-                        dpi=dpi,
-                    )
+                # for i in range(tile_usage_EECBS.shape[0]):
+                #     curr_tile_usage_EECBS = tile_usage_EECBS[i]
+                #     curr_tile_usage_PBS = tile_usage_PBS[0]
+                #     repaired_map = sample_start_goal(metadata, repaired_env, 0)
+                #     visualize_kiva(repaired_map, ax=ax_map, dpi=300) 
+                #     plot_tile_usage(
+                #         curr_tile_usage_PBS,
+                #         env_h,
+                #         env_w,
+                #         fig,
+                #         ax_tile_use,
+                #         ax_tile_use_cbar,
+                #         logdir,
+                #         filenames=[
+                #             f"tile_usage_fast/{index_0}_{index_1}-{i}.pdf",
+                #             f"tile_usage_fast/{index_0}_{index_1}-{i}.svg",
+                #             f"tile_usage_fast/{index_0}_{index_1}-{i}.png",
+                #         ],
+                #         dpi=dpi,
+                #     )
 
+                curr_tile_usage_PBS = tile_usage_PBS[0]
+                repaired_map = sample_start_goal(metadata, repaired_env, 0)
+                visualize_kiva(repaired_map, ax=ax_map, dpi=300) 
+                plot_tile_usage(
+                    curr_tile_usage_PBS,
+                    env_h,
+                    env_w,
+                    fig,
+                    ax_tile_use,
+                    ax_tile_use_cbar,
+                    logdir,
+                    filenames=[
+                        f"tile_usage_middle/{index_0}_{index_1}-{0}.pdf",
+                        f"tile_usage_middle/{index_0}_{index_1}-{0}.svg",
+                        f"tile_usage_middle/{index_0}_{index_1}-{0}.png",
+                    ],
+                    dpi=dpi,
+                )
+                
                 plt.close('all')
 
 
@@ -686,7 +717,7 @@ def main(
     # all_maps_to_json(
     #     logdir = logdir,
     #     gen = gen,
-    #     )
+    #     ) 
 
 
 if __name__ == "__main__":

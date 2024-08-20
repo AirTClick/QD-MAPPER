@@ -7,6 +7,7 @@ From: python:3.9.18-bullseye
     pybind11/ /usr/project/pybind11
     PBS/ /usr/project/PBS
     EECBS/ /usr/project/EECBS
+    # pibt2/ /usr/project/pibt2
     # RHCR/ /usr/project/RHCR
     CMakeLists.txt /usr/project/CMakeLists.txt
     # boost_1_71_0.tar.gz /usr/project/boost_1_71_0.tar.gz
@@ -96,10 +97,16 @@ From: python:3.9.18-bullseye
     export MALLOC_TRIM_THRESHOLD_=0
 
 %runscript
+    cpuCores=`cat /proc/cpuinfo | grep "cpu cores" | uniq | awk '{print $NF}'`
+    echo "Available CPU cores: "$cpuCores
     cd $PROJECT_ROOT
     cmake .
-    make
+    make -j $cpuCores
     cd EECBS
     cmake .
-    make 
+    make -j $cpuCores
     mv "warehouse_sim_EECBS.cpython-39-x86_64-linux-gnu.so" ..
+    # cd pibt2
+    # cmake .
+    # make 
+    # mv "warehouse_sim_PIBT.cpython-39-x86_64-linux-gnu.so" ..
