@@ -108,9 +108,9 @@ For example:
 
 ```bash
 bash scripts/run_slurm.sh config/foo.gin 42 config/hpc/test.sh
-``` -->
+```
 
-<!-- `CONFIG` is the experiment config for `env_search_PBS/main.py`, and `HPC_CONFIG` is a shell
+`CONFIG` is the experiment config for `env_search_PBS/main.py`, and `HPC_CONFIG` is a shell
 file that is sourced by the script to provide configuration for the Slurm
 cluster. See `config/hpc` for example files.
 
@@ -118,7 +118,7 @@ Once the script has run, it will output commands like the following:
 
 - `tail -f ...` - You can use this to monitor stdout and stderr of the main
   experiment script. Run it.
-- `bash scripts/slurm_cancel.sh ...` - This will cancel the job. -->
+- `bash scripts/slurm_cancel.sh ...` - This will cancel the job.
 
 ### Reloading
 
@@ -144,7 +144,12 @@ The `config/` directory contains the config files required to run the experiment
 | config/warehouse/CMA-ME_CBS_obs_KL.gin | CPU runtime | number of obstalces & KL Div of tile pattern distribution |
 | config/warehouse/CMA-ME_EECBS_obs_KL.gin           | CPU runtime            | number of obstalces & KL Div of tile pattern distribution |
 | config/warehouse/CMA-ME_PBS_obs_KL.gin | CPU runtime| number of obstalces & KL Div of tile pattern distribution |
-| config/warehouse/CMA-ME_PIBT_obs_KL.gin | RSR | number of obstalces & KL Div of tile pattern distribution |
-| config/warehouse/CMA-ME_LTF_obs_KL.gin | RSR | number of obstalces & KL Div of tile pattern distribution |
+| config/warehouse/CMA-ME_PIBT_obs_KL.gin | Regularized Success Rate(RSR) | number of obstalces & KL Div of tile pattern distribution |
+| config/warehouse/CMA-ME_LTF_obs_KL.gin | Regularized Success Rate(RSR) | number of obstalces & KL Div of tile pattern distribution |
 | config/warehouse/CMA-ME_PBS_EECBS_obj_obstacle_KL.gin | Absolute Difference of CPU runtime | number of obstalces & KL Div of tile pattern distribution |
-| config/warehouse/CMA-ME_LTF_PIBT_obs_KL.gin | Absolute Difference of RSR | number of obstalces & KL Div of tile pattern distribution |
+| config/warehouse/CMA-ME_LTF_PIBT_obs_KL.gin | Absolute Difference of Regularized Success Rate(RSR) | number of obstalces & KL Div of tile pattern distribution |
+| config/warehouse/CMA-ME_PBS_obs_lambda2.gin | CPU runtime| number of obstalces & Lambda2 |
+| config/warehouse/CMA-ME_PBS_obs_bc.gin | CPU runtime| number of obstalces & Standard deviation of Betweenness Centrality |
+| config/warehouse/CMA-ME_PBS_KL_node_hashing.gin | CPU runtime| KL divergence of tile pattern distribution & KL divergence of WL graph feature |
+| config/warehouse/CMA-ME_PBS_KL_entropy.gin | CPU runtime| KL divergence of tile pattern distribution & Map Entropy |
+| config/warehouse/CMA-ME_PBS_entropy_obs.gin | CPU runtime| Map Entropy & Number of obstacles |
