@@ -16,7 +16,7 @@ experiment.name = 'Warehouse Generation'
 # Parameters for GridArchive:
 # ======================================================================================================================
 GridArchive.dims = [80, 80]
-GridArchive.ranges = [[307, 717], [0.0, 1.5]]
+GridArchive.ranges = [[307, 717], [0.0, 1.0]]
 
 # Parameters for downsample/GridArchive:
 # ======================================================================================================================
@@ -32,7 +32,7 @@ Manager.env_manager_class = @WarehouseManager
 Manager.initial_sols = 100
 Manager.inner_itrs = 10000
 Manager.is_em = False
-Manager.max_evals = 100
+Manager.max_evals = 10000
 Manager.plot_metrics_freq = 1
 Manager.reload_save_freq = 1
 Manager.sol_size = 1731

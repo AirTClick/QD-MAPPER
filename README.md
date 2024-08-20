@@ -1,6 +1,6 @@
 # A Quality Diversity Approach to Automatically Generate Multi-Agent Path Finding Benchmark Maps 
 
-This repository is the official implementation of **[A Quality Diversity Approach to Automatically Generate Multi-Agent Path Finding Benchmark Maps]**. The repository builds on top of the repositories of [Multi-Robot Coordination and Layout Design for Automated Warehousing](https://github.com/lunjohnzhang/warehouse_env_gen_public) and [EECBS: Bounded-Suboptimal Search for Multi-Agent Path Finding](https://github.com/Jiaoyang-Li/EECBS).
+This repository is the official implementation of **[A Quality Diversity Approach to Automatically Generate Multi-Agent Path Finding Benchmark Maps]**. The repository builds on top of the repositories of [Multi-Robot Coordination and Layout Design for Automated Warehousing](https://github.com/lunjohnzhang/warehouse_env_gen_public), [EECBS: Bounded-Suboptimal Search for Multi-Agent Path Finding](https://github.com/Jiaoyang-Li/EECBS), [Priority-Based Search](https://github.com/Jiaoyang-Li/PBS), [Priority Inheritance with Backtracking for Iterative Multi-agent Path Finding](https://github.com/Kei18/pibt2), and [Learn to Follow: Decentralized Lifelong Multi-agent Pathfinding via Planning and Learning](https://github.com/AIRI-Institute/learn-to-follow).
 
 ## Installation
 
@@ -79,13 +79,13 @@ following files:
 To run one experiment locally, use:
 
 ```bash
-bash scripts/run_local_EECBS.sh CONFIG SEED NUM_WORKERS
+bash scripts/run_local_PBS.sh CONFIG SEED NUM_WORKERS
 ```
 
 For instance, with 4 workers:
 
 ```bash
-bash scripts/run_local_EECBS.sh config/warehouse/CMA-ME_small_EECBS.gin 42 4
+bash scripts/run_local_PBS.sh config/warehouse/CMA-ME_PBS_obs_KL.gin 42 4
 ```
 
 `CONFIG` is the [gin](https://github.com/google/gin-config) experiment config
@@ -95,7 +95,7 @@ To run one specific map on some algorithm several (200) times
 ```bash
 bash scripts/run_single_sim_PBS.sh config/warehouse/pure_simulation_PBS.gin logs/PBS_python_start_goal/generated_maps/27_25.json 150 200 constant 1
 ```
-<!-- ### Running on Slurm
+### Running on Slurm
 
 Use the following command to run an experiment on an HPC with Slurm (and
 Singularity) installed:
@@ -110,7 +110,7 @@ For example:
 bash scripts/run_slurm.sh config/foo.gin 42 config/hpc/test.sh
 ``` -->
 
-<!-- `CONFIG` is the experiment config for `env_search/main.py`, and `HPC_CONFIG` is a shell
+<!-- `CONFIG` is the experiment config for `env_search_PBS/main.py`, and `HPC_CONFIG` is a shell
 file that is sourced by the script to provide configuration for the Slurm
 cluster. See `config/hpc` for example files.
 
@@ -129,11 +129,11 @@ experiment. To do so, execute the same command as before, but append the path to
 the logging directory of the failed experiment.
 
 ```bash
-bash scripts/run_local_EECBS.sh.sh config/foo.gin 42 config/hpc/test.sh -r logs/.../
+bash scripts/run_slurm.sh config/foo.gin 42 config/hpc/test.sh -r logs/.../
 ```
-<!-- 
+
 The experiment will then run to completion in the same logging directory. This
-works with `scripts/run_local_EECBS.sh` too. -->
+works with `scripts/run_local_PBS.sh` too. 
 
 ## Reproducing Paper Results
 
@@ -141,7 +141,10 @@ The `config/` directory contains the config files required to run the experiment
 
 | Config file                                                      | Objective                      |                                     Measures |
 | ---------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------- | 
-| config/warehouse/CMA-ME_small_EECBS_obj_run_time.gin | Run Time | std_BC & map_entropy |
-| config/warehouse/CMA-ME_small_EECBS.gin           | Map Entropy            | std_BC & avg_run_time |
-| config/warehouse/CMA-ME_small_EECBS_obj_entropy_suboptimality.gin | Map Entropy|average_suboptimality & avg_run_time |
-
+| config/warehouse/CMA-ME_CBS_obs_KL.gin | CPU runtime | number of obstalces & KL Div of tile pattern distribution |
+| config/warehouse/CMA-ME_EECBS_obs_KL.gin           | CPU runtime            | number of obstalces & KL Div of tile pattern distribution |
+| config/warehouse/CMA-ME_PBS_obs_KL.gin | CPU runtime| number of obstalces & KL Div of tile pattern distribution |
+| config/warehouse/CMA-ME_PIBT_obs_KL.gin | RSR | number of obstalces & KL Div of tile pattern distribution |
+| config/warehouse/CMA-ME_LTF_obs_KL.gin | RSR | number of obstalces & KL Div of tile pattern distribution |
+| config/warehouse/CMA-ME_PBS_EECBS_obj_obstacle_KL.gin | Absolute Difference of CPU runtime | number of obstalces & KL Div of tile pattern distribution |
+| config/warehouse/CMA-ME_LTF_PIBT_obs_KL.gin | Absolute Difference of RSR | number of obstalces & KL Div of tile pattern distribution |
