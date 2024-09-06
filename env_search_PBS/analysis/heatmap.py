@@ -34,7 +34,7 @@ MEASURE_NAMES = {
     # "all_task_len_mean": "Mean task length",
     "n_shelf_components": "Number of shelf components",
     "average_suboptimality" : "Average of Suboptimality",
-    "std_BC" : "std of Betweenness Centrality",
+    "std_BC" : "std of BC",
     "avg_degrees" : "average of degrees",
     "avg_run_time" : "average run time",
     "layout_entropy" : "Map entropy",
@@ -69,11 +69,13 @@ def plot_generation_on_axis(
     df = pd.read_pickle(logdir.file(f"archive/archive_{gen}.pkl"))
     alg_list = []
     for _, to_plot in df.iterrows():
+        # alg_list.append(to_plot["metadata"]["warehouse_metadata"]["lower_runtime_alg"])
         alg_list.append(to_plot["metadata"]["warehouse_metadata"]["lower_runtime_alg"])
+
     
     print(archive.as_pandas())
     # for elite in archive:
-    #     print(elite)
+    #     print(elite.obj)
     #     breakpoint()
     grid_archive_heatmap(
         archive,

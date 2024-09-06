@@ -68,6 +68,96 @@ def repair_warehouse(
     return map_json, map_np_unrepaired, map_comp_unrepaired, map_np_repaired
 
 
+
+def run_warehouse_PIBT(
+    map_json: str,
+    eval_logdir: pathlib.Path,
+    sim_seed: int,
+    agentNum: int,
+    map_id: int,
+    eval_id: int,
+) -> WarehouseResult:
+
+    if map_json is None:
+        logger.info("Evaluating failed layout. Skipping")
+        result = {"success": False}
+        return result
+
+    start = time.time()
+
+    logger.info("seeding global randomness")
+    np.random.seed(sim_seed // np.int32(4))
+    random.seed(sim_seed // np.int32(2))
+
+    logger.info("run warehouse PIBT with seed %d", sim_seed)
+    warehouse_module = get_warehouse_module()
+
+    try:
+        result_PIBT = warehouse_module.evaluate_PIBT(
+            map_json=map_json,
+            eval_logdir=eval_logdir,
+            sim_seed=sim_seed,
+            agentNum=agentNum,
+            map_id=map_id,
+            eval_id=eval_id, 
+        )
+        result_PIBT["success"] = True
+
+    except TimeoutError as e:
+        layout = map_json["layout"]
+        logger.warning(f"evaluate failed")
+        logger.info(f"The map was {layout}")
+        result = {"success": False}
+
+    logger.info("run_warehouse_PIBT done after %f sec", time.time() - start)
+
+    return result_PIBT
+
+def run_warehouse_LTF(
+    map_json: str,
+    eval_logdir: pathlib.Path,
+    sim_seed: int,
+    agentNum: int,
+    map_id: int,
+    eval_id: int,
+) -> WarehouseResult:
+
+    if map_json is None:
+        logger.info("Evaluating failed layout. Skipping")
+        result = {"success": False}
+        return result
+
+    start = time.time()
+
+    logger.info("seeding global randomness")
+    np.random.seed(sim_seed // np.int32(4))
+    random.seed(sim_seed // np.int32(2))
+
+    logger.info("run warehouse LTF with seed %d", sim_seed)
+    warehouse_module = get_warehouse_module()
+
+    try:
+        result_LTF = warehouse_module.evaluate_LTF(
+            map_json=map_json,
+            eval_logdir=eval_logdir,
+            sim_seed=sim_seed,
+            agentNum=agentNum,
+            map_id=map_id,
+            eval_id=eval_id, 
+        )
+        result_LTF["success"] = True
+
+    except TimeoutError as e:
+        layout = map_json["layout"]
+        logger.warning(f"evaluate failed")
+        logger.info(f"The map was {layout}")
+        result = {"success": False}
+
+    logger.info("run_warehouse_LTF done after %f sec", time.time() - start)
+
+    return result_LTF
+
+
 # Run with two algorithms at a time
 def run_warehouse_PBS(
     map_json: str,
@@ -190,6 +280,8 @@ def run_warehouse_EECBS(
 def process_warehouse_eval_result(
     curr_result_json_EECBS: List[dict],
     curr_result_json_PBS: List[dict],
+    curr_result_json_PIBT: List[dict],
+    curr_result_json_LTF: List[dict],
     n_evals: int,
     map_np_unrepaired,
     map_comp_unrepaired,
@@ -206,6 +298,8 @@ def process_warehouse_eval_result(
     results = warehouse_module.process_eval_result(
         curr_result_json_EECBS=curr_result_json_EECBS,
         curr_result_json_PBS = curr_result_json_PBS,
+        curr_result_json_PIBT = curr_result_json_PIBT,
+        curr_result_json_LTF = curr_result_json_LTF,
         n_evals=n_evals,
         map_np_unrepaired=map_np_unrepaired,
         map_comp_unrepaired=map_comp_unrepaired,

@@ -78,6 +78,16 @@ class WarehouseMetadata:
     abs_diff_hash: float = None
     lambda2: float = None
 
+    #FOR PIBT
+    avg_success_rate_PIBT: float = None
+    avg_sum_of_cost_PIBT: float = None
+    avg_make_span_PIBT: float = None
+
+    #FOR LTF
+    avg_success_rate_LTF: float = None
+    avg_sum_of_cost_LTF: float = None
+    avg_make_span_LTF: float = None
+    
     #FOR RHCR
     throughput : List[float] = None # throughput of the simulation
 

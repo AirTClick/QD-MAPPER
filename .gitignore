@@ -44,6 +44,25 @@ comparison_has_legend
 comparison_no_legend
 figure_data.json
 
+# additional ignore
+build_1/
+build_PBS/
+build_two_exp/
+data/
+logs_/
+maps/huamn-design_empty/
+maps/huamn-design_long_corridors/
+maps/obs_bc/
+maps/obs_lambda2/
+maps/similar_LTF/
+maps/similar_maps_CBS/
+maps/similar_maps_EECBS/
+maps/similar_maps_PBS/
+maps/similar_maps_PIBT/
+maps/*.json
+maps/*.png
+run_all_for_comparison.sh
+
 
 # Using https://github.com/github/gitignore/blob/master/Python.gitignore
 

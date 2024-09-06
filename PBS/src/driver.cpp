@@ -47,8 +47,14 @@ int main(int argc, char** argv)
 
 	///////////////////////////////////////////////////////////////////////////
 	// load the instance
-	Instance instance(vm["map"].as<string>(), vm["agents"].as<string>(),
-		vm["agentNum"].as<int>());
+	std::ifstream i(vm["map"].as<std::string>());
+        json map_json;
+        i >> map_json;
+	
+	Instance instance(map_json, 150,0);
+
+	// Instance instance(vm["map"].as<string>(), vm["agents"].as<string>(),
+	// 	vm["agentNum"].as<int>());
 
 	srand(0);
     PBS pbs(instance, vm["sipp"].as<bool>(), vm["screen"].as<int>());

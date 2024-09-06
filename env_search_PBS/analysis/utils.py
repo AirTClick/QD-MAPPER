@@ -299,6 +299,9 @@ def grid_archive_heatmap(archive,
     #     i+=1
 
         # normal case
+        # if elite.obj <= -10:
+        #     colors[elite.idx[1], elite.idx[0]] = -elite.obj -(1024-elite.beh[0]) * 0.007
+        # else:
         colors[elite.idx[1], elite.idx[0]] = -elite.obj 
         
 
