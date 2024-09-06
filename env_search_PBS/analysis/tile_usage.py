@@ -373,7 +373,7 @@ def tile_usage_heatmap_from_qd(
         # find out
         # print(df[(df["behavior_0"]>=512) & (df["objective"] > -5.0)].index)
         indices = list(df[(df["behavior_1"] >= 717)].index)
-        indices_slow = list(df[(df["behavior_1"]<0.5) & (df["behavior_0"]<0.5) & (df["objective"] > -5.0)].index) 
+        indices_slow = list(df[(df["behavior_0"]>0.5) & (df["behavior_0"]<0.6) & (df["objective"] > -25.0)].index) 
         # print(indices)
         # breakpoint() 
         # print("index_1: ", df[(df["behavior_1"]<0.5) & (df["behavior_0"]>0.00065) & (df["objective"] > -2.5)])
@@ -683,9 +683,9 @@ def tile_usage_heatmap_from_qd(
                     ax_tile_use_cbar,
                     logdir,
                     filenames=[
-                        f"tile_usage_middle/{index_0}_{index_1}-{0}.pdf",
-                        f"tile_usage_middle/{index_0}_{index_1}-{0}.svg",
-                        f"tile_usage_middle/{index_0}_{index_1}-{0}.png",
+                        f"tile_usage_entropy/{index_0}_{index_1}-{0}.pdf",
+                        f"tile_usage_entropy/{index_0}_{index_1}-{0}.svg",
+                        f"tile_usage_entropy/{index_0}_{index_1}-{0}.png",
                     ],
                     dpi=dpi,
                 )
