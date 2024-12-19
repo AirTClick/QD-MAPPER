@@ -808,6 +808,16 @@ class WarehouseModule:
 
             actual_obj = -objs_PBS
 
+
+            # binary objective to see if PBS can find solution in the given map
+            binary_obj = 0
+            for solution_cost in solution_cost_PBS:
+                if solution_cost >= 0:
+                    binary_obj = 1
+                else:
+                    binary_obj = 0
+
+
             #set for fit purpose
             lower_runtime_alg = "PBS"
             solution_cost_EECBS=[]
@@ -1196,6 +1206,8 @@ class WarehouseModule:
             avg_sum_of_cost_LTF = avg_sum_of_cost_LTF,
             avg_make_span_LTF = avg_make_span_LTF,
 
+            #binary_obj for PBS
+            binary_obj = binary_obj,
 
 
         )

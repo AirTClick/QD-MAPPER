@@ -214,6 +214,7 @@ singularity exec ${SINGULARITY_OPTS} singularity/ubuntu_warehouse.sif \\
   dask-worker \\
     --scheduler-file $SCHEDULER_FILE \\
     --nprocs $HPC_MASTER_WORKERS \\
+    --memory-limit=\"8GB\" \\
     --nthreads 1 &
 
 # Start main experiment in the foreground.
@@ -259,11 +260,16 @@ date
 
 # Important to not run in background, as the worker must block so that the slurm
 # job does not terminate.
+# Manually specify memory limit.
+# In RM-shared, 2GB of memory is assigned per 1 core automatically, but for
+# some reason dask cannot figure that out. If we do not have enough memory, the
+# maximum aviaible memory is used (usually 2GB).
 singularity exec ${SINGULARITY_OPTS} singularity/ubuntu_warehouse.sif \\
   dask-worker \\
     --scheduler-file $SCHEDULER_FILE \\
     --nprocs $HPC_SLURM_CPUS_PER_NODE \\
-    --nthreads 1
+    --nthreads 1 \\
+    --memory-limit=\"8GB\" \
 
 echo
 echo \"========== Done ==========\"
