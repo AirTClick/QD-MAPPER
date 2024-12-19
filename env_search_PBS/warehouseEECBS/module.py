@@ -2036,8 +2036,10 @@ def single_simulation(seed, agent_num, kwargs, results_dir):
     result_json = json.loads(result_jsonstr)
 
     solution_cost = result_json["runtime"]
+    real_solution_cost = result_json["solution_cost"]
 
-    print("runtime: ",solution_cost)
+    # print("runtime: ",solution_cost)
+    # print("solution_cost: ", real_solution_cost)
 
     # print("Tile_usage_shape: ", len(result_json["tile_usage"]))
 
@@ -2062,7 +2064,7 @@ def single_simulation(seed, agent_num, kwargs, results_dir):
     # if mode == "inc_agents":
     #     kwargs["agentNum"] += 1
 
-    return solution_cost
+    return real_solution_cost,solution_cost
 
 # def test_calc_path_len_mean(map_filepath):
 #     # Read in map
@@ -2167,7 +2169,7 @@ def main(
             seeds.extend(repeat(seed + i, n_evals))
             agent_nums.extend([agent_num + j for j in range(n_evals)])
 
-        solution_cost = pool.starmap(
+        real_solution_cost,solution_cost = pool.starmap(
             single_simulation,
             zip(seeds,
                 agent_nums,
@@ -2189,11 +2191,23 @@ def main(
     n_failure = np.array(solution_cost) >= 20
     n_success = 200 - np.sum(n_failure)
     succ_rate = n_success/200
-    
-    avg_obj = np.mean(solution_cost)
-    std_obj = np.std(solution_cost)
-    max_obj = np.max(solution_cost)
-    min_obj = np.min(solution_cost)
+    # print("Solution_cost: " ,solution_cost)
+    real_obj = []
+    runtime_ = [] 
+    for sc in solution_cost: 
+        real_obj.append(sc[0])
+        runtime_.append(sc[1])
+
+    avg_obj = np.mean(runtime_)
+    std_obj = np.std(runtime_)
+    max_obj = np.max(runtime_)
+    min_obj = np.min(runtime_)
+
+    real_avg_obj = np.mean(real_obj)
+    real_std_obj = np.std(real_obj)
+    real_max_obj = np.max(real_obj)
+    real_min_obj = np.min(real_obj)
+
 
     n_evals = n_evals * n_sim if mode == "inc_agents" else n_evals
 
@@ -2206,6 +2220,11 @@ def main(
     print(f"Max Runtime over {n_evals} simulations: {max_obj}")
     print(f"Min Runtime over {n_evals} simulations: {min_obj}")
 
+
+    print(f"Average Solution_cost over {n_evals} simulations: {real_avg_obj}")
+    print(f"Std Solution_cost over {n_evals} simulations: {real_std_obj}")
+    print(f"Max Solution_cost over {n_evals} simulations: {real_max_obj}")
+    print(f"Min Solution_cost over {n_evals} simulations: {real_min_obj}")
 
 
 if __name__ == "__main__":

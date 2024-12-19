@@ -59,24 +59,13 @@ def plot_generation_on_axis(
 ):
     # pylint: disable = unused-argument
     archive = load_archive_gen(logdir, gen)
-    # df = pd.read_pickle(logdir.file(f"archive/archive_{gen}.pkl"))
-    # for _, to_plot in df.iterrows():
-    #     print(to_plot["metadata"]["warehouse_metadata"]["lower_runtime_alg"])
-    #     breakpoint()
-    # for d in df:
-    #     print(d)
-    #     breakpoint()
     df = pd.read_pickle(logdir.file(f"archive/archive_{gen}.pkl"))
     alg_list = []
     for _, to_plot in df.iterrows():
-        # alg_list.append(to_plot["metadata"]["warehouse_metadata"]["lower_runtime_alg"])
         alg_list.append(to_plot["metadata"]["warehouse_metadata"]["lower_runtime_alg"])
 
     
-    print(archive.as_pandas())
-    # for elite in archive:
-    #     print(elite.obj)
-    #     breakpoint()
+    # print(archive.as_pandas())
     grid_archive_heatmap(
         archive,
         alg_list,
@@ -104,6 +93,34 @@ def plot_generation_on_axis(
                 cbar_ticklabel_fontsize=20,
                 **plot_kwargs,
             )
+    
+    # archive = load_archive_gen(logdir, gen)
+    # grid_archive_heatmap(
+    #     archive,
+    #     ax,
+    #     transpose_bcs=True,
+    #     cbar_ticklabel_fontsize=20,
+    #     **plot_kwargs,
+    # )
+
+    # is_em = gin.query_parameter("Manager.is_em")
+    # if is_em and os.path.isdir(logdir.dir("surrogate_archive")):
+    #     surr_archive, downsample_archive = load_surrogate_archive(logdir, -1)
+    #     grid_archive_heatmap(
+    #         surr_archive,
+    #         surr_ax,
+    #         transpose_bcs=True,
+    #         cbar_ticklabel_fontsize=20,
+    #         **plot_kwargs,
+    #     )
+    #     if downsample_archive:
+    #         grid_archive_heatmap(
+    #             downsample_archive,
+    #             downsample_ax,
+    #             transpose_bcs=True,
+    #             cbar_ticklabel_fontsize=20,
+    #             **plot_kwargs,
+    #         )
 
 
 def post_process_figure(ax, fig, kiva, heatmap_only):
@@ -376,12 +393,13 @@ def heatmap(logdir: str,
 
     vmin = 0
     # vmax = 1 # for objective = entropy
-    vmax = 20 # for objective = runtime
+    vmax = 10 # for objective = runtime
 
     # Plotting arguments for grid_archive_heatmap.
     plot_kwargs = {
         "square": False,
         "cmap": "viridis",
+        # "cmap": "viridis_r",
         "pcm_kwargs": {
             # Looks much better in PDF viewers because the heatmap is not drawn
             # as individual rectangles. See here:

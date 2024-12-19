@@ -481,6 +481,36 @@ vector<int> Instance::get_goal_locations() const
 	return goal_locations;
 }
 
+void Instance::shuffle_start_goal(vector<int> start, vector<int> goal)
+{
+	std::vector<int> indices(start.size());
+    for (int i = 0; i < indices.size(); ++i) {
+        indices[i] = i;
+    }
+
+	// Random number generator
+    std::random_device rd;  // Obtain a random number from hardware
+    std::mt19937 g(rd());   // Seed the g
+
+	// Shuffle the indices
+    std::shuffle(indices.begin(), indices.end(), g);
+
+	// Create new shuffled lists
+    std::vector<int> start_loc;
+    std::vector<int> goal_loc;
+
+    for (size_t i : indices) {
+        start_loc.push_back(start[i]);
+        goal_loc.push_back(goal[i]);
+    }
+
+	for (int j = 0; j < num_of_agents; j++){
+		start_locations[j] = start_loc[j];
+		goal_locations[j] = goal_loc[j];
+	}
+
+
+}
 bool Instance::load_map_from_jsonstr(json G_json,int num_of_agents, int eval_id) 
 {	
 	string line;
@@ -502,7 +532,7 @@ bool Instance::load_map_from_jsonstr(json G_json,int num_of_agents, int eval_id)
 		start_locations[j] = start[j];
 		goal_locations[j] = goal[j];
 	}
-
+	
 
 	this->map_size = num_of_cols * num_of_rows;
 

@@ -20,13 +20,13 @@ public:
 	uint64_t num_LL_expanded = 0;
 	uint64_t num_LL_generated = 0;
 
-	PBSNode* dummy_start = nullptr;
-    PBSNode* goal_node = nullptr;
+	PBSNode* dummy_start = nullptr;//
+    PBSNode* goal_node = nullptr;//
 
 
 
-	bool solution_found = false;
-	int solution_cost = -2;
+	bool solution_found = false;//
+	int solution_cost = -2;//
 
 	/////////////////////////////////////////////////////////////////////////////////////////
 	// set params
@@ -52,8 +52,8 @@ public:
 private:
 	conflict_selection conflict_seletion_rule;
 
-    stack<PBSNode*> open_list;
-	list<PBSNode*> allNodes_table;
+    stack<PBSNode*> open_list;//
+	list<PBSNode*> allNodes_table;//
 
 
     list<int> ordered_agents;
