@@ -108,6 +108,9 @@ class WarehouseMetadata:
 
     n_shelf_components: int = None # Number of connected shelf components
 
+    # for PBS 
+    binary_obj : int = 0
+
 @dataclass
 class WarehouseResult:  # pylint: disable = too-many-instance-attributes
     """Represents `n` results from an objective function evaluation.
@@ -175,7 +178,11 @@ class WarehouseResult:  # pylint: disable = too-many-instance-attributes
         return WarehouseResult(
             warehouse_metadata=asdict(warehouse_metadata),
             # agg_obj=agg_obj,
-            agg_obj=warehouse_metadata.objs,
+
+            # agg_obj=warehouse_metadata.objs,   # for other cases except PBS
+            agg_obj= warehouse_metadata.binary_obj, # for binary objective in PBS case
+
+
             agg_measures=agg_measures,
             # std_obj=maybe_std(objs, std_indices),
             # std_measure=maybe_std(measures, std_indices),

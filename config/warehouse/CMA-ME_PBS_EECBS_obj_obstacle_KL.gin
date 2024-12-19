@@ -7,6 +7,7 @@ measure_dim = 2
 min_n_shelf = 20
 num_objects = 3
 sigma0 = 0.2
+obj = "PBS_EECBS"
 
 # Parameters for experiment:
 # ======================================================================================================================
@@ -31,7 +32,7 @@ Manager.env_manager_class = @WarehouseManager
 Manager.initial_sols = 100
 Manager.inner_itrs = 10000
 Manager.is_em = False
-Manager.max_evals = 5000
+Manager.max_evals = 10000
 Manager.plot_metrics_freq = 1
 Manager.reload_save_freq = 1
 Manager.sol_size = 1731  # add one for optimizing the suboptimality of EECBS
@@ -111,6 +112,7 @@ WarehouseManager.n_endpt = 2
 WarehouseManager.n_evals = 5
 WarehouseManager.num_objects = %num_objects
 WarehouseManager.w_mode = True
+WarehouseManager.obj = %obj
 
 WarehouseManager.is_nca = True
 WarehouseManager.nca_iter = 50 
