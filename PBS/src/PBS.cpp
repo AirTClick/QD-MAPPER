@@ -37,7 +37,7 @@ bool PBS::solve(double _time_limit)
     {
         string name = getSolverName();
         name.resize(35, ' ');
-        cout << name << ": ";
+        //cout << name << ": ";
     }
     // set timer
     start = clock();
@@ -311,6 +311,7 @@ shared_ptr<Conflict> PBS::chooseConflict(const PBSNode &node) const
 		printConflicts(node);
 	if (node.conflicts.empty())
 		return nullptr;
+    //a random conflict 
     return node.conflicts.back();
 }
 int PBS::getSumOfCosts() const
@@ -655,6 +656,12 @@ bool PBS::generateRoot()
 inline void PBS::releaseNodes()
 {
     // TODO:: clear open_list
+    while (!open_list.empty())
+	{
+		// PBSNode* curr = open_list.top();
+		open_list.pop();
+		// delete curr;
+	}
 	for (auto& node : allNodes_table)
 		delete node;
 	allNodes_table.clear();
@@ -754,6 +761,7 @@ void PBS::clear()
 	goal_node = nullptr;
 	solution_found = false;
 	solution_cost = -2;
+    runtime = 0;
 }
 
 

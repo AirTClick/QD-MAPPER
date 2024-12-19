@@ -55,12 +55,34 @@ std::string run(const py::kwargs& kwargs)
 
 	json G_json = json::parse(kwargs["map"].cast<string>());
 	Instance instance(G_json, kwargs["agentNum"].cast<int>(), kwargs["eval_id"].cast<int>());
+	vector<int> start_locations = instance.get_start_locations();
+	vector<int> goal_locations = instance.get_goal_locations();
 
 	srand(0);
     PBS pbs(instance, kwargs["sipp"].cast<bool>(), kwargs["screen"].cast<int>());
     // run
     double runtime = 0;
     pbs.solve(kwargs["cutoffTime"].cast<double>());
+
+	runtime += pbs.runtime;
+	if (pbs.solution_cost == -2)
+	{ 
+		while (!pbs.solution_found)
+		{
+			instance.shuffle_start_goal(start_locations,goal_locations);
+			pbs.clear();
+			pbs.solve(kwargs["cutoffTime"].cast<double>()-runtime);
+			runtime += pbs.runtime;	
+			if (pbs.solution_cost == -1 || pbs.solution_cost >= 0 || pbs.solution_cost == -3)
+			{
+				break;
+			} 
+			cout << "Failed to find solutions with runtime " << pbs.runtime << endl;	
+		}
+	}
+
+	pbs.runtime = runtime;
+	cout << "runtime: " << pbs.runtime << endl;
     if (kwargs.contains("output"))
         pbs.saveResults(kwargs["output"].cast<string>());
     if (pbs.solution_found && kwargs.contains("outputPaths"))
@@ -68,7 +90,6 @@ std::string run(const py::kwargs& kwargs)
     /*size_t pos = vm["output"].as<string>().rfind('.');      // position of the file extension
     string output_name = vm["output"].as<string>().substr(0, pos);     // get the name without extension
     cbs.saveCT(output_name); // for debug*/
-	runtime += pbs.runtime;
 
 	result =  pbs.cal_tile_usage(instance, result);
 	result["suboptimality"] = pbs.cal_suboptimality(instance,pbs.solution_cost);

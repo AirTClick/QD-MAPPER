@@ -16,7 +16,7 @@ experiment.name = 'Warehouse Generation'
 # Parameters for GridArchive:
 # ======================================================================================================================
 GridArchive.dims = [80, 80]
-GridArchive.ranges = [[307, 717], [0.0, 1.5]]
+GridArchive.ranges = [[307, 717], [0.0, 1.0]]
 
 # Parameters for downsample/GridArchive:
 # ======================================================================================================================

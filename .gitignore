@@ -25,6 +25,7 @@ maps/human/to_show/img
 maps/ours/dsage_me_algo_fig/img
 maps/ours/to_show/img
 env_search/dask-worker-space
+env_search_PBS/generated_map/*.json
 
 
 singularity/ubuntu_warehouse

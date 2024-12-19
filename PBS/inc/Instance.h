@@ -16,6 +16,7 @@ public:
 	Instance(const string& map_fname, const string& agent_fname, 
 		int num_of_agents = 0, int num_of_rows = 0, int num_of_cols = 0, int num_of_obstacles = 0, int warehouse_width = 0);
     Instance(json& G_json, int num_of_agents, int eval_id);
+	void shuffle_start_goal(vector<int> start, vector<int> goal);
 
 	vector<int> get_goal_locations() const;
 	vector<int> get_start_locations() const;
