@@ -32,7 +32,7 @@ Manager.env_manager_class = @WarehouseManager
 Manager.initial_sols = 100
 Manager.inner_itrs = 10000
 Manager.is_em = False
-Manager.max_evals = 10000
+Manager.max_evals = 100
 Manager.plot_metrics_freq = 1
 Manager.reload_save_freq = 1
 Manager.sol_size = 1731
@@ -41,7 +41,7 @@ Manager.hyper_flag = True # add one hyperparameter for optimizing the suboptimal
 # Need more exploration 
 # Parameters for ImprovementEmitter:
 # ======================================================================================================================
-ImprovementEmitter.batch_size = 20
+ImprovementEmitter.batch_size = 1
 ImprovementEmitter.sigma0 = 0.2
 ImprovementEmitter.selection_rule = "filter"
 ImprovementEmitter.weight_rule = "truncation"

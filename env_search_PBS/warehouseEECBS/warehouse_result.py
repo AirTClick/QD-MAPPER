@@ -179,8 +179,9 @@ class WarehouseResult:  # pylint: disable = too-many-instance-attributes
             warehouse_metadata=asdict(warehouse_metadata),
             # agg_obj=agg_obj,
 
-            # agg_obj=warehouse_metadata.objs,   # for other cases except PBS
-            agg_obj= warehouse_metadata.binary_obj, # for binary objective in PBS case
+            agg_obj=warehouse_metadata.objs,   # for other cases except PBS
+            
+            # agg_obj= warehouse_metadata.binary_obj, # for binary objective in PBS case
 
 
             agg_measures=agg_measures,
