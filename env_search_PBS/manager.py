@@ -644,7 +644,8 @@ class Manager:  # pylint: disable = too-many-instance-attributes
 
             #objs = objective_values
             #behavior_values = measures
-
+            #breakpoint()
+            
             self.optimizer.tell(
                 objs,
                 measures,

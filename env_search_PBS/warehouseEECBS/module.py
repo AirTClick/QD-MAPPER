@@ -724,7 +724,7 @@ class WarehouseModule:
             # objs = entropy
             objs_EECBS = avg_run_time_EECBS
 
-            actual_obj = -objs_EECBS
+            actual_obj = objs_EECBS
 
             #set for fit purpose
             lower_runtime_alg = "EECBS"
@@ -806,7 +806,7 @@ class WarehouseModule:
             # objs = entropy
             objs_PBS = avg_run_time_PBS
 
-            actual_obj = -objs_PBS
+            actual_obj = objs_PBS
 
 
             # binary objective to see if PBS can find solution in the given map

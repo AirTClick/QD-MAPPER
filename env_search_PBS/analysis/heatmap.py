@@ -393,7 +393,7 @@ def heatmap(logdir: str,
 
     vmin = 0
     # vmax = 1 # for objective = entropy
-    vmax = 10 # for objective = runtime
+    vmax = 20 # for objective = runtime
 
     # Plotting arguments for grid_archive_heatmap.
     plot_kwargs = {
