@@ -391,7 +391,7 @@ def heatmap(logdir: str,
         # if not w_mode:
         #     vmax += 1.5
 
-    vmin = 0
+    vmin = -20
     # vmax = 1 # for objective = entropy
     vmax = 20 # for objective = runtime
 

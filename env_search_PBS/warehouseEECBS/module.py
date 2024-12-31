@@ -743,6 +743,8 @@ class WarehouseModule:
             avg_sum_of_cost_LTF = 0.0 
             avg_make_span_LTF = 0.0 
 
+            binary_obj = 0
+
 
             # --------------------------------------------------------------------------------------------------
 
@@ -953,6 +955,8 @@ class WarehouseModule:
             avg_success_rate_PIBT = 0.0
             avg_sum_of_cost_PIBT = 0.0
             avg_make_span_PIBT = 0.0
+
+            binary_obj = 0
         
         if obj == "PIBT_LTF":
             if not curr_result_json_PIBT[0]["success"]:
@@ -1039,6 +1043,8 @@ class WarehouseModule:
             tile_usage_mean_EECBS=0.0
             tile_usage_std_EECBS=0.0
             average_suboptimality_EECBS= 0.0
+
+            binary_obj = 0
         
         # print(collected_results)
         # Calculate n_shelf and n_endpoint
