@@ -148,6 +148,7 @@ std::string run(const py::kwargs& kwargs) {
         // run
         double runtime = 0;
         int lowerbound = 0;
+        int times_no_solution = 0;
         for (int i = 0; i < runs; i++)
         {
             ecbs.clear();
@@ -158,6 +159,7 @@ std::string run(const py::kwargs& kwargs) {
             lowerbound = ecbs.getLowerBound();
             ecbs.randomRoot = true;
             cout << "Failed to find solutions in Run " << i << endl;
+            times_no_solution += 1;
         }
         ecbs.runtime = runtime;
         //store tile_usage, mean, std inside result
@@ -188,6 +190,7 @@ std::string run(const py::kwargs& kwargs) {
         result["solution_found"] = ecbs.solution_found;
         result["start_locations"] = instance.get_start_locations();
         result["goal_locations"] = instance.get_goal_locations();
+        result["times_no_solution"] = times_no_solution; 
 
 
         // cout << "For finish: " << result["finish"] << endl;
@@ -222,6 +225,7 @@ std::string run(const py::kwargs& kwargs) {
         // run
         double runtime = 0;
         int lowerbound = 0;
+        int times_no_solution = 0;
         for (int i = 0; i < runs; i++)
         {
             cbs.clear();
@@ -232,6 +236,7 @@ std::string run(const py::kwargs& kwargs) {
             lowerbound = cbs.getLowerBound();
             cbs.randomRoot = true;
             cout << "Failed to find solutions in Run " << i << endl;
+            times_no_solution += 1;
         }
         cbs.runtime = runtime;
         //store tile_usage, mean, std inside result
@@ -250,6 +255,7 @@ std::string run(const py::kwargs& kwargs) {
         result["solution_found"] = cbs.solution_found;
         result["start_locations"] = instance.get_start_locations();
         result["goal_locations"] = instance.get_goal_locations();
+        result["times_no_solution"] = times_no_solution;
 
         cout << "For finish: " << result["finish"] << endl;
 

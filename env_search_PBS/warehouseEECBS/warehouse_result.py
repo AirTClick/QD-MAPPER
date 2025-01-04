@@ -111,6 +111,9 @@ class WarehouseMetadata:
     # for PBS 
     binary_obj : int = 0
 
+    times_no_solution_EECBS : List[int] = None
+    times_no_solution_PBS : List[int] = None
+
 @dataclass
 class WarehouseResult:  # pylint: disable = too-many-instance-attributes
     """Represents `n` results from an objective function evaluation.
