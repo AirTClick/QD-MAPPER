@@ -605,6 +605,10 @@ class WarehouseModule:
             tile_usage_std_EECBS=0.0
             average_suboptimality_EECBS= 0.0
 
+            binary_obj = 0
+            times_no_solution_EECBS = np.zeros(5) 
+            times_no_solution_PBS = np.zeros(5) 
+
         if obj == "LTF":
             if not curr_result_json_LTF[0]["success"]:
                 logger.info(
@@ -664,6 +668,10 @@ class WarehouseModule:
             tile_usage_mean_EECBS=0.0
             tile_usage_std_EECBS=0.0
             average_suboptimality_EECBS= 0.0
+
+            binary_obj = 0
+            times_no_solution_EECBS = np.zeros(5) 
+            times_no_solution_PBS = np.zeros(5) 
         
             
         if obj == "EECBS":
@@ -717,6 +725,8 @@ class WarehouseModule:
 
             Suboptimality_EECBS = np.array(collected_results_EECBS.get("suboptimality"))
 
+            times_no_solution_EECBS = np.array(collected_results_EECBS.get("runtime")) 
+            times_no_solution_PBS = np.zeros(5)
             # print("suboptimality_list: ", Suboptimality)
 
             average_suboptimality_EECBS = np.mean(Suboptimality_EECBS)
@@ -800,6 +810,8 @@ class WarehouseModule:
 
             Suboptimality_PBS = np.array(collected_results_PBS.get("suboptimality"))
 
+            times_no_solution_PBS = np.array(collected_results_PBS.get("runtime")) 
+            times_no_solution_EECBS = np.zeros(5)
             # print("suboptimality_list: ", Suboptimality)
 
             average_suboptimality_PBS = np.mean(Suboptimality_PBS)
@@ -948,6 +960,10 @@ class WarehouseModule:
 
             actual_obj = abs_objs
 
+
+            times_no_solution_EECBS = np.array(collected_results_EECBS.get("runtime")) 
+            times_no_solution_PBS = np.array(collected_results_PBS.get("runtime")) 
+
             avg_success_rate_LTF=0.0
             avg_sum_of_cost_LTF = 0.0 
             avg_make_span_LTF = 0.0 
@@ -1045,6 +1061,8 @@ class WarehouseModule:
             average_suboptimality_EECBS= 0.0
 
             binary_obj = 0
+            times_no_solution_EECBS = np.zeros(5) 
+            times_no_solution_PBS = np.zeros(5) 
         
         # print(collected_results)
         # Calculate n_shelf and n_endpoint
@@ -1214,6 +1232,9 @@ class WarehouseModule:
 
             #binary_obj for PBS
             binary_obj = binary_obj,
+
+            times_no_solution_EECBS = times_no_solution_EECBS,
+            times_no_solution_PBS = times_no_solution_PBS, 
 
 
         )

@@ -65,6 +65,7 @@ std::string run(const py::kwargs& kwargs)
     pbs.solve(kwargs["cutoffTime"].cast<double>());
 
 	runtime += pbs.runtime;
+	int times_no_solution = 0;
 	if (pbs.solution_cost == -2)
 	{ 
 		while (!pbs.solution_found)
@@ -78,6 +79,7 @@ std::string run(const py::kwargs& kwargs)
 				break;
 			} 
 			cout << "Failed to find solutions with runtime " << pbs.runtime << endl;	
+			times_no_solution += 1;	
 		}
 	}
 
@@ -99,6 +101,7 @@ std::string run(const py::kwargs& kwargs)
 	result["solution_found"] = pbs.solution_found;
 	result["start_locations"] = instance.get_start_locations();
 	result["goal_locations"] = instance.get_goal_locations();
+	result["times_no_solution"] = times_no_solution; 
 
     pbs.clearSearchEngines();
 

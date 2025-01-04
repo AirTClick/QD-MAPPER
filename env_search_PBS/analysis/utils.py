@@ -290,19 +290,19 @@ def grid_archive_heatmap(archive,
     i = 0
     for elite in archive:
     #     # show on archive for the difference
-        if alg_list[i] == "EECBS":
-            # change here for maximizing the runtime gap between two algorihtms
-            colors[elite.idx[1], elite.idx[0]] = elite.obj
-        elif alg_list[i] == "PBS":
-            colors[elite.idx[1], elite.idx[0]] = -elite.obj
+        # if alg_list[i] == "EECBS":
+        #     # change here for maximizing the runtime gap between two algorihtms
+        #     colors[elite.idx[1], elite.idx[0]] = elite.obj
+        # elif alg_list[i] == "PBS":
+        #     colors[elite.idx[1], elite.idx[0]] = -elite.obj
         
-        i+=1
+        # i+=1
 
         # normal case
         # if elite.obj <= -10:
         #     colors[elite.idx[1], elite.idx[0]] = -elite.obj -(1024-elite.beh[0]) * 0.007
         # else:
-        # colors[elite.idx[1], elite.idx[0]] = elite.obj 
+        colors[elite.idx[1], elite.idx[0]] = elite.obj 
         
 
     # print(colors)
