@@ -51,7 +51,7 @@ int main(int argc, char** argv)
         json map_json;
         i >> map_json;
 	
-	Instance instance(map_json, 150,1);
+	Instance instance(map_json, 50,1);
 
 	// shuffle start and goal locations with a given random seed
 	vector<int> start_locations = instance.get_start_locations();
@@ -80,6 +80,7 @@ int main(int argc, char** argv)
     double runtime = 0;
 	pbs.solve(vm["cutoffTime"].as<double>());
 	runtime += pbs.runtime;
+	int times_no_solution = 0;
 	if (pbs.solution_cost == -2)
 	{ 
 		while (!pbs.solution_found)
@@ -92,7 +93,8 @@ int main(int argc, char** argv)
 			{
 				break;
 			} 
-			cout << "Failed to find solutions with runtime " << pbs.runtime << endl;	
+			cout << "Failed to find solutions with runtime " << pbs.runtime << endl;
+			times_no_solution += 1;		
 		}
 	}
 	// for (int i = 0; i < runs; i++)
@@ -110,6 +112,7 @@ int main(int argc, char** argv)
 	pbs.runtime = runtime;
 
 	cout << "runtime: " << pbs.runtime << endl;
+	cout << "times_no_solution: " << times_no_solution << endl;
 
     if (vm.count("output"))
         pbs.saveResults(vm["output"].as<string>());

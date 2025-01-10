@@ -140,12 +140,12 @@ int main(int argc, char** argv)
 
 	//load the .json instance
 
-	
+	// json G_json = json::parse(vm["map"].as<std::string>());
 	std::ifstream i(vm["map"].as<std::string>());
         json map_json;
         i >> map_json;
 	
-	Instance instance(map_json, vm["agentNum"].as<int>(),vm["iteration"].as<int>());
+	Instance instance(map_json, vm["agentNum"].as<int>(),0);
 
 	srand(0);
 	int runs = 1 + vm["restart"].as<int>();
@@ -170,6 +170,7 @@ int main(int argc, char** argv)
         // run
         double runtime = 0;
         int lowerbound = 0;
+		int times_no_solution = 0;
         for (int i = 0; i < runs; i++)
         {
             ecbs.clear();
@@ -180,6 +181,7 @@ int main(int argc, char** argv)
             lowerbound = ecbs.getLowerBound();
             ecbs.randomRoot = true;
             cout << "Failed to find solutions in Run " << i << endl;
+			times_no_solution += 1;
         }
         ecbs.runtime = runtime;
 		// print("Runtime: ",runtime)
@@ -200,6 +202,7 @@ int main(int argc, char** argv)
 		// std::cout << std::endl;
 
 		cout << "run time: " << ecbs.runtime << endl;
+		cout << "times_no_solution: " << times_no_solution << endl; 
 
         if (vm.count("output"))
 			// ecbs.saveResults(vm["output"].as<string>(), vm["agents"].as<string>());
@@ -234,6 +237,7 @@ int main(int argc, char** argv)
         // run
         double runtime = 0;
         int lowerbound = 0;
+		int times_no_solution = 0;
         for (int i = 0; i < runs; i++)
         {
             cbs.clear();
@@ -244,10 +248,12 @@ int main(int argc, char** argv)
             lowerbound = cbs.getLowerBound();
             cbs.randomRoot = true;
             cout << "Failed to find solutions in Run " << i << endl;
+			times_no_solution += 1;
         }
         cbs.runtime = runtime;
 
 		cout << "run time: " << cbs.runtime << endl;
+		cout << "times_no_solution: " << times_no_solution << endl; 
 		//tests for tile_usage 
 		// std::vector<double> tile_usage = cbs.cal_tile_usage(instance);
 

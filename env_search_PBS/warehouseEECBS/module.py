@@ -725,7 +725,7 @@ class WarehouseModule:
 
             Suboptimality_EECBS = np.array(collected_results_EECBS.get("suboptimality"))
 
-            times_no_solution_EECBS = np.array(collected_results_EECBS.get("runtime")) 
+            times_no_solution_EECBS = np.array(collected_results_EECBS.get("times_no_solution")) 
             times_no_solution_PBS = np.zeros(5)
             # print("suboptimality_list: ", Suboptimality)
 
@@ -810,7 +810,7 @@ class WarehouseModule:
 
             Suboptimality_PBS = np.array(collected_results_PBS.get("suboptimality"))
 
-            times_no_solution_PBS = np.array(collected_results_PBS.get("runtime")) 
+            times_no_solution_PBS = np.array(collected_results_PBS.get("times_no_solution")) 
             times_no_solution_EECBS = np.zeros(5)
             # print("suboptimality_list: ", Suboptimality)
 
@@ -961,8 +961,8 @@ class WarehouseModule:
             actual_obj = abs_objs
 
 
-            times_no_solution_EECBS = np.array(collected_results_EECBS.get("runtime")) 
-            times_no_solution_PBS = np.array(collected_results_PBS.get("runtime")) 
+            times_no_solution_EECBS = np.array(collected_results_EECBS.get("times_no_solution")) 
+            times_no_solution_PBS = np.array(collected_results_PBS.get("times_no_solution")) 
 
             avg_success_rate_LTF=0.0
             avg_sum_of_cost_LTF = 0.0 
