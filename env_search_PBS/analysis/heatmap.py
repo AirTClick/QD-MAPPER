@@ -63,6 +63,8 @@ def plot_generation_on_axis(
     alg_list = []
     for _, to_plot in df.iterrows():
         alg_list.append(to_plot["metadata"]["warehouse_metadata"]["lower_runtime_alg"])
+        #print((to_plot["metadata"]["warehouse_metadata"]["times_no_solution_EECBS"]))
+        # alg_list.append(np.mean(to_plot["metadata"]["warehouse_metadata"]["times_no_solution_PBS"]))
 
     
     # print(archive.as_pandas())

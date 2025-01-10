@@ -20,7 +20,7 @@ SINGULARITY_OPTS="--cleanenv --env MALLOC_TRIM_THRESHOLD_=0"
 if [ "${MODE}" = "${collect}" ];
 then
     singularity exec ${SINGULARITY_OPTS} singularity/ubuntu_warehouse.sif \
-        python env_search/analysis/figures.py \
+        python env_search_PBS/analysis/figures.py \
             collect \
             --reps 1 "$MANIFEST"
 fi
@@ -28,7 +28,7 @@ fi
 if [ "${MODE}" = "${comparison}" ];
 then
     singularity exec ${SINGULARITY_OPTS} singularity/ubuntu_warehouse.sif \
-        python env_search/analysis/figures.py \
+        python env_search_PBS/analysis/figures.py \
             comparison \
             "figure_data.json"
 fi

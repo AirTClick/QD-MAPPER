@@ -65,7 +65,7 @@ def map_to_json(
     data["lambda2"] = lambda2.astype(float)
     data['abs_diff_hash'] = abs_diff_hash.astype(float)
     data["runtime_EECBS"] = runtime_EECBS.astype(float)
-    data["runtime_PBS"] = runtime_PBS.astype(float)
+    #data["runtime_PBS"] = runtime_PBS.astype(float)
     data["entropy"] = entropy.astype(float)
     data["start"] = start
     data["goal"] = goal
@@ -129,7 +129,7 @@ def sample_start_goal(metadata,repaired_env,j):
 
     h,w = repaired_env.shape
     
-    count_list = np.random.randint(0,150,size = 10)
+    count_list = np.random.randint(0,50,size = 10)
 
     repaired_map = copy.deepcopy(repaired_env)
 
@@ -374,7 +374,7 @@ def tile_usage_heatmap_from_qd(
         # print(df[(df["behavior_0"]>=512) & (df["objective"] > -5.0)].index)
         indices = list(df[(df["behavior_1"] >= 717)].index)
         indices_slow = list(df[(df["behavior_0"]>0.5) & (df["behavior_0"]<0.6) & (df["objective"] > -25.0)].index) 
-        indices_fast = list(df[(df["objective"] < 5.0)].index) 
+        indices_fast = list(df[(df["objective"] <5.0)].index) 
         # print(indices)
         # breakpoint() 
         # print("index_1: ", df[(df["behavior_1"]<0.5) & (df["behavior_0"]>0.00065) & (df["objective"] > -2.5)])
@@ -677,7 +677,7 @@ def tile_usage_heatmap_from_qd(
                 repaired_map = sample_start_goal(metadata, repaired_env, 0)
                 visualize_kiva(repaired_map, ax=ax_map, dpi=300) 
                 plot_tile_usage(
-                    curr_tile_usage_EECBS,
+                    curr_tile_usage_PBS,
                     env_h,
                     env_w,
                     fig,
@@ -685,9 +685,9 @@ def tile_usage_heatmap_from_qd(
                     ax_tile_use_cbar,
                     logdir,
                     filenames=[
-                        f"tile_usage_PBS/{index_0}_{index_1}-{0}.pdf",
-                        f"tile_usage_PBS/{index_0}_{index_1}-{0}.svg",
-                        f"tile_usage_PBS/{index_0}_{index_1}-{0}.png",
+                        f"tile_usage_slow/{index_0}_{index_1}-{0}.pdf",
+                        f"tile_usage_slow/{index_0}_{index_1}-{0}.svg",
+                        f"tile_usage_slow/{index_0}_{index_1}-{0}.png",
                     ],
                     dpi=dpi,
                 )
