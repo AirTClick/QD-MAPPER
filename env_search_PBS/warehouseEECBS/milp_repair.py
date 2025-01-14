@@ -221,7 +221,7 @@ def add_neighboaring_constraint(mdl, graph, objs, obj_t1, obj_t2):
 # add_movement: if True, use edit distance obj, otherwise, use hamming distance.
 def repair_env(
     env_np,
-    agent_num,
+    # agent_num,
     warm_envs_np=None,
     time_limit=120,
     add_movement=True,
@@ -303,7 +303,7 @@ def repair_env(
         # mdl.add_constraint(sum(objs[eecbs_obj_types.index("e")]) >= agent_num)
 
         #number of empty space needs to be less than number of agents 
-        mdl.add_constraint(sum(objs[eecbs_obj_types.index(".")]) >= agent_num)
+        # mdl.add_constraint(sum(objs[eecbs_obj_types.index(".")]) >= agent_num)
 
         # Only one 's'
         mdl.add_constraint(sum(objs[eecbs_obj_types.index("s")]) == 1)

@@ -51,7 +51,7 @@ int main(int argc, char** argv)
         json map_json;
         i >> map_json;
 	
-	Instance instance(map_json, 50,1);
+	Instance instance(map_json, 50,2);
 
 	// shuffle start and goal locations with a given random seed
 	vector<int> start_locations = instance.get_start_locations();

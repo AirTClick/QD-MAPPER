@@ -23,7 +23,7 @@ def repair_warehouse(
     # min_n_shelf: int,
     min_n_obstacles: int,
     max_n_obstacles: int,
-    agentNum: int,
+    # agentNum: int,
     n_evals: int,
 ):
     start = time.time()
@@ -41,6 +41,7 @@ def repair_warehouse(
             map_np_unrepaired,
             map_comp_unrepaired,
             map_np_repaired,
+            num_agent,
         ) = warehouse_module.repair(
             map=map,
             parent_map=parent_map,
@@ -50,7 +51,7 @@ def repair_warehouse(
             # min_n_shelf=min_n_shelf,
             min_n_obstacles = min_n_obstacles,
             max_n_obstacles=max_n_obstacles,
-            agentNum=agentNum,
+            # agentNum=agentNum,
             n_evals = n_evals,
         )
     except TimeoutError as e:
@@ -61,11 +62,12 @@ def repair_warehouse(
             map_np_unrepaired,
             map_comp_unrepaired,
             map_np_repaired,
-        ) = [None] * 4
+            num_agent,
+        ) = [None] * 5
 
     logger.info("repair_warehouse done after %f sec", time.time() - start)
 
-    return map_json, map_np_unrepaired, map_comp_unrepaired, map_np_repaired
+    return map_json, map_np_unrepaired, map_comp_unrepaired, map_np_repaired, num_agent
 
 
 

@@ -99,7 +99,7 @@ class WarehouseManager:
         seed_env_path: str = gin.REQUIRED,
 
         n_endpt: bool = gin.REQUIRED,
-        agent_num: int = gin.REQUIRED,
+        # agent_num: int = gin.REQUIRED,
         obj: str = gin.REQUIRED,
     ):
         self.client = client
@@ -133,7 +133,7 @@ class WarehouseManager:
 
         self.w_mode = w_mode
         self.n_endpt = n_endpt
-        self.agent_num = agent_num
+        # self.agent_num = agent_num
         self.obj = obj
 
         # Set up a module locally and on workers. During evaluations,
@@ -422,7 +422,7 @@ class WarehouseManager:
                 # min_n_shelf=self.min_n_shelf,
                 max_n_obstacles=self.max_n_obstacles,
                 min_n_obstacles=self.min_n_obstacles,
-                agentNum=self.agent_num,
+                # agentNum=self.agent_num,
                 n_evals = self.n_evals,
             ) for lvl, parent_lvl, seed in zip(lvls, parent_lvls,
                                                evaluation_seeds)
@@ -442,6 +442,7 @@ class WarehouseManager:
         maps_eval_seed_sim = []
         eval_id_sim = []
         map_ids = np.arange(len(sols))
+        num_agents_sim = []
         for map_id, repair_result, eval_seed in zip(
                 map_ids,
                 repair_results,
@@ -452,6 +453,7 @@ class WarehouseManager:
                 map_np_unrepaired,
                 map_comp_unrepaired,
                 map_np_repaired,
+                num_of_agents,
             ) = repair_result
             for j in range(self.n_evals):
                 map_jsons_sim.append(copy.deepcopy(map_json))
@@ -462,6 +464,7 @@ class WarehouseManager:
                 maps_id_sim.append(map_id)
                 maps_eval_seed_sim.append(eval_seed + j)
                 eval_id_sim.append(j)
+                num_agents_sim.append(num_of_agents)
 
 
         # print(len(map_jsons_sim))
@@ -469,6 +472,7 @@ class WarehouseManager:
         # print(len(maps_id_sim))
         # print(len(eval_id_sim))
         # print(len(sols_hyper))
+        logger.info("--------------------------------NUMBER OF AGENTS: " , num_agents_sim)
         # breakpoint()
 
         # Then, evaluate the maps
@@ -485,7 +489,7 @@ class WarehouseManager:
                     map_json=map_json,
                     eval_logdir=eval_logdir,
                     sim_seed=sim_seed,
-                    agentNum=self.agent_num,
+                    agentNum=agent_num,
                     map_id=map_id,
                     eval_id=eval_id,
                 ) for (
@@ -493,11 +497,13 @@ class WarehouseManager:
                     sim_seed,
                     map_id,
                     eval_id,
+                    agent_num,
                 ) in zip(
                     map_jsons_sim,
                     maps_eval_seed_sim,
                     maps_id_sim,
                     eval_id_sim,
+                    num_agents_sim,
                 )
             ]
             logger.info("Collecting evaluations")
@@ -525,7 +531,7 @@ class WarehouseManager:
                     map_json=map_json,
                     eval_logdir=eval_logdir,
                     sim_seed=sim_seed,
-                    agentNum=self.agent_num,
+                    agentNum=agent_num,
                     map_id=map_id,
                     eval_id=eval_id,
                 ) for (
@@ -533,11 +539,13 @@ class WarehouseManager:
                     sim_seed,
                     map_id,
                     eval_id,
+                    agent_num,
                 ) in zip(
                     map_jsons_sim,
                     maps_eval_seed_sim,
                     maps_id_sim,
                     eval_id_sim,
+                    num_agents_sim,
                 )
             ]
             logger.info("Collecting evaluations")
@@ -565,7 +573,7 @@ class WarehouseManager:
                     map_json=map_json,
                     eval_logdir=eval_logdir,
                     sim_seed=sim_seed,
-                    agentNum=self.agent_num,
+                    agentNum=agent_num,
                     map_id=map_id,
                     eval_id=eval_id,
                     suboptimality_bound = suboptimality_bound,
@@ -575,12 +583,14 @@ class WarehouseManager:
                     map_id,
                     eval_id,
                     suboptimality_bound,
+                    agent_num,
                 ) in zip(
                     map_jsons_sim,
                     maps_eval_seed_sim,
                     maps_id_sim,
                     eval_id_sim,
                     sols_hyper,
+                    num_agents_sim
                 )
             ]
             logger.info("Collecting evaluations")
@@ -610,7 +620,7 @@ class WarehouseManager:
                     map_json=map_json,
                     eval_logdir=eval_logdir,
                     sim_seed=sim_seed,
-                    agentNum=self.agent_num,
+                    agentNum=agent_num,
                     map_id=map_id,
                     eval_id=eval_id,
                 ) for (
@@ -618,11 +628,13 @@ class WarehouseManager:
                     sim_seed,
                     map_id,
                     eval_id,
+                    agent_num,
                 ) in zip(
                     map_jsons_sim,
                     maps_eval_seed_sim,
                     maps_id_sim,
                     eval_id_sim,
+                    num_agents_sim,
                 )
             ]
             logger.info("Collecting evaluations")
@@ -650,7 +662,7 @@ class WarehouseManager:
                     map_json=map_json,
                     eval_logdir=eval_logdir,
                     sim_seed=sim_seed,
-                    agentNum=self.agent_num,
+                    agentNum=agent_num,
                     map_id=map_id,
                     eval_id=eval_id,
                     suboptimality_bound = suboptimality_bound,
@@ -660,12 +672,14 @@ class WarehouseManager:
                     map_id,
                     eval_id,
                     suboptimality_bound,
+                    agent_num,
                 ) in zip(
                     map_jsons_sim,
                     maps_eval_seed_sim,
                     maps_id_sim,
                     eval_id_sim,
                     sols_hyper,
+                    num_agents_sim,
                 )
             ]
             sim_futures_PBS = [
@@ -674,7 +688,7 @@ class WarehouseManager:
                     map_json=map_json,
                     eval_logdir=eval_logdir,
                     sim_seed=sim_seed,
-                    agentNum=self.agent_num,
+                    agentNum=agent_num,
                     map_id=map_id,
                     eval_id=eval_id,
                 ) for (
@@ -682,11 +696,13 @@ class WarehouseManager:
                     sim_seed,
                     map_id,
                     eval_id,
+                    agent_num,
                 ) in zip(
                     map_jsons_sim,
                     maps_eval_seed_sim,
                     maps_id_sim,
                     eval_id_sim,
+                    num_agents_sim,
                 )
             ] 
 
@@ -720,7 +736,7 @@ class WarehouseManager:
                     map_json=map_json,
                     eval_logdir=eval_logdir,
                     sim_seed=sim_seed,
-                    agentNum=self.agent_num,
+                    agentNum=agent_num,
                     map_id=map_id,
                     eval_id=eval_id,
                 ) for (
@@ -728,11 +744,13 @@ class WarehouseManager:
                     sim_seed,
                     map_id,
                     eval_id,
+                    agent_num,
                 ) in zip(
                     map_jsons_sim,
                     maps_eval_seed_sim,
                     maps_id_sim,
                     eval_id_sim,
+                    num_agents_sim,
                 )
             ]
             sim_futures_LTF = [
@@ -741,7 +759,7 @@ class WarehouseManager:
                     map_json=map_json,
                     eval_logdir=eval_logdir,
                     sim_seed=sim_seed,
-                    agentNum=self.agent_num,
+                    agentNum=agent_num,
                     map_id=map_id,
                     eval_id=eval_id,
                 ) for (
@@ -749,11 +767,13 @@ class WarehouseManager:
                     sim_seed,
                     map_id,
                     eval_id,
+                    agent_num,
                 ) in zip(
                     map_jsons_sim,
                     maps_eval_seed_sim,
                     maps_id_sim,
                     eval_id_sim,
+                    num_agents_sim,
                 )
             ]
 
