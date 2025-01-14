@@ -51,6 +51,8 @@ def map_to_json(
         abs_diff_hash,
         std_bc,
         entropy,
+        # times_no_solution_EECBS,
+        times_no_solution_PBS,
     ):
     data = dict()
     data["name"] = f"{index0}_{index1}"
@@ -65,11 +67,13 @@ def map_to_json(
     data["lambda2"] = lambda2.astype(float)
     data['abs_diff_hash'] = abs_diff_hash.astype(float)
     data["runtime_EECBS"] = runtime_EECBS.astype(float)
-    #data["runtime_PBS"] = runtime_PBS.astype(float)
+    # data["runtime_PBS"] = runtime_PBS.astype(float)
     data["entropy"] = entropy.astype(float)
     data["start"] = start
     data["goal"] = goal
     data["std_bc"] = std_bc.astype(float)
+    # data["times_no_solution_EECBS"] = times_no_solution_EECBS
+    # data["times_no_solution_PBS"] = times_no_solution_PBS
 
     tile_usage_dir = logdir.dir("generated_maps")
 
@@ -114,12 +118,14 @@ def all_maps_to_json(
         abs_diff_hash= metadata["abs_diff_hash"]
         std_bc = metadata['std_BC']
         entropy = metadata['layout_entropy']
+        # times_no_solution_EECBS = metadata['times_no_solution_EECBS'].tolist()
+        times_no_solution_PBS = metadata['times_no_solution_PBS'].tolist()
         # print("suboptimality_EECBS: ", metadata["average_suboptimality_EECBS"])
         # print("suboptimality_PBS: ", metadata["average_suboptimality_PBS"]) 
         # print(goal)
         # print("index_0: ",index_0)
         # print("index_1: ",index_1)
-        map_to_json(map,index_0,index_1,logdir,start,goal,objective,runtime_EECBS,runtime_PBS,num_of_obstacles,kl_div,lower_runtime_alg,suboptimal_EECBS,suboptimal_PBS,lambda2,abs_diff_hash,std_bc,entropy)
+        map_to_json(map,index_0,index_1,logdir,start,goal,objective,runtime_EECBS,runtime_PBS,num_of_obstacles,kl_div,lower_runtime_alg,suboptimal_EECBS,suboptimal_PBS,lambda2,abs_diff_hash,std_bc,entropy,times_no_solution_PBS)
         print(f"{i}th map complete")
 
 
@@ -374,7 +380,8 @@ def tile_usage_heatmap_from_qd(
         # print(df[(df["behavior_0"]>=512) & (df["objective"] > -5.0)].index)
         indices = list(df[(df["behavior_1"] >= 717)].index)
         indices_slow = list(df[(df["behavior_0"]>0.5) & (df["behavior_0"]<0.6) & (df["objective"] > -25.0)].index) 
-        indices_fast = list(df[(df["objective"] <5.0)].index) 
+        indices_fast = list(df[(df["objective"] <10.0)].index)
+        indices_specific = list(df[(df["index_1"]==66) & (df["index_0"]==42)].index) 
         # print(indices)
         # breakpoint() 
         # print("index_1: ", df[(df["behavior_1"]<0.5) & (df["behavior_0"]>0.00065) & (df["objective"] > -2.5)])
@@ -685,9 +692,9 @@ def tile_usage_heatmap_from_qd(
                     ax_tile_use_cbar,
                     logdir,
                     filenames=[
-                        f"tile_usage_slow/{index_0}_{index_1}-{0}.pdf",
-                        f"tile_usage_slow/{index_0}_{index_1}-{0}.svg",
-                        f"tile_usage_slow/{index_0}_{index_1}-{0}.png",
+                        f"tile_usage_10{index_0}_{index_1}-{0}.pdf",
+                        f"tile_usage_10/{index_0}_{index_1}-{0}.svg",
+                        f"tile_usage_10/{index_0}_{index_1}-{0}.png",
                     ],
                     dpi=dpi,
                 )
@@ -697,7 +704,7 @@ def tile_usage_heatmap_from_qd(
 
 def main(
     logdir: str,
-    logdir_type: str = "qd",  # "qd" or "sim"
+    logdir_type: str = "qd",  # "qd" or "sim" or "json"
     gen: int = None,
     index_0: int = None,
     index_1: int = None,
@@ -715,11 +722,11 @@ def main(
         )
     elif logdir_type == "sim":
         tile_usage_heatmap_from_single_run(logdir, dpi=dpi)
-
-    # all_maps_to_json(
-    #     logdir = logdir,
-    #     gen = gen,
-    #     ) 
+    elif logdir_type == "json":
+        all_maps_to_json(
+            logdir = logdir,
+            gen = gen,
+            ) 
 
 
 if __name__ == "__main__":

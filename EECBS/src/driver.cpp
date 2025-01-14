@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 		("highLevelSolver", po::value<string>()->default_value("EES"), "the high-level solver (A*, A*eps, EES, NEW)")
 		("lowLevelSolver", po::value<bool>()->default_value(true), "using suboptimal solver in the low level")
 		("inadmissibleH", po::value<string>()->default_value("Global"), "inadmissible heuristics (Zero, Global, Path, Local, Conflict)")
-		("suboptimality", po::value<double>()->default_value(1.2), "suboptimality bound")
+		("suboptimality", po::value<double>()->default_value(1.5), "suboptimality bound")
 
 		// params for CBS improvement
 		("heuristics", po::value<string>()->default_value("WDG"), "admissible heuristics for the high-level search (Zero, CG,DG, WDG)")
@@ -144,8 +144,8 @@ int main(int argc, char** argv)
 	std::ifstream i(vm["map"].as<std::string>());
         json map_json;
         i >> map_json;
-	
-	Instance instance(map_json, vm["agentNum"].as<int>(),0);
+	std::cout << map_json.dump(4) << std::endl;
+	Instance instance(map_json, vm["agentNum"].as<int>(),3);
 
 	srand(0);
 	int runs = 1 + vm["restart"].as<int>();

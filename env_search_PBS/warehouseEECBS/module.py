@@ -37,7 +37,7 @@ from env_search_PBS.warehouseEECBS.milp_repair import repair_env
 from env_search_PBS.warehouseEECBS.warehouse_result import (WarehouseResult,
                                                    WarehouseMetadata)
 from env_search_PBS.utils import (eecbs_obj_types, MIN_SCORE,
-                              eecbs_env_number2str,
+                              eecbs_env_number2str, eecbs_env_str2number,
                               kiva_env_str2number, format_env_str,
                               read_in_kiva_map, flip_tiles)
 from env_search_PBS.node_hashing import maze_hashing
@@ -141,7 +141,7 @@ class WarehouseModule:
         # w_mode: bool,
         min_n_obstacles: int,
         max_n_obstacles: int,
-        agentNum: int,
+        # agentNum: int,
         n_evals: int,
     ):
         map_np_unrepaired = copy.deepcopy(map)
@@ -209,7 +209,7 @@ class WarehouseModule:
             # Get the solution from hamming distance objective
             hamming_repaired_env = repair_env(
                 map,
-                agentNum,
+                # agentNum,
                 add_movement=False,
                 min_n_obstacles=min_n_obstacles,
                 max_n_obstacles=max_n_obstacles,
@@ -242,7 +242,7 @@ class WarehouseModule:
         else:
             map_np_repaired = repair_env(
                 map,
-                agentNum,
+                # agentNum,
                 add_movement=True,
                 warm_envs_np=warm_up_sols,
                 min_n_obstacles=min_n_obstacles,
@@ -261,8 +261,11 @@ class WarehouseModule:
         #and constraint on the distance between start and goal locations 
         #and distance between start locations
         start_locations, goal_locations = [] ,[]
+        num_agent = []
         for i in range(0, n_evals):
-            start, goal = calc_start_goal_locations(map_np_repaired, agentNum, parts = 5)
+            start, goal, agent_number = calc_start_goal_locations(map_np_repaired, agent_ratio=0.1, parts = 5)
+            # start, goal = calc_start_goal_locations(map_np_repaired, agentNum, parts = 5)
+            num_agent.append(agent_number)
             start_locations.append(start)
             goal_locations.append(goal)
     
@@ -299,7 +302,7 @@ class WarehouseModule:
         # else:
         #     NotImplementedError("Other warehouse types not supported yet.")
 
-        return map_json, map_np_unrepaired, map_comp_unrepaired, map_np_repaired
+        return map_json, map_np_unrepaired, map_comp_unrepaired, map_np_repaired, num_agent[0]
 
     # evaluate with EECBS 
     def evaluate_EECBS(
@@ -1601,7 +1604,8 @@ def split_list(lst, parts=5):
         start = end
     return result
 
-def calc_start_goal_locations(repaired_env, num_of_agents, parts):
+# def calc_start_goal_locations(repaired_env, num_of_agents, parts):
+def calc_start_goal_locations(repaired_env, agent_ratio, parts):
     n_row, n_col = repaired_env.shape
     total_grid = n_row * n_col
     num_of_obstacle = 0
@@ -1663,6 +1667,8 @@ def calc_start_goal_locations(repaired_env, num_of_agents, parts):
     less_restrict_indices = np.where(dist_matrix > (np.max(dist_matrix)/8)) 
     indices = np.where(dist_matrix > (np.max(dist_matrix)/4))
 
+    total_emtpy = total_grid - num_of_obstacle
+    num_of_agents = int(total_emtpy * agent_ratio)
     assert(len(indices[0])>num_of_agents)
 
     # try to split start and goals into "parts" lists to evenly distribute the start and goal locations
@@ -1712,7 +1718,7 @@ def calc_start_goal_locations(repaired_env, num_of_agents, parts):
             count += 1
     
     
-    return start_locations,goal_locations
+    return start_locations,goal_locations,num_of_agents
     
 # function to check duplicates in generated start and goal locations
 def has_duplicates(lst):
@@ -2055,7 +2061,7 @@ def cal_lambda2(map_np_repaired):
 
     return (eigen[1])
 
-def single_simulation(seed, agent_num, kwargs, results_dir):
+def single_simulation(seed, agent_num, kwargs, results_dir, eval_id, alg):
     kwargs["seed"] = int(seed)
     output_dir = os.path.join(results_dir,
         f"sim-agent_num={agent_num}-seed={seed}")
@@ -2068,9 +2074,11 @@ def single_simulation(seed, agent_num, kwargs, results_dir):
     print(kwargs["stats"])
     
     #for eval_id
-    kwargs["eval_id"] = 3
-    
-    result_jsonstr = warehouse_sim_PBS.run(**kwargs)
+    kwargs["eval_id"] = eval_id
+    if alg == "PBS":
+        result_jsonstr = warehouse_sim_PBS.run(**kwargs)
+    elif alg == "EECBS":
+        result_jsonstr = warehouse_sim_EECBS.run(**kwargs)
     
     result_json = json.loads(result_jsonstr)
 
@@ -2132,6 +2140,7 @@ def main(
     n_evals=10,
     n_sim=2, # Run `inc_agents` `n_sim`` times
     mode="constant",
+    alg = "PBS",
 ):
     """
     For testing purposes. Graph a map and run one simulation.
@@ -2150,6 +2159,16 @@ def main(
     # Read in map
     with open(map_filepath, "r") as f:
         raw_env_json = json.load(f)
+    map_read = eecbs_env_str2number(raw_env_json['layout']) 
+    start_location, goal_location = [], []
+    for i in range(0, n_evals):
+        start_, goal_ = calc_start_goal_locations(map_read, agent_num, parts = 5)
+        start_location.append(start_)
+        goal_location.append(goal_)
+        print(i)
+    raw_env_json['start'] = start_location
+    raw_env_json['goal'] = goal_location 
+    print(len(raw_env_json['start']))
 
     # Create log dir
     map_name = raw_env_json["name"]
@@ -2166,29 +2185,43 @@ def main(
 
 
     # Construct kwargs
-    kwargs = {
-        "map" : json.dumps(raw_env_json),
-        # "output" : log_dir,
-        "agentNum" : agent_num,
-        "cutoffTime": gin.query_parameter("WarehouseEECBSConfig.cutoffTime"),
-        "screen":gin.query_parameter("WarehouseEECBSConfig.screen"),
-        "stats": gin.query_parameter("WarehouseEECBSConfig.stats"),
-        # "id": gin.query_parameter("WarehouseEECBSConfig.id"),
-        # "highLevelSolver":gin.query_parameter("WarehouseEECBSConfig.highLevelSolver"),
-        # "lowLevelSolver":gin.query_parameter("WarehouseEECBSConfig.lowLevelSolver"),
-        # "inadmissibleH": gin.query_parameter("WarehouseEECBSConfig.inadmissibleH"),
-        # "suboptimality": gin.query_parameter("WarehouseEECBSConfig.suboptimality"),
-        # "heuristics": gin.query_parameter("WarehouseEECBSConfig.heuristics"),
-        # "prioritizingConflicts":gin.query_parameter("WarehouseEECBSConfig.prioritizingConflicts"),
-        # "bypass": gin.query_parameter("WarehouseEECBSConfig.bypass"),
-        # "disjointSplitting": gin.query_parameter("WarehouseEECBSConfig.disjointSplitting"),
-        # "rectangleReasoning": gin.query_parameter("WarehouseEECBSConfig.rectangleReasoning"),
-        # "corridorReasoning": gin.query_parameter("WarehouseEECBSConfig.corridorReasoning"),
-        # "targetReasoning": gin.query_parameter("WarehouseEECBSConfig.targetReasoning"),
-        "sipp": gin.query_parameter("WarehouseEECBSConfig.sipp"),
-        # "restart":gin.query_parameter("WarehouseEECBSConfig.restart"),
-        "force_new_logdir": False,
-    }
+    # PBS Config
+    if alg == "PBS":
+        kwargs = {
+            "map" : json.dumps(raw_env_json),
+            "agentNum" : agent_num,
+            "cutoffTime": gin.query_parameter("WarehouseEECBSConfig.cutoffTime"),
+            "screen":gin.query_parameter("WarehouseEECBSConfig.screen"),
+            "stats": gin.query_parameter("WarehouseEECBSConfig.stats"),
+            "sipp": gin.query_parameter("WarehouseEECBSConfig.sipp"),
+            "force_new_logdir": False,
+        }
+    elif alg == "EECBS":
+
+        # EECBS Config
+        kwargs = {
+            "map" : json.dumps(raw_env_json),
+            # "output" : log_dir,
+            "agentNum" : agent_num,
+            "cutoffTime": gin.query_parameter("WarehouseEECBSConfig.cutoffTime"),
+            "screen":gin.query_parameter("WarehouseEECBSConfig.screen"),
+            "stats": gin.query_parameter("WarehouseEECBSConfig.stats"),
+            # "id": gin.query_parameter("WarehouseEECBSConfig.id"),
+            "highLevelSolver":gin.query_parameter("WarehouseEECBSConfig.highLevelSolver"),
+            "lowLevelSolver":gin.query_parameter("WarehouseEECBSConfig.lowLevelSolver"),
+            "inadmissibleH": gin.query_parameter("WarehouseEECBSConfig.inadmissibleH"),
+            "suboptimality": gin.query_parameter("WarehouseEECBSConfig.suboptimality"),
+            "heuristics": gin.query_parameter("WarehouseEECBSConfig.heuristics"),
+            "prioritizingConflicts":gin.query_parameter("WarehouseEECBSConfig.prioritizingConflicts"),
+            "bypass": gin.query_parameter("WarehouseEECBSConfig.bypass"),
+            "disjointSplitting": gin.query_parameter("WarehouseEECBSConfig.disjointSplitting"),
+            "rectangleReasoning": gin.query_parameter("WarehouseEECBSConfig.rectangleReasoning"),
+            "corridorReasoning": gin.query_parameter("WarehouseEECBSConfig.corridorReasoning"),
+            "targetReasoning": gin.query_parameter("WarehouseEECBSConfig.targetReasoning"),
+            "sipp": gin.query_parameter("WarehouseEECBSConfig.sipp"),
+            "restart":gin.query_parameter("WarehouseEECBSConfig.restart"),
+            "force_new_logdir": False,
+        }
 
     # For some of the parameters, we do not want to pass them in here
     # to the use the default value defined on the C++ side.
@@ -2207,35 +2240,44 @@ def main(
         for i in range(n_sim):
             seeds.extend(repeat(seed + i, n_evals))
             agent_nums.extend([agent_num + j for j in range(n_evals)])
+        eval_id_list = [i for i in range(n_evals)]
+        alg_list = [alg for _ in range(n_evals)]  
 
         real_solution_cost,solution_cost = pool.starmap(
             single_simulation,
             zip(seeds,
                 agent_nums,
                 repeat(kwargs, n_evals * n_sim),
-                repeat(results_dir, n_evals * n_sim)),
+                repeat(results_dir, n_evals * n_sim),
+                eval_id_list,
+                alg_list),
         )
     elif mode == "constant":
         agent_nums = [agent_num for _ in range(n_evals)]
         seeds = np.random.choice(np.arange(10000), size=n_evals, replace=False)
+        eval_id_list = [i for i in range(n_evals)] 
+        alg_list = [alg for _ in range(n_evals)] 
 
         solution_cost = pool.starmap(
             single_simulation,
             zip(seeds,
                 agent_nums,
                 repeat(kwargs, n_evals),
-                repeat(results_dir, n_evals)),
+                repeat(results_dir, n_evals),
+                eval_id_list,
+                alg_list),
         )
 
-    n_failure = np.array(solution_cost) >= 20
-    n_success = 200 - np.sum(n_failure)
-    succ_rate = n_success/200
     # print("Solution_cost: " ,solution_cost)
     real_obj = []
     runtime_ = [] 
     for sc in solution_cost: 
         real_obj.append(sc[0])
         runtime_.append(sc[1])
+    print("Runtime: ", runtime_) 
+    n_failure = np.array(runtime_) >= 20
+    n_success = 200 - np.sum(n_failure)
+    succ_rate = n_success/200 
 
     avg_obj = np.mean(runtime_)
     std_obj = np.std(runtime_)
