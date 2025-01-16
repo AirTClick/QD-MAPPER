@@ -224,7 +224,7 @@ class WarehouseModule:
                 failed_unrepaired_env = format_env_str(
                 eecbs_env_number2str(map_comp_unrepaired))
                 logger.info(f"Hamming repair failed! The layout is:\n{failed_unrepaired_env}")
-                return None, map_np_unrepaired, map_comp_unrepaired, None
+                return None, map_np_unrepaired, map_comp_unrepaired, None, None
             hamming_warm_env_str = format_env_str(
                 eecbs_env_number2str(hamming_repaired_env))
             logger.info(
@@ -254,7 +254,7 @@ class WarehouseModule:
             if map_np_repaired is None:
                 failed_unrepaired_env = format_env_str(eecbs_env_number2str(map_comp_unrepaired))
                 logger.info(f"Repair failed! The layout is:\n{failed_unrepaired_env}")
-                return None, map_np_unrepaired, map_comp_unrepaired, None
+                return None, map_np_unrepaired, map_comp_unrepaired, None, None
         
 
         # Create start and goal locations at this point with num of agents 
@@ -1669,6 +1669,10 @@ def calc_start_goal_locations(repaired_env, agent_ratio, parts):
 
     total_emtpy = total_grid - num_of_obstacle
     num_of_agents = int(total_emtpy * agent_ratio)
+    if num_of_agents % 5 !=0:
+        remainder = num_of_agents % 5
+        num_of_agents += 5 - remainder
+    # print(num_of_agents) 
     assert(len(indices[0])>num_of_agents)
 
     # try to split start and goals into "parts" lists to evenly distribute the start and goal locations
@@ -1680,17 +1684,22 @@ def calc_start_goal_locations(repaired_env, agent_ratio, parts):
     goal_locations = []
 
     interval = np.arange(num_of_agents//parts,num_of_agents+(num_of_agents//parts),num_of_agents//parts)
+    print(interval)
 
     # select num_of_agents start and goal locations 
     j = 0
     k = 0
     count = 1
+    # print("Agents: ",num_of_agents)
     while j < num_of_agents:
         if j <= interval[k]:
             temp_start = result_start[k]
             temp_goal = result_goal[k]
         else:
             k += 1
+            # print("K: " ,k)
+            # print("START: " ,len(result_start))
+            # print("GOAL: ", len(result_goal))
             temp_start = result_start[k]
             temp_goal = result_goal[k]
         
@@ -1716,7 +1725,7 @@ def calc_start_goal_locations(repaired_env, agent_ratio, parts):
             # print(f"{j}th index made")
         else:
             count += 1
-    
+        # print("J: ", j)
     
     return start_locations,goal_locations,num_of_agents
     
@@ -2162,7 +2171,7 @@ def main(
     map_read = eecbs_env_str2number(raw_env_json['layout']) 
     start_location, goal_location = [], []
     for i in range(0, n_evals):
-        start_, goal_ = calc_start_goal_locations(map_read, agent_num, parts = 5)
+        start_, goal_ = calc_start_goal_locations(map_read, agent_num, parts = 4)
         start_location.append(start_)
         goal_location.append(goal_)
         print(i)
