@@ -1066,11 +1066,62 @@ class WarehouseModule:
             binary_obj = 0
             times_no_solution_EECBS = np.zeros(5) 
             times_no_solution_PBS = np.zeros(5) 
-        
+
+        if obj == "NONE":
+            if map_np_repaired is None:
+                logger.info(
+                f"Map ID {map_id} failed.")
+
+                metadata = WarehouseMetadata(
+                    map_int_unrepaired=map_comp_unrepaired,
+                    map_int_raw=map_np_unrepaired,
+                )
+                result = WarehouseResult.from_raw(
+                    warehouse_metadata=metadata,
+                    opts={
+                        "aggregation": self.config.aggregation_type,
+                        "measure_names": self.config.measure_names,
+                    },
+                )
+                result.failed = True
+                return result
+            
+            start_locations = []
+            goal_locations = []
+            avg_success_rate_LTF=0.0
+            avg_sum_of_cost_LTF = 0.0 
+            avg_make_span_LTF = 0.0 
+
+            avg_success_rate_PIBT = 0.0
+            avg_sum_of_cost_PIBT = 0.0
+            avg_make_span_PIBT = 0.0
+
+            avg_success_rate_LTF=0.0
+            avg_sum_of_cost_LTF = 0.0 
+            avg_make_span_LTF = 0.0 
+
+            solution_cost_PBS=[0]
+            avg_run_time_PBS = 0.0
+            tile_usage_PBS=np.zeros(100)
+            tile_usage_mean_PBS=0.0
+            tile_usage_std_PBS=0.0
+            average_suboptimality_PBS= 0.0
+
+            solution_cost_EECBS=[]
+            avg_run_time_EECBS = 0.0
+            tile_usage_EECBS=np.zeros(100)
+            tile_usage_mean_EECBS=0.0
+            tile_usage_std_EECBS=0.0
+            average_suboptimality_EECBS= 0.0
+
+            binary_obj = 0
+            times_no_solution_EECBS = np.zeros(5) 
+            times_no_solution_PBS = np.zeros(5) 
+            lower_runtime_alg = "PBS"
         # print(collected_results)
         # Calculate n_shelf and n_endpoint
         # Note: we use the number of searchable block (aka the portion of
-        # the layout in the middle) as the totol number of tiles
+        # the layout in the middle) as the totol number of tiles        
         tile_ele, tile_cnt = np.unique(map_np_repaired, return_counts=True)
         tile_cnt_dict = dict(zip(tile_ele, tile_cnt))
         n_obstacles = tile_cnt_dict[eecbs_obj_types.index("@")]
@@ -1166,12 +1217,19 @@ class WarehouseModule:
         #     return ValueError(
         #         f"Object type {self.config.obj_type} not supported")
         
-        logger.info("actual_obj %f", actual_obj)
+        # logger.info("actual_obj %f", actual_obj)
+
+        hamming_dist, sim_score = cal_similarity_score(map_comp_unrepaired, map_np_repaired)
+        logger.info(f"Map ID {map_id}: Hamming dist: {hamming_dist}")
+        logger.info(f"Map ID {map_id}: similarity score: {sim_score}")
+
+
 
         # Create WarehouseResult object using the mean of n_eval simulations
         # For tile_usage, num_wait, and finished_task_len, the mean is not taken
         metadata = WarehouseMetadata(
-            objs=actual_obj,
+            # objs= actual_obj,
+            objs= sim_score,
             # objs = objs,  # for extracting maps where one algorithm works well on
             # throughput=collected_results.get("throughput"),
 
@@ -1405,6 +1463,13 @@ d = [(0, 1), (0, -1), (1, 0), (-1, 0)]
 
 #     return np.mean(all_path_length)
 
+def cal_similarity_score(map_np_unrepaired, map_np_repaired):
+    # Calculate hamming distance
+    assert map_np_unrepaired.shape == map_np_repaired.shape
+    hamming_dist = (map_np_unrepaired != map_np_repaired).sum()
+    n_tiles_storage = np.prod(map_np_unrepaired.shape)
+    sim_score = 1 - hamming_dist/n_tiles_storage
+    return hamming_dist, sim_score
 
 def BFS_shelf_component(start_loc, env_np, env_visited):
     """
@@ -1684,7 +1749,7 @@ def calc_start_goal_locations(repaired_env, agent_ratio, parts):
     goal_locations = []
 
     interval = np.arange(num_of_agents//parts,num_of_agents+(num_of_agents//parts),num_of_agents//parts)
-    print(interval)
+    # print(interval)
 
     # select num_of_agents start and goal locations 
     j = 0
@@ -2070,6 +2135,7 @@ def cal_lambda2(map_np_repaired):
 
     return (eigen[1])
 
+# def single_simulation(seed, agent_num, kwargs, results_dir, eval_id, alg, obs, std_bc):
 def single_simulation(seed, agent_num, kwargs, results_dir, eval_id, alg):
     kwargs["seed"] = int(seed)
     output_dir = os.path.join(results_dir,
@@ -2081,7 +2147,7 @@ def single_simulation(seed, agent_num, kwargs, results_dir, eval_id, alg):
     # for i in kwargs:
     #     print(i)
     print(kwargs["stats"])
-    
+    # print(kwargs)
     #for eval_id
     kwargs["eval_id"] = eval_id
     if alg == "PBS":
@@ -2120,6 +2186,7 @@ def single_simulation(seed, agent_num, kwargs, results_dir, eval_id, alg):
     # if mode == "inc_agents":
     #     kwargs["agentNum"] += 1
 
+    # return obs, std_bc, real_solution_cost,solution_cost
     return real_solution_cost,solution_cost
 
 # def test_calc_path_len_mean(map_filepath):
@@ -2165,73 +2232,167 @@ def main(
 
     gin.parse_config_file(warehouse_config)
 
-    # Read in map
-    with open(map_filepath, "r") as f:
-        raw_env_json = json.load(f)
-    map_read = eecbs_env_str2number(raw_env_json['layout']) 
-    start_location, goal_location = [], []
-    for i in range(0, n_evals):
-        start_, goal_ = calc_start_goal_locations(map_read, agent_num, parts = 4)
-        start_location.append(start_)
-        goal_location.append(goal_)
-        print(i)
-    raw_env_json['start'] = start_location
-    raw_env_json['goal'] = goal_location 
-    print(len(raw_env_json['start']))
+    if mode == "maps":
+        file_list = [os.path.join(map_filepath, f) for f in os.listdir(map_filepath) if os.path.isfile(os.path.join(map_filepath, f))]
+        n_evals = len(file_list)
+        # print(n_evals)
+        # print(file_list)
+        kwargs_list = []
+        agent_list = []
+        obs_list = []
+        std_bc_list = []
 
-    # Create log dir
-    map_name = raw_env_json["name"]
-    time_str = time.strftime("%Y-%m-%d_%H-%M-%S")
-    base_log_dir = time_str + "_" + map_name
-    log_dir = os.path.join(LOG_DIR, base_log_dir)
-    results_dir = os.path.join(log_dir, "results")
-    os.mkdir(log_dir)
-    os.mkdir(results_dir)
+        time_str = time.strftime("%Y-%m-%d_%H-%M-%S")
+        base_log_dir = time_str + "_"
+        log_dir = os.path.join(LOG_DIR, base_log_dir)
+        results_dir = os.path.join(log_dir, "results")
+        os.mkdir(log_dir)
+        os.mkdir(results_dir)
+        
+        # Read in map
+        for file in file_list:
+            with open(file, "r") as f:
+                raw_env_json = json.load(f)
+            print(raw_env_json["name"])
+            map_read = eecbs_env_str2number(raw_env_json['layout']) 
+            # print(raw_env_json["num_of_agent"])
+            agent_list.append(raw_env_json["num_of_agent"])
+            obs_list.append(raw_env_json["num_of_obstacles"])
+            std_bc_list.append(raw_env_json["std_bc"])
+            #used for generating instances
+            start_location, goal_location = [], []
+            start_location.append(raw_env_json['start'])
+            goal_location.append(raw_env_json['goal'])
+            # for i in range(0, n_evals):
+            #     start_, goal_ = calc_start_goal_locations(map_read, agent_num, parts = 5)
+            #     start_location.append(start_)
+            #     goal_location.append(goal_)
+            #     # print(i)
+            raw_env_json['start'] = start_location
+            raw_env_json['goal'] = goal_location 
+            
+            # print(len(raw_env_json['start']))
 
-    # Write map file to logdir
-    with open(os.path.join(log_dir, "map.json"), "w") as f:
-        f.write(json.dumps(raw_env_json, indent=4))
+            # Create log dir
+            # map_name = raw_env_json["name"]
+            # time_str = time.strftime("%Y-%m-%d_%H-%M-%S")
+            # base_log_dir = time_str + "_" + map_name
+            # log_dir = os.path.join(LOG_DIR, base_log_dir)
+            # results_dir = os.path.join(log_dir, "results")
+            # os.mkdir(log_dir)
+            # os.mkdir(results_dir)
+
+            # # Write map file to logdir
+            # with open(os.path.join(log_dir, "map.json"), "w") as f:
+            #     f.write(json.dumps(raw_env_json, indent=4))
 
 
-    # Construct kwargs
-    # PBS Config
-    if alg == "PBS":
-        kwargs = {
-            "map" : json.dumps(raw_env_json),
-            "agentNum" : agent_num,
-            "cutoffTime": gin.query_parameter("WarehouseEECBSConfig.cutoffTime"),
-            "screen":gin.query_parameter("WarehouseEECBSConfig.screen"),
-            "stats": gin.query_parameter("WarehouseEECBSConfig.stats"),
-            "sipp": gin.query_parameter("WarehouseEECBSConfig.sipp"),
-            "force_new_logdir": False,
-        }
-    elif alg == "EECBS":
+            # Construct kwargs
+            # PBS Config
+            if alg == "PBS":
+                kwargs = {
+                    "map" : json.dumps(raw_env_json),
+                    "agentNum" : raw_env_json["num_of_agent"],
+                    "cutoffTime": gin.query_parameter("WarehouseEECBSConfig.cutoffTime"),
+                    "screen":gin.query_parameter("WarehouseEECBSConfig.screen"),
+                    "stats": gin.query_parameter("WarehouseEECBSConfig.stats"),
+                    "sipp": gin.query_parameter("WarehouseEECBSConfig.sipp"),
+                    "force_new_logdir": False,
+                }
+            elif alg == "EECBS":
+                # EECBS Config
+                kwargs = {
+                    "map" : json.dumps(raw_env_json),
+                    # "output" : log_dir,
+                    "agentNum" : raw_env_json["num_of_agent"],
+                    "cutoffTime": gin.query_parameter("WarehouseEECBSConfig.cutoffTime"),
+                    "screen":gin.query_parameter("WarehouseEECBSConfig.screen"),
+                    "stats": gin.query_parameter("WarehouseEECBSConfig.stats"),
+                    # "id": gin.query_parameter("WarehouseEECBSConfig.id"),
+                    "highLevelSolver":gin.query_parameter("WarehouseEECBSConfig.highLevelSolver"),
+                    "lowLevelSolver":gin.query_parameter("WarehouseEECBSConfig.lowLevelSolver"),
+                    "inadmissibleH": gin.query_parameter("WarehouseEECBSConfig.inadmissibleH"),
+                    "suboptimality": gin.query_parameter("WarehouseEECBSConfig.suboptimality"),
+                    "heuristics": gin.query_parameter("WarehouseEECBSConfig.heuristics"),
+                    "prioritizingConflicts":gin.query_parameter("WarehouseEECBSConfig.prioritizingConflicts"),
+                    "bypass": gin.query_parameter("WarehouseEECBSConfig.bypass"),
+                    "disjointSplitting": gin.query_parameter("WarehouseEECBSConfig.disjointSplitting"),
+                    "rectangleReasoning": gin.query_parameter("WarehouseEECBSConfig.rectangleReasoning"),
+                    "corridorReasoning": gin.query_parameter("WarehouseEECBSConfig.corridorReasoning"),
+                    "targetReasoning": gin.query_parameter("WarehouseEECBSConfig.targetReasoning"),
+                    "sipp": gin.query_parameter("WarehouseEECBSConfig.sipp"),
+                    "restart":gin.query_parameter("WarehouseEECBSConfig.restart"),
+                    "force_new_logdir": False,
+                }
+            kwargs_list.append(kwargs)
+        assert(len(kwargs_list) == n_evals)
+    else:
+        with open(map_filepath, "r") as f:
+            raw_env_json = json.load(f)
+        map_read = eecbs_env_str2number(raw_env_json['layout']) 
+        start_location, goal_location, agent_numbers = [], [], []
+        for i in range(0, n_evals):
+            start_, goal_, agent_number = calc_start_goal_locations(map_read, agent_ratio=0.1, parts = 5)
+            start_location.append(start_)
+            goal_location.append(goal_)
+            agent_numbers.append(agent_number)
+            print(i)
+        raw_env_json['start'] = start_location
+        raw_env_json['goal'] = goal_location 
+        print(len(raw_env_json['start']))
 
-        # EECBS Config
-        kwargs = {
-            "map" : json.dumps(raw_env_json),
-            # "output" : log_dir,
-            "agentNum" : agent_num,
-            "cutoffTime": gin.query_parameter("WarehouseEECBSConfig.cutoffTime"),
-            "screen":gin.query_parameter("WarehouseEECBSConfig.screen"),
-            "stats": gin.query_parameter("WarehouseEECBSConfig.stats"),
-            # "id": gin.query_parameter("WarehouseEECBSConfig.id"),
-            "highLevelSolver":gin.query_parameter("WarehouseEECBSConfig.highLevelSolver"),
-            "lowLevelSolver":gin.query_parameter("WarehouseEECBSConfig.lowLevelSolver"),
-            "inadmissibleH": gin.query_parameter("WarehouseEECBSConfig.inadmissibleH"),
-            "suboptimality": gin.query_parameter("WarehouseEECBSConfig.suboptimality"),
-            "heuristics": gin.query_parameter("WarehouseEECBSConfig.heuristics"),
-            "prioritizingConflicts":gin.query_parameter("WarehouseEECBSConfig.prioritizingConflicts"),
-            "bypass": gin.query_parameter("WarehouseEECBSConfig.bypass"),
-            "disjointSplitting": gin.query_parameter("WarehouseEECBSConfig.disjointSplitting"),
-            "rectangleReasoning": gin.query_parameter("WarehouseEECBSConfig.rectangleReasoning"),
-            "corridorReasoning": gin.query_parameter("WarehouseEECBSConfig.corridorReasoning"),
-            "targetReasoning": gin.query_parameter("WarehouseEECBSConfig.targetReasoning"),
-            "sipp": gin.query_parameter("WarehouseEECBSConfig.sipp"),
-            "restart":gin.query_parameter("WarehouseEECBSConfig.restart"),
-            "force_new_logdir": False,
-        }
+        # Create log dir
+        map_name = raw_env_json["name"]
+        time_str = time.strftime("%Y-%m-%d_%H-%M-%S")
+        base_log_dir = time_str + "_" + map_name
+        log_dir = os.path.join(LOG_DIR, base_log_dir)
+        results_dir = os.path.join(log_dir, "results")
+        os.mkdir(log_dir)
+        os.mkdir(results_dir)
 
+        # Write map file to logdir
+        with open(os.path.join(log_dir, "map.json"), "w") as f:
+            f.write(json.dumps(raw_env_json, indent=4))
+        
+        if alg == "PBS":
+            kwargs = {
+                "map" : json.dumps(raw_env_json),
+                "agentNum" : agent_numbers[0],
+                "cutoffTime": gin.query_parameter("WarehouseEECBSConfig.cutoffTime"),
+                "screen":gin.query_parameter("WarehouseEECBSConfig.screen"),
+                "stats": gin.query_parameter("WarehouseEECBSConfig.stats"),
+                "sipp": gin.query_parameter("WarehouseEECBSConfig.sipp"),
+                "force_new_logdir": False,
+            }
+        elif alg == "EECBS":
+
+            # EECBS Config
+            kwargs = {
+                "map" : json.dumps(raw_env_json),
+                # "output" : log_dir,
+                "agentNum" : agent_numbers[0],
+                "cutoffTime": gin.query_parameter("WarehouseEECBSConfig.cutoffTime"),
+                "screen":gin.query_parameter("WarehouseEECBSConfig.screen"),
+                "stats": gin.query_parameter("WarehouseEECBSConfig.stats"),
+                # "id": gin.query_parameter("WarehouseEECBSConfig.id"),
+                "highLevelSolver":gin.query_parameter("WarehouseEECBSConfig.highLevelSolver"),
+                "lowLevelSolver":gin.query_parameter("WarehouseEECBSConfig.lowLevelSolver"),
+                "inadmissibleH": gin.query_parameter("WarehouseEECBSConfig.inadmissibleH"),
+                "suboptimality": gin.query_parameter("WarehouseEECBSConfig.suboptimality"),
+                "heuristics": gin.query_parameter("WarehouseEECBSConfig.heuristics"),
+                "prioritizingConflicts":gin.query_parameter("WarehouseEECBSConfig.prioritizingConflicts"),
+                "bypass": gin.query_parameter("WarehouseEECBSConfig.bypass"),
+                "disjointSplitting": gin.query_parameter("WarehouseEECBSConfig.disjointSplitting"),
+                "rectangleReasoning": gin.query_parameter("WarehouseEECBSConfig.rectangleReasoning"),
+                "corridorReasoning": gin.query_parameter("WarehouseEECBSConfig.corridorReasoning"),
+                "targetReasoning": gin.query_parameter("WarehouseEECBSConfig.targetReasoning"),
+                "sipp": gin.query_parameter("WarehouseEECBSConfig.sipp"),
+                "restart":gin.query_parameter("WarehouseEECBSConfig.restart"),
+                "force_new_logdir": False,
+            }
+        
+        
+        
     # For some of the parameters, we do not want to pass them in here
     # to the use the default value defined on the C++ side.
     # try:
@@ -2276,45 +2437,119 @@ def main(
                 eval_id_list,
                 alg_list),
         )
+    elif mode == "maps":
+        seeds = np.random.choice(np.arange(10000), size=n_evals, replace=False)
+        eval_id_list = [0 for i in range(n_evals)] 
+        alg_list = [alg for _ in range(n_evals)] 
+        solution_cost = pool.starmap(
+            single_simulation,
+            zip(seeds,
+                agent_list,
+                kwargs_list,
+                repeat(results_dir, n_evals),
+                eval_id_list,
+                alg_list,
+                obs_list,
+                std_bc_list),
+        )
 
     # print("Solution_cost: " ,solution_cost)
-    real_obj = []
-    runtime_ = [] 
-    for sc in solution_cost: 
-        real_obj.append(sc[0])
-        runtime_.append(sc[1])
-    print("Runtime: ", runtime_) 
-    n_failure = np.array(runtime_) >= 20
-    n_success = 200 - np.sum(n_failure)
-    succ_rate = n_success/200 
+    if mode == "maps":
+        real_obj = []
+        runtime_ = [] 
+        obs = []
+        std_bc = []
+        for sc in solution_cost: 
+            obs.append(sc[0])
+            std_bc.append(sc[1])
+            real_obj.append(sc[2])
+            runtime_.append(sc[3])
+        
+        filename = "output.json"
 
-    avg_obj = np.mean(runtime_)
-    std_obj = np.std(runtime_)
-    max_obj = np.max(runtime_)
-    min_obj = np.min(runtime_)
+        data = {
+            "obs" : obs,
+            "std_bc" : std_bc,
+            "real_obj": real_obj,
+            "runtime" : runtime_,
+        }
+    # Write the data to the JSON file
+    # with open(filename, 'w') as json_file:
+    #     json.dump(data, json_file, indent=4) 
 
-    real_avg_obj = np.mean(real_obj)
-    real_std_obj = np.std(real_obj)
-    real_max_obj = np.max(real_obj)
-    real_min_obj = np.min(real_obj)
+        with open(os.path.join(log_dir, filename), "w") as f:
+            f.write(json.dumps(data, indent=4))
+    else:
+        real_obj = []
+        runtime_ = [] 
+        for sc in solution_cost: 
+            real_obj.append(sc[0])
+            runtime_.append(sc[1])
+        print("Runtime: ", runtime_) 
+        n_failure = np.array(runtime_) >= 20
+        n_success = 200 - np.sum(n_failure)
+        succ_rate = n_success/200 
+
+        avg_obj = np.mean(runtime_)
+        std_obj = np.std(runtime_)
+        max_obj = np.max(runtime_)
+        min_obj = np.min(runtime_)
+
+        real_avg_obj = np.mean(real_obj)
+        real_std_obj = np.std(real_obj)
+        real_max_obj = np.max(real_obj)
+        real_min_obj = np.min(real_obj)
 
 
-    n_evals = n_evals * n_sim if mode == "inc_agents" else n_evals
+        n_evals = n_evals * n_sim if mode == "inc_agents" else n_evals
 
-    print(f"Number of success simulations: {n_success}")
-    print(f"Success rate: {succ_rate}")
+        print(f"Number of success simulations: {n_success}")
+        print(f"Success rate: {succ_rate}")
+        
+
+        print(f"Average Runtime over {n_evals} simulations: {avg_obj}")
+        print(f"Std Runtime over {n_evals} simulations: {std_obj}")
+        print(f"Max Runtime over {n_evals} simulations: {max_obj}")
+        print(f"Min Runtime over {n_evals} simulations: {min_obj}")
+
+
+        print(f"Average Solution_cost over {n_evals} simulations: {real_avg_obj}")
+        print(f"Std Solution_cost over {n_evals} simulations: {real_std_obj}")
+        print(f"Max Solution_cost over {n_evals} simulations: {real_max_obj}")
+        print(f"Min Solution_cost over {n_evals} simulations: {real_min_obj}")
+
+    # print("Runtime: ", runtime_) 
+    # n_failure = np.array(runtime_) >= 20
+    # n_success = 200 - np.sum(n_failure)
+    # succ_rate = n_success/200 
+
+    # avg_obj = np.mean(runtime_)
+    # std_obj = np.std(runtime_)
+    # max_obj = np.max(runtime_)
+    # min_obj = np.min(runtime_)
+
+    # real_avg_obj = np.mean(real_obj)
+    # real_std_obj = np.std(real_obj)
+    # real_max_obj = np.max(real_obj)
+    # real_min_obj = np.min(real_obj)
+
+
+    # n_evals = n_evals * n_sim if mode == "inc_agents" else n_evals
+
+    # print(f"Number of success simulations: {n_success}")
+    # print(f"Success rate: {succ_rate}")
     
 
-    print(f"Average Runtime over {n_evals} simulations: {avg_obj}")
-    print(f"Std Runtime over {n_evals} simulations: {std_obj}")
-    print(f"Max Runtime over {n_evals} simulations: {max_obj}")
-    print(f"Min Runtime over {n_evals} simulations: {min_obj}")
+    # print(f"Average Runtime over {n_evals} simulations: {avg_obj}")
+    # print(f"Std Runtime over {n_evals} simulations: {std_obj}")
+    # print(f"Max Runtime over {n_evals} simulations: {max_obj}")
+    # print(f"Min Runtime over {n_evals} simulations: {min_obj}")
 
 
-    print(f"Average Solution_cost over {n_evals} simulations: {real_avg_obj}")
-    print(f"Std Solution_cost over {n_evals} simulations: {real_std_obj}")
-    print(f"Max Solution_cost over {n_evals} simulations: {real_max_obj}")
-    print(f"Min Solution_cost over {n_evals} simulations: {real_min_obj}")
+    # print(f"Average Solution_cost over {n_evals} simulations: {real_avg_obj}")
+    # print(f"Std Solution_cost over {n_evals} simulations: {real_std_obj}")
+    # print(f"Max Solution_cost over {n_evals} simulations: {real_max_obj}")
+    # print(f"Min Solution_cost over {n_evals} simulations: {real_min_obj}")
 
 
 if __name__ == "__main__":

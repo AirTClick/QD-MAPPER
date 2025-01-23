@@ -22,6 +22,7 @@ from env_search_PBS.utils.logging import setup_logging
 from env_search_PBS.mpl_styles.utils import mpl_style_file
 from env_search_PBS.utils import (set_spines_visible,eecbs_env_str2number,
                               kiva_env_str2number, read_in_kiva_map)
+from env_search_PBS.warehouseEECBS.module import calc_start_goal_locations
 
 mpl.use("agg")
 
@@ -60,17 +61,16 @@ def map_to_json(
     data["n_row"] = 32
     data["n_col"] = 32
     data["layout"] = map
+    data["start"], data["goal"], data["num_of_agent"] =  calc_start_goal_locations(eecbs_env_str2number(map), agent_ratio=0.1, parts = 5)
     data["lower_runtime_alg"] = lower_runtime_alg
     data["objective"] = objective.astype(float)
     data["num_of_obstacles"] = num_of_obstacles.astype(float)
     data["kl_div"] = kl_div.astype(float)
     data["lambda2"] = lambda2.astype(float)
     data['abs_diff_hash'] = abs_diff_hash.astype(float)
-    data["runtime_EECBS"] = runtime_EECBS.astype(float)
+    # data["runtime_EECBS"] = runtime_EECBS.astype(float)
     # data["runtime_PBS"] = runtime_PBS.astype(float)
     data["entropy"] = entropy.astype(float)
-    data["start"] = start
-    data["goal"] = goal
     data["std_bc"] = std_bc.astype(float)
     # data["times_no_solution_EECBS"] = times_no_solution_EECBS
     # data["times_no_solution_PBS"] = times_no_solution_PBS
@@ -103,9 +103,11 @@ def all_maps_to_json(
         index_1 = df.loc[i]["index_1"]
         metadata = df.loc[i]["metadata"]["warehouse_metadata"]
         map = metadata["map_str"]
-        start = metadata["start_locations"].tolist()
+        # start = metadata["start_locations"].tolist()
+        start = metadata["start_locations"]
         # print(start)
-        goal = metadata["goal_locations"].tolist()
+        # goal = metadata["goal_locations"].tolist()
+        goal = metadata["goal_locations"]
         objective = df.loc[i]["objective"]
         runtime_EECBS = metadata["avg_run_time_EECBS"]
         runtime_PBS = metadata["avg_run_time_PBS"]
@@ -135,7 +137,7 @@ def sample_start_goal(metadata,repaired_env,j):
 
     h,w = repaired_env.shape
     
-    count_list = np.random.randint(0,50,size = 10)
+    count_list = np.random.randint(0,30,size = 10)
 
     repaired_map = copy.deepcopy(repaired_env)
 
@@ -380,7 +382,8 @@ def tile_usage_heatmap_from_qd(
         # print(df[(df["behavior_0"]>=512) & (df["objective"] > -5.0)].index)
         indices = list(df[(df["behavior_1"] >= 717)].index)
         indices_slow = list(df[(df["behavior_0"]>0.5) & (df["behavior_0"]<0.6) & (df["objective"] > -25.0)].index) 
-        indices_fast = list(df[(df["objective"] <10.0)].index)
+        indices_fast = list(df[(df["objective"] >20.0)].index)
+        indices_obstacles = list(df[(df["behavior_0"] <= 310) & (df["objective"] > 20.0)].index)
         indices_specific = list(df[(df["index_1"]==66) & (df["index_0"]==42)].index) 
         # print(indices)
         # breakpoint() 
@@ -526,6 +529,7 @@ def tile_usage_heatmap_from_qd(
                 # print("map",metadata["map_str"])
                 # print("KL_div", metadata["all_kl_div"])
                 print("number of obstacles:", metadata["n_obstacles"])
+                print("number of agents:", len(metadata["start_locations"][0]))
                 # print("Lower runtime algorithm: ", metadata["lower_runtime_alg"])
                 # print("Connectivity: ", metadata["std_connectivity"])
                 # print("avg_degrees: ",metadata["avg_degrees"])
@@ -684,7 +688,7 @@ def tile_usage_heatmap_from_qd(
                 repaired_map = sample_start_goal(metadata, repaired_env, 0)
                 visualize_kiva(repaired_map, ax=ax_map, dpi=300) 
                 plot_tile_usage(
-                    curr_tile_usage_PBS,
+                    curr_tile_usage_EECBS,
                     env_h,
                     env_w,
                     fig,
@@ -692,9 +696,9 @@ def tile_usage_heatmap_from_qd(
                     ax_tile_use_cbar,
                     logdir,
                     filenames=[
-                        f"tile_usage_10{index_0}_{index_1}-{0}.pdf",
-                        f"tile_usage_10/{index_0}_{index_1}-{0}.svg",
-                        f"tile_usage_10/{index_0}_{index_1}-{0}.png",
+                        f"tile_usage_less_obstacles/{index_0}_{index_1}-{0}.pdf",
+                        f"tile_usage_less_obstacles/{index_0}_{index_1}-{0}.svg",
+                        f"tile_usage_less_obstacles/{index_0}_{index_1}-{0}.png",
                     ],
                     dpi=dpi,
                 )
