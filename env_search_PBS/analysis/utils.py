@@ -9,6 +9,7 @@ import pickle as pkl
 from pathlib import Path
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 import gin
 import numpy as np
@@ -287,8 +288,10 @@ def grid_archive_heatmap(archive,
     x_bounds = archive.boundaries[0]
     y_bounds = archive.boundaries[1]
 
+    custom_color = [1, 0.5, 0, 1]
     # Color for each cell in the heatmap.
     colors = np.full((y_dim, x_dim), np.nan)
+    mask_colors = np.full((y_dim, x_dim), np.nan, dtype=object)
     i = 0
     for elite in archive:
     #     # show on archive for the difference
@@ -298,8 +301,8 @@ def grid_archive_heatmap(archive,
         # elif alg_list[i] == "PBS":
         #     colors[elite.idx[1], elite.idx[0]] = -elite.obj
         
-        if alg_list[i] == 0:
-            colors[elite.idx[1], elite.idx[0]] = -elite.obj
+        if alg_list[i] > 0:
+            mask_colors[elite.idx[1], elite.idx[0]] = custom_color
         else:
             colors[elite.idx[1], elite.idx[0]] = elite.obj 
         i+=1
@@ -321,6 +324,7 @@ def grid_archive_heatmap(archive,
         lower_bounds = np.flip(lower_bounds)
         upper_bounds = np.flip(upper_bounds)
         colors = colors.T
+        mask_colors = mask_colors.T
 
     # Initialize the axis.
     ax = plt.gca() if ax is None else ax
@@ -342,6 +346,20 @@ def grid_archive_heatmap(archive,
                       vmin=vmin,
                       vmax=vmax,
                       **pcm_kwargs)
+
+    for y_idx in range(mask_colors.shape[0]):
+        for x_idx in range(mask_colors.shape[1]):
+            if isinstance(mask_colors[y_idx, x_idx], list):
+                ax.add_patch(plt.Rectangle(
+                    (x_bounds[x_idx], y_bounds[y_idx]),
+                    x_bounds[x_idx + 1] - x_bounds[x_idx],
+                    y_bounds[y_idx + 1] - y_bounds[y_idx],
+                    color=mask_colors[y_idx, x_idx],
+                    linewidth=0
+                ))
+
+    legend_patch = mpatches.Patch(color=custom_color, label="No Solution")
+    ax.legend(handles=[legend_patch], loc='upper left', fontsize=20)
 
     # Create the colorbar.
     if plot_color_bar:

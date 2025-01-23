@@ -63,8 +63,9 @@ def plot_generation_on_axis(
     alg_list = []
     for _, to_plot in df.iterrows():
         # alg_list.append(to_plot["metadata"]["warehouse_metadata"]["lower_runtime_alg"])
-        #print(np.mean(to_plot["metadata"]["warehouse_metadata"]["times_no_solution_PBS"]))
+        # print(np.mean(to_plot["metadata"]["warehouse_metadata"]["times_no_solution_PBS"]))
         alg_list.append(np.mean(to_plot["metadata"]["warehouse_metadata"]["times_no_solution_PBS"]))
+        
 
     
     # print(archive.as_pandas())
@@ -353,7 +354,7 @@ def heatmap(logdir: str,
     # Decide upper bound of heatmap based on config
     if vmax is None:
         sol_dim = gin.query_parameter("Manager.sol_size")
-        agent_num = gin.query_parameter("WarehouseManager.agent_num")
+        # agent_num = gin.query_parameter("WarehouseManager.agent_num") # comment for agent ratio purpose
         w_mode = gin.query_parameter("WarehouseManager.w_mode")
         # if sol_dim == 108:
         #     if 0 < agent_num <= 10:

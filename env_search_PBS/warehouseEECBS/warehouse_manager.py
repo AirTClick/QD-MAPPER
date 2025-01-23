@@ -472,7 +472,7 @@ class WarehouseManager:
         # print(len(maps_id_sim))
         # print(len(eval_id_sim))
         # print(len(sols_hyper))
-        logger.info("--------------------------------NUMBER OF AGENTS: " , num_agents_sim)
+        # logger.info("--------------------------------NUMBER OF AGENTS: " , num_agents_sim)
         # breakpoint()
 
         # Then, evaluate the maps
@@ -800,6 +800,18 @@ class WarehouseManager:
                 results_json_sorted_PIBT.append(curr_eval_results_PIBT)
                 results_json_sorted_LTF.append(curr_eval_results_PIBT)
 
+        if self.obj == "NONE":
+            results_json_sorted_EECBS = []
+            results_json_sorted_PBS = []
+            results_json_sorted_PIBT = []
+            results_json_sorted_LTF=[]
+            for i in range(len(sols)):
+                curr_eval_results_PIBT = []
+                curr_eval_results_LTF = [] 
+                results_json_sorted_EECBS.append(curr_eval_results_PIBT)
+                results_json_sorted_PBS.append(curr_eval_results_LTF)
+                results_json_sorted_PIBT.append(curr_eval_results_PIBT)
+                results_json_sorted_LTF.append(curr_eval_results_PIBT)
 
         logger.info("Processing eval results")
 

@@ -35,3 +35,13 @@ then
         --mode "$MODE" \
         --alg "$ALG" 
 fi
+
+if [ "${MODE}" = "maps" ]
+then
+    singularity exec --cleanenv singularity/ubuntu_warehouse.sif \
+    python env_search_PBS/warehouseEECBS/module.py \
+        --warehouse-config "$SIM_CONFIG" \
+        --map-filepath "$MAP_FILE" \
+        --mode "$MODE" \
+        --alg "$ALG" 
+fi
