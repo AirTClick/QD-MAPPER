@@ -1,7 +1,7 @@
 # Used for actually experiment
-HPC_SLURM_ACCOUNT=cis220074p  # Change this to your HPC account
+HPC_SLURM_ACCOUNT=  # Change this to your HPC account
 HPC_SLURM_TIME=48:00:00
 HPC_SLURM_NUM_NODES=100
 HPC_SLURM_CPUS_PER_NODE=2
 HPC_MASTER_WORKERS=2
-LOGDIR_ROOT_ARG=/ocean/projects/cis220074p/cqian3/benchmark_logs
+LOGDIR_ROOT_ARG=..
