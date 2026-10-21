@@ -516,14 +516,22 @@ bool Instance::load_map_from_jsonstr(json G_json,int num_of_agents, int eval_id)
 	string line;
 	std::vector<int> start;
 	std::vector<int> goal;
-	num_of_agents = G_json["num_of_agent"];
-
 	this->num_of_rows = G_json["n_row"];
 	this->num_of_cols = G_json["n_col"];
 
-	for (int k = 0; k < num_of_agents; k++){
-		start.push_back(G_json["start"][k].get<int>());
-		goal.push_back(G_json["goal"][k].get<int>());	
+	if (G_json.contains("num_of_agent")) {
+		// One set of start/goal locations
+		num_of_agents = G_json["num_of_agent"];
+		for (int k = 0; k < num_of_agents; k++){
+			start.push_back(G_json["start"][k].get<int>());
+			goal.push_back(G_json["goal"][k].get<int>());
+		}
+	} else {
+		// Map repair output: one set of start/goal locations per evaluation
+		for (int k = 0; k < num_of_agents; k++){
+			start.push_back(G_json["start"][eval_id][k].get<int>());
+			goal.push_back(G_json["goal"][eval_id][k].get<int>());
+		}
 	}
 
 	start_locations.resize(num_of_agents);

@@ -78,7 +78,7 @@ std::string run(const py::kwargs& kwargs)
 			{
 				break;
 			} 
-			cout << "Failed to find solutions with runtime " << pbs.runtime << endl;	
+			// cout << "Failed to find solutions with runtime " << pbs.runtime << endl;	
 			times_no_solution += 1;	
 		}
 	}
