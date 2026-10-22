@@ -16,7 +16,7 @@ import pathlib
 import warnings
 import warehouse_sim_PBS  # type: ignore # ignore pylance warning
 import warehouse_sim_EECBS  # type: ignore # ignore pylance warning
-# import warehouse_sim_PIBT  # type: ignore # ignore pylance warning
+from mapf_py import warehouse_sim_PIBT, warehouse_sim_LaCAM  # Python PIBT / LaCAM, see mapf_py/
 import numpy as np
 import multiprocessing
 import scipy
@@ -41,7 +41,7 @@ from env_search_PBS.utils import (eecbs_obj_types, MIN_SCORE,
                               kiva_env_str2number, format_env_str,
                               read_in_kiva_map, flip_tiles)
 from env_search_PBS.node_hashing import maze_hashing
-# from env_search_PBS.LTF.example import run_follower
+from mapf_py.warehouse_sim_LTF import run_follower  # Python Learn-to-Follow, see mapf_py/
 # from env_search_PBS.test_entropy import maze_dist
 
 logger = logging.getLogger(__name__)
@@ -94,6 +94,8 @@ class WarehouseEECBSConfig:
         stop_at_traffic_jam (bool): whether stop the simulation at traffic jam
         obj_type (str): type of objective
                         ("throughput", "throughput_plus_n_shelf")
+        max_makespan (int): max timesteps of PIBT and LTF (M in the paper)
+        ltf_device (str): device of the LTF policy network ("cpu" or "cuda")
     """
     # Measures.
     measure_names: Collection[str] = gin.REQUIRED
@@ -124,8 +126,26 @@ class WarehouseEECBSConfig:
     hamming_only : bool = gin.REQUIRED,
     obj: str = gin.REQUIRED,
 
+    # Python MAPF solvers in mapf_py/ (PIBT, LaCAM, LTF)
+    max_makespan: int = 1000
+    ltf_device: str = "cpu"
+
     # tile_usage_room: np.ndarray = gin.REQUIRED, 
     # obj_name : str = gin.REQUIRED,
+
+
+def regularized_success_rate(success_rates, sums_of_cost, C):
+    """r(x) in the paper: the sum over the N_e instances of the regularized
+    success rate of Eq. (1),
+
+        RSR = SR            if SR < 1
+        RSR = SR * C - SoC  if SR = 1
+
+    where C is a constant larger than any sum of costs, so a map whose agents
+    all reach their goals always scores higher than one where some do not.
+    """
+    return float(sum(sr if sr < 1 else sr * C - soc
+                     for sr, soc in zip(success_rates, sums_of_cost)))
 
 
 class WarehouseModule:
@@ -401,11 +421,13 @@ class WarehouseModule:
             "map" : map_json,
             "agentNum" : agentNum,
             "eval_id": eval_id,
+            "seed": sim_seed,
+            "max_makespan": self.config.max_makespan,
         }
 
-        logger.info(f"PBS Map evaluate: {map_id}")
+        logger.info(f"PIBT Map evaluate: {map_id}")
 
-        one_sim_result_jsonstr = warehouse_sim_PBS.run(**kwargs)
+        one_sim_result_jsonstr = warehouse_sim_PIBT.run(**kwargs)
 
         result_json = json.loads(one_sim_result_jsonstr)
         
@@ -426,6 +448,9 @@ class WarehouseModule:
             "map" : map_json,
             "agentNum" : agentNum,
             "eval_id": eval_id,
+            "seed": sim_seed,
+            "max_makespan": self.config.max_makespan,
+            "device": self.config.ltf_device,
         }
 
         logger.info(f"ltf Map evaluate: {map_id}")
@@ -435,6 +460,31 @@ class WarehouseModule:
         result_json = json.loads(one_sim_result_jsonstr)
         
         return result_json 
+
+    def evaluate_LaCAM(
+        self,
+        map_json: str,
+        eval_logdir: pathlib.Path,
+        sim_seed: int,
+        agentNum: int,
+        map_id: int,
+        eval_id: int,
+    ):
+        kwargs = {
+            "map" : map_json,
+            "agentNum" : agentNum,
+            "eval_id": eval_id,
+            "seed": sim_seed,
+            "cutoffTime": self.config.cutoffTime,
+        }
+
+        logger.info(f"LaCAM Map evaluate: {map_id}")
+
+        one_sim_result_jsonstr = warehouse_sim_LaCAM.run(**kwargs)
+
+        result_json = json.loads(one_sim_result_jsonstr)
+
+        return result_json
 
     def evaluate(
         self,
@@ -545,6 +595,13 @@ class WarehouseModule:
 
         """
 
+        # Defaults for the PIBT / LTF / PIBT_LTF / LaCAM branches, which do not
+        # set them (the other branches overwrite them).
+        start_locations, goal_locations = [], []
+        avg_run_time_LaCAM = None
+        avg_success_rate_LaCAM = None
+        avg_sum_of_cost_LaCAM = None
+
         # Deal with failed layout.
         # For now, failure only happens during MILP repair, so it failure
         # happens, all simulation json results would contain
@@ -585,7 +642,10 @@ class WarehouseModule:
             make_span_PIBT = np.array(collected_results_PIBT.get("make_span_PIBT"))
             avg_make_span_PIBT = np.mean(make_span_PIBT)
 
-            actual_obj = -((avg_success_rate_PIBT * (avg_make_span_PIBT * 150 * 150)) - avg_sum_of_cost_PIBT)
+            # Paper Eq. (1): minimise r_PIBT; the archive maximises, hence -r
+            actual_obj = -regularized_success_rate(
+                success_rate_PIBT, sum_of_cost_PIBT,
+                self.config.max_makespan * 150 * 150)
 
 
             lower_runtime_alg = "PIBT"
@@ -648,7 +708,10 @@ class WarehouseModule:
             make_span_LTF = np.array(collected_results_LTF.get("make_span_LTF"))
             avg_make_span_LTF = np.mean(make_span_LTF)
 
-            actual_obj = -((avg_success_rate_LTF * (avg_make_span_LTF * 150 * 150)) - avg_sum_of_cost_LTF)
+            # Paper Eq. (1): minimise r_LTF; the archive maximises, hence -r
+            actual_obj = -regularized_success_rate(
+                success_rate_LTF, sum_of_cost_LTF,
+                self.config.max_makespan * 150 * 150)
 
 
             lower_runtime_alg = "LTF"
@@ -677,6 +740,66 @@ class WarehouseModule:
             times_no_solution_PBS = np.zeros(5) 
         
             
+        if obj == "LaCAM":
+            # warehouse_manager puts the LaCAM results in all four result lists
+            curr_result_json_LaCAM = curr_result_json_PBS
+            if not curr_result_json_LaCAM[0]["success"]:
+                logger.info(
+                f"Map ID {map_id} failed.")
+
+                metadata = WarehouseMetadata(
+                    map_int_unrepaired=map_comp_unrepaired,
+                    map_int_raw=map_np_unrepaired,
+                )
+                result = WarehouseResult.from_raw(
+                    warehouse_metadata=metadata,
+                    opts={
+                        "aggregation": self.config.aggregation_type,
+                        "measure_names": self.config.measure_names,
+                    },
+                )
+                result.failed = True
+                return result
+
+            # Same objective as PBS / EECBS: mean CPU runtime, where an
+            # unsolved instance counts as cutoffTime.
+            avg_run_time_LaCAM = np.mean(
+                [r["runtime"] for r in curr_result_json_LaCAM])
+            avg_success_rate_LaCAM = np.mean(
+                [r["solution_found"] for r in curr_result_json_LaCAM])
+            solved_costs = [r["solution_cost"] for r in curr_result_json_LaCAM
+                            if r["solution_found"]]
+            avg_sum_of_cost_LaCAM = np.mean(solved_costs) if solved_costs else None
+
+            actual_obj = avg_run_time_LaCAM
+
+            lower_runtime_alg = "LaCAM"
+
+            avg_success_rate_PIBT = 0.0
+            avg_sum_of_cost_PIBT = 0.0
+            avg_make_span_PIBT = 0.0
+            avg_success_rate_LTF = 0.0
+            avg_sum_of_cost_LTF = 0.0
+            avg_make_span_LTF = 0.0
+
+            solution_cost_PBS=[0]
+            avg_run_time_PBS = 0.0
+            tile_usage_PBS=np.zeros(100)
+            tile_usage_mean_PBS=0.0
+            tile_usage_std_PBS=0.0
+            average_suboptimality_PBS= 0.0
+
+            solution_cost_EECBS=[]
+            avg_run_time_EECBS = 0.0
+            tile_usage_EECBS=np.zeros(100)
+            tile_usage_mean_EECBS=0.0
+            tile_usage_std_EECBS=0.0
+            average_suboptimality_EECBS= 0.0
+
+            binary_obj = 0
+            times_no_solution_EECBS = np.zeros(5)
+            times_no_solution_PBS = np.zeros(5)
+
         if obj == "EECBS":
             if not curr_result_json_EECBS[0]["success"]:
                 logger.info(
@@ -1014,7 +1137,10 @@ class WarehouseModule:
             make_span_PIBT = np.array(collected_results_PIBT.get("make_span_PIBT"))
             avg_make_span_PIBT = np.mean(make_span_PIBT)
 
-            actual_obj_PIBT = -((avg_success_rate_PIBT * (avg_make_span_PIBT * 150 * 150)) - avg_sum_of_cost_PIBT)
+            # Paper Eq. (1); both algorithms use the same C (same max_makespan)
+            actual_obj_PIBT = -regularized_success_rate(
+                success_rate_PIBT, sum_of_cost_PIBT,
+                self.config.max_makespan * 150 * 150)
 
             #LTF
             keys_LTF = curr_result_json_LTF[0].keys()
@@ -1034,7 +1160,9 @@ class WarehouseModule:
             make_span_LTF = np.array(collected_results_LTF.get("make_span_LTF"))
             avg_make_span_LTF = np.mean(make_span_LTF)
 
-            actual_obj_LTF = -((avg_success_rate_LTF * (avg_make_span_LTF * 150 * 150)) - avg_sum_of_cost_LTF)
+            actual_obj_LTF = -regularized_success_rate(
+                success_rate_LTF, sum_of_cost_LTF,
+                self.config.max_makespan * 150 * 150)
 
             objs = actual_obj_LTF - actual_obj_PIBT
 
@@ -1045,9 +1173,11 @@ class WarehouseModule:
 
             actual_obj = abs(objs)
 
-            avg_success_rate_LTF=0.0
-            avg_sum_of_cost_LTF = 0.0 
-            avg_make_span_LTF = 0.0 
+            # Keep LTF's statistics in the metadata (needed for the paper's
+            # Fig. 11 heatmap of SR_PIBT - SR_LTF); they used to be reset here.
+            # avg_success_rate_LTF=0.0
+            # avg_sum_of_cost_LTF = 0.0
+            # avg_make_span_LTF = 0.0
 
             solution_cost_PBS=[0]
             avg_run_time_PBS = 0.0
@@ -1228,8 +1358,8 @@ class WarehouseModule:
         # Create WarehouseResult object using the mean of n_eval simulations
         # For tile_usage, num_wait, and finished_task_len, the mean is not taken
         metadata = WarehouseMetadata(
-            # objs= actual_obj,
-            objs= sim_score,
+            objs= actual_obj,
+            # objs= sim_score,
             # objs = objs,  # for extracting maps where one algorithm works well on
             # throughput=collected_results.get("throughput"),
 
@@ -1296,6 +1426,9 @@ class WarehouseModule:
 
             times_no_solution_EECBS = times_no_solution_EECBS,
             times_no_solution_PBS = times_no_solution_PBS, 
+            avg_run_time_LaCAM = avg_run_time_LaCAM,
+            avg_success_rate_LaCAM = avg_success_rate_LaCAM,
+            avg_sum_of_cost_LaCAM = avg_sum_of_cost_LaCAM,
 
 
         )

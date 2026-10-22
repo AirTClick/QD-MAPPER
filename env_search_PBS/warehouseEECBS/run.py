@@ -160,6 +160,44 @@ def run_warehouse_LTF(
     return result_LTF
 
 
+def run_warehouse_LaCAM(
+    map_json: str,
+    eval_logdir: pathlib.Path,
+    sim_seed: int,
+    agentNum: int,
+    map_id: int,
+    eval_id: int,
+) -> WarehouseResult:
+
+    if map_json is None:
+        logger.info("Evaluating failed layout. Skipping")
+        result = {"success": False}
+        return result
+
+    start = time.time()
+
+    logger.info("seeding global randomness")
+    np.random.seed(sim_seed // np.int32(4))
+    random.seed(sim_seed // np.int32(2))
+
+    logger.info("run warehouse LaCAM with seed %d", sim_seed)
+    warehouse_module = get_warehouse_module()
+
+    result_LaCAM = warehouse_module.evaluate_LaCAM(
+        map_json=map_json,
+        eval_logdir=eval_logdir,
+        sim_seed=sim_seed,
+        agentNum=agentNum,
+        map_id=map_id,
+        eval_id=eval_id,
+    )
+    result_LaCAM["success"] = True
+
+    logger.info("run_warehouse_LaCAM done after %f sec", time.time() - start)
+
+    return result_LaCAM
+
+
 # Run with two algorithms at a time
 def run_warehouse_PBS(
     map_json: str,

@@ -88,6 +88,11 @@ class WarehouseMetadata:
     avg_sum_of_cost_LTF: float = None
     avg_make_span_LTF: float = None
     
+    #FOR LaCAM (mapf_py)
+    avg_run_time_LaCAM: float = None
+    avg_success_rate_LaCAM: float = None
+    avg_sum_of_cost_LaCAM: float = None
+
     #FOR RHCR
     throughput : List[float] = None # throughput of the simulation
 

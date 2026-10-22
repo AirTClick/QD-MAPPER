@@ -30,9 +30,9 @@ Manager.archive_type = @GridArchive
 Manager.emitter_types = [(@ImprovementEmitter, 5)]
 Manager.env_manager_class = @WarehouseManager
 Manager.initial_sols = 100
-Manager.inner_itrs = 10000
+Manager.inner_itrs = 1000
 Manager.is_em = False
-Manager.max_evals = 10000
+Manager.max_evals = 1000
 Manager.plot_metrics_freq = 1
 Manager.reload_save_freq = 1
 Manager.sol_size = 1731
@@ -100,7 +100,7 @@ WarehouseEmulationModel.train_sample_size = 20000
 
 # Parameters for WarehouseManager:
 # ======================================================================================================================
-WarehouseManager.agent_num = 50
+# WarehouseManager.agent_num = 50 # PBS gets the agent count from map repair
 WarehouseManager.lvl_height = 32
 WarehouseManager.lvl_width = 32
 WarehouseManager.max_n_shelf = %max_n_shelf

@@ -1,0 +1,6 @@
+# Created by scripts/install_mapf_py_deps.sh or at run time, not source files.
+_deps/
+learn_to_follow/follower_cpp/*.so
+learn_to_follow/follower_cpp/*.lock
+learn_to_follow/follower_cpp/.rendered.*
+__pycache__/

@@ -93,7 +93,7 @@ int main(int argc, char** argv)
 			{
 				break;
 			} 
-			cout << "Failed to find solutions with runtime " << pbs.runtime << endl;
+			// cout << "Failed to find solutions with runtime " << pbs.runtime << endl;
 			times_no_solution += 1;		
 		}
 	}

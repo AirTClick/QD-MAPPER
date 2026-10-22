@@ -30,7 +30,7 @@ from env_search_PBS.warehouseEECBS.module import (WarehouseModule, WarehouseEECB
                                         #  ,get_comp_map, get_additional_h_blocks,
                                         #  get_additional_v_blocks)
 from env_search_PBS.warehouseEECBS.run import (run_warehouse_EECBS, run_warehouse_PBS,run_warehouse_PIBT,run_warehouse_LTF,repair_warehouse,
-                                      process_warehouse_eval_result)
+                                      process_warehouse_eval_result, run_warehouse_LaCAM)
 from env_search_PBS.utils.worker_state import init_warehouse_module
 from env_search_PBS.warehouseEECBS.generator.nca_generator import WarehouseNCA
 from env_search_PBS.utils import (kiva_obj_types, KIVA_ROBOT_BLOCK_WIDTH,
@@ -798,7 +798,49 @@ class WarehouseManager:
                 results_json_sorted_EECBS.append(curr_eval_results_PIBT)
                 results_json_sorted_PBS.append(curr_eval_results_LTF)
                 results_json_sorted_PIBT.append(curr_eval_results_PIBT)
-                results_json_sorted_LTF.append(curr_eval_results_PIBT)
+                results_json_sorted_LTF.append(curr_eval_results_LTF)
+
+        if self.obj == "LaCAM":
+            sim_futures_LaCAM = [
+                self.client.submit(
+                    run_warehouse_LaCAM,
+                    map_json=map_json,
+                    eval_logdir=eval_logdir,
+                    sim_seed=sim_seed,
+                    agentNum=agent_num,
+                    map_id=map_id,
+                    eval_id=eval_id,
+                ) for (
+                    map_json,
+                    sim_seed,
+                    map_id,
+                    eval_id,
+                    agent_num,
+                ) in zip(
+                    map_jsons_sim,
+                    maps_eval_seed_sim,
+                    maps_id_sim,
+                    eval_id_sim,
+                    num_agents_sim,
+                )
+            ]
+            logger.info("Collecting evaluations")
+            results_json_LaCAM = self.client.gather(sim_futures_LaCAM)
+
+            logger.info("Finished Collection")
+
+            results_json_sorted_EECBS = []
+            results_json_sorted_PBS = []
+            results_json_sorted_PIBT = []
+            results_json_sorted_LTF = []
+            for i in range(len(sols)):
+                curr_eval_results_LaCAM = []
+                for j in range(self.n_evals):
+                    curr_eval_results_LaCAM.append(results_json_LaCAM[i * self.n_evals + j])
+                results_json_sorted_EECBS.append(curr_eval_results_LaCAM)
+                results_json_sorted_PBS.append(curr_eval_results_LaCAM)
+                results_json_sorted_PIBT.append(curr_eval_results_LaCAM)
+                results_json_sorted_LTF.append(curr_eval_results_LaCAM)
 
         if self.obj == "NONE":
             results_json_sorted_EECBS = []

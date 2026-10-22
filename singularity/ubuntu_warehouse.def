@@ -7,6 +7,7 @@ From: python:3.9.18-bullseye
     pybind11/ /usr/project/pybind11
     PBS/ /usr/project/PBS
     EECBS/ /usr/project/EECBS
+    pybind11/ /usr/project/EECBS/pybind11
     # pibt2/ /usr/project/pibt2
     # RHCR/ /usr/project/RHCR
     CMakeLists.txt /usr/project/CMakeLists.txt
@@ -20,6 +21,9 @@ From: python:3.9.18-bullseye
 
 %post
     echo "Hello from inside the container"
+
+    # Debian bullseye is EOL; its packages now live on archive.debian.org
+    grep -rl deb.debian.org /etc/apt/ | xargs -r sed -i 's|deb.debian.org|archive.debian.org|g'
 
     apt-get update
     apt-get install -y \
